@@ -8,7 +8,7 @@
     <StackPanel Orientation="Vertical">
     <TextBox TextChanged="TextBox_OnTextChanged" Name="docidbox" Width="1000" Height="10"></TextBox>
     <Button Click="OpenDoc" Width="250" Height="50"></Button>
-        <TextBlock Text="Please open a doc...." Name="Main"></TextBlock>
+        <TextBlock Text="Please open a doc...." Name="MainText"></TextBlock>
         <WebView Name="LoginPage" Url="https://accounts.google.com/ServiceLogin" Height="400" Width="600" ></WebView>
     </StackPanel>
 </Window>
