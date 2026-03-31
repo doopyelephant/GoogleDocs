@@ -1,3 +1,4 @@
+
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -5,10 +6,11 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="GoogleDocs.MainWindow"
         Title="GoogleDocs">
+
     <StackPanel Orientation="Vertical">
     <TextBox TextChanged="TextBox_OnTextChanged" Name="docidbox" Width="1000" Height="10"></TextBox>
     <Button Click="OpenDoc" Width="250" Height="50"></Button>
-        <TextBlock Text="Please open a doc...." Name="MainText"></TextBlock>
-        <WebView Name="LoginPage" Url="https://accounts.google.com/ServiceLogin" Height="400" Width="600" ></WebView>
+        <TextBlock Text="Please open a doc...." Name="MainText"  TextWrapping="Wrap"></TextBlock>
+        <WebView Name="LoginPage" Url="https://docs.google.com/document/u/0" Height="400" Width="600" ></WebView>
     </StackPanel>
 </Window>

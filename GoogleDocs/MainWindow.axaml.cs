@@ -1,13 +1,128 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace GoogleDocs;
 
+public enum EditType { Insert, Alter, Multi,Noop,Unknown}
+public class Edit
+{
+    public Edit(EditType type, String[] Params)
+    {
+        Type = type;
+        this.Params = Params;
+    }
+    public Edit(JObject json)
+    {
+        String typestring = json["ty"].ToString();
+        if (typestring == "is")
+        {
+            Type = EditType.Insert;
+            String[] paramstmp = new string[2];
+            paramstmp[0] = json["ibi"].ToString();
+            paramstmp[1] = json["s"].ToString();
+            Params = paramstmp;
+        }
+        else if (typestring == "as")
+        {
+            Type = EditType.Alter;
+            String[] paramstmp = new string[0];
+            Params = paramstmp;
+        }
+        else if (typestring == "ml") // Not sure code
+        {
+            Type = EditType.Multi;
+            String[] paramstmp = new string[0];
+            Params = paramstmp;
+        }
+        else if (typestring == "noop")
+        {
+            Type = EditType.Noop;
+            String[] paramstmp = new string[0];
+            Params = paramstmp;
+        }
+        else
+        {
+            Type = EditType.Unknown;
+            String[] paramstmp = new string[0];
+            Params = paramstmp;
+        }
+
+    }
+    public EditType Type { get; set; }
+    public String[] Params;
+}
+public class DocHistory
+{
+    public List<Edit> Edits { get; set; }
+
+    public DocHistory(JObject json)
+    {
+        Edits = new List<Edit>();
+        if (json is null) return;
+
+        var edits = json["sc"] as JArray;
+        if (edits is null) return;
+
+        foreach (var token in edits)
+        {
+            if (token is JObject obj)
+            {
+                Edits.Add(new Edit(obj));
+            }
+        }
+    }
+    private static JObject? AsJObject(JToken? token)
+    {
+        if (token is null)
+            return null;
+
+        if (token.Type == JTokenType.Object)
+            return (JObject)token;
+
+        // Optional: wrap non\-object token into an object // return new JObject { ["value"] = token };
+
+        return null;
+    }
+}
+public class GoogleDoc
+{
+    JObject? json1;
+    public DocHistory? history;
+
+    public GoogleDoc(JObject json1, JObject json2)
+    {
+        this.json1 = json1;
+        history = new DocHistory(json2);
+    }
+
+    public String GetText()
+    {
+        String content = "";
+        foreach (var edit in history.Edits)
+        {
+            if (edit.Type == EditType.Insert)
+            {
+                if (Convert.ToInt32(edit.Params[0]) == content.Length + 1)
+                {
+                    content += edit.Params[1].Replace("\\n","\n");
+                }
+            }
+        }
+        return content;
+    }
+}
 public partial class MainWindow : Window
 {
     private static String currentUrl = "";
@@ -17,16 +132,21 @@ public partial class MainWindow : Window
     };
     private string doc_id = "";
 
-    private string cookie =
-        "COMPASS=documents=CmIACWuJV_IWtEZzP8wzCogz5MKscNE7tNzIbc_nFv6KOLDixhsDadJbZ-Kq4RZXrUHZihpvXT6KVwCeUmh9LQJvU1z0SG4g-efIB-rqQ1Aeu2ATrWOLgWfU6NQePYumZPJ_bRDr5ZnOBhqEAQAJa4lXwuVFmeJbxy88F2IPzF3ZLPUHVx0tUkL-jiSJxis1zBnLO2gHuNQ6lQfWW_ctw_ilX6gEoqNMjuMDztONVs-wGM_nn2BbytXKasb41AhLAn1dSRXVzFyuMT2QhOWu7BCn9rQcefJJPI7Hwy5vYZgwhlxSBamxyi1-e2zjwTGvGQ==; NID=530=m4p59CNbB_Q9KuGqtE_XwhEoeSCNZj9kFmHrf4tUOjGkpvnIAVi4U19oMIOe27BjJ0AxLBsrTfy-OmsHlw9qCqnlKvQJhJkLvvXf6zP4yeTHmgDdRrO-vTNfobomYRQ_ABtqED5O5dYg9P3nYsNNLEKSmlv0syOGQLnP6Wu7xTk0OZBdhHVW2FLtZLyph-K6gxuDw20t8QWo4PXwOtQn-ouuqFaeqIsZxnYoNpWn0Oc48TFSY6b6nfFkJUElBOIsaQoyiXWxK0SVtJv5UeM7_CHmxTxDEL8C2pJJOtsqmd_9iKXhhcdTsEKV1UsOeUxHcYBTdDYbXaY4L5YQ0QHRdnqbHOPgvfNvMUX1pE3tA3DOCTOm3aePJaRZD5naylc5W2g_3r0zGonwiS2iSVQh-hrs_1uhxkUvjRXb1eSMXC-fFvuysLnubRVGHdwgkieclb-ko6KMUEou5-xvOr8AoR9sLRurTRWD3h23mCf6gi3Ji8scSL3h00bJZHDSSrmO7lneKK5n7GSl3WSBs5Qc1wqanV4fsZD3ItM_0g3ry1rXAdvGD-xpWMvzlKqgWEFlFolShHLDRrDmuB_CJlrenVwEB8cQhT1GkmvUxHIU8wbM2BLRbxKjQIf5yucMFYerDG_IxuaT21Q2cdxtl5Twy6AlbOzoUPb025T6nQviYiuyE5ARDs7UfHQkqa7rEJH7zUClTiYFQN4K6Adk11WmN34iTfiZw3fMRguJEtPHM1W71jmJWapUQp3Wk85bthtDdvrSwdBFpdMYmjinmYSGpaLr_Q-MQ0VxZ3y1rwx5qAE84PE; SID=g.a0007whah4bEqXeFBsUe4RPuTfjxsah0lJmnVRH9DgReqWQDoWsLW2xS-mlmdSTxdkqK0speewACgYKAesSARQSFQHGX2MikkZ0ULg15goEz5t18SaJQhoVAUF8yKqw38t8PShDdOXclGh5Xqmd0076; __Secure-1PSID=g.a0007whah4bEqXeFBsUe4RPuTfjxsah0lJmnVRH9DgReqWQDoWsL6ZRevsd9Ur3JtMdtvR5KZQACgYKATcSARQSFQHGX2Mig7PWEJfanFzs3sU6xXAIRhoVAUF8yKpdpqwKBIJBxAVArr6POEMS0076; __Secure-3PSID=g.a0007whah4bEqXeFBsUe4RPuTfjxsah0lJmnVRH9DgReqWQDoWsLkCixmOgc2FMTH30xZ4HPfgACgYKAQcSARQSFQHGX2MiKkC64r090tldq8PQdZibGhoVAUF8yKpNnBAHaospDvlKRWIcqFnm0076; HSID=Ar3yC1mBUaa1a0Fpp; SSID=AYMr1tbyU9avtPX4-; APISID=ju4fB_YNuGgBT_Pp/AOm8LL5biEbGkOgc7; SAPISID=9MbuET2lqZp5FZ74/A1OrLj5oCIutPIflT; __Secure-1PAPISID=9MbuET2lqZp5FZ74/A1OrLj5oCIutPIflT; __Secure-3PAPISID=9MbuET2lqZp5FZ74/A1OrLj5oCIutPIflT; SIDCC=AKEyXzVm9jx8ouHmQ78KQ97P5wFii125Lm4BqxlE1pSJb5CKuDZJyxbA2p_vUhHxgL2RoDctNXY; __Secure-1PSIDCC=AKEyXzW6cr8Vx6m_m1tCFLM10V6tnLURH2tF2gIcYdpF6_ob774awvtvN3WSMjbiLOERvpmSwLw; __Secure-3PSIDCC=AKEyXzVBtzEzhCn3diCm8_RnqawyHR5Qxqu2bpAMLj7bvNyLbN_Nb5gbYxFRzPOqb6ki8FG4xzR9; SEARCH_SAMESITE=CgQIxp8B; __Secure-1PSIDTS=sidts-CjEBWhotCV2JDuTEX9ffeVFuXEptl-S2CpxZfLqXvMIdr8dWacNf1Qpt2Ij3ph2YdxhCEAA; __Secure-3PSIDTS=sidts-CjEBWhotCV2JDuTEX9ffeVFuXEptl-S2CpxZfLqXvMIdr8dWacNf1Qpt2Ij3ph2YdxhCEAA; OSID=g.a0007whah5DbtxM3FlZi5AhyI6b5UlO5X0JDSVuos302vmQnljrYsCuqTMhL8n40u37mc4dxpwACgYKAeESARQSFQHGX2Mi1jzy-75FcNkhkBuiqj1WtBoVAUF8yKoK_-dbuCdEhcpq2O0dHC3A0076; __Secure-OSID=g.a0007whah5DbtxM3FlZi5AhyI6b5UlO5X0JDSVuos302vmQnljrYYTQ51tXRsmSQmEs5JHUkagACgYKASQSARQSFQHGX2MiHRqlE2y_S-eTYgU0SkXnzhoVAUF8yKoXponDY9K9aaaLyKLM36DV0076; __Secure-BUCKET=CLQC; AEC=AaJma5vT-RdpcwP7j7D8TJHEo7IV8YQFnEl5X12P5DZCq3V7T96Ohbap9Vw; COMPASS=appsfrontendserver=CgAQ6uWZzgYafQAJa4lXNdK39218o12B2cPkLXlou9FGt4_7JcDYZ4-HgnOHpsw9ESh_LGoS2iw4ufcm7Le-EAe9qg2jQ_FjVcOYONRpfKTJK8oZUyehGLcAy5fnou7Xgkj9ZEGzM0PLMVq2kDG3lNned2sjr2ps1QJr6JHPPX7wCEiOThdXIAEwAQ; S=billing-ui-v3=fBvsBAkD9DHgOVj-4CaHL5ZCgXmzFNiQ4fTQFoqjMPw:billing-ui-v3-efe=fBvsBAkD9DHgOVj-4CaHL5ZCgXmzFNiQ4fTQFoqjMPw";
+
+
+
+    // Keep this in memory only; it is refreshed from the embedded login WebView.
+    private string cookie = "";
+    public GoogleDoc? doc;
     public MainWindow()
     {
         InitializeComponent();
-      /*  LoginPage.NavigationCompleted += LoginPage_OnNavigationCompleted;
-        LoginPage.Url = new Uri("https://accounts.google.com/ServiceLogin");*/
+
+        LoginPage.NavigationCompleted += LoginPage_OnNavigationCompleted;
+        LoginPage.Url = new Uri("https://docs.google.com/document/u/0");
     }
 
-    private void LoginPage_OnNavigationCompleted(object? sender, EventArgs e)
+    private async void LoginPage_OnNavigationCompleted(object? sender, EventArgs e)
     {
         string url = "";
 
@@ -40,30 +160,76 @@ public partial class MainWindow : Window
         if (value is Uri uri) url = uri.ToString();
         else if (value is string s) url = s;
 
-      /*  if (string.IsNullOrWhiteSpace(url))
-            url = LoginPage.Url?.ToString() ?? "";*/
-        currentUrl = url;
-        // Read from the control, not event args var currentUrl = LoginPage.Url?.ToString() ?? string.Empty;
-        Console.WriteLine($"Navigated: {currentUrl}");
-
-        if (currentUrl.Contains("myaccount.google.com", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(url))
         {
-            Dispatcher.UIThread.Post(() =>
-            {
-                LoginPage.Url = new Uri("https://docs.google.com/document/u/0");
-            });
+            url = LoginPage.Url?.ToString() ?? "";
         }
+
+        currentUrl = url;
+        Console.WriteLine($"Navigated: {currentUrl}");
     }
 
-
-    private String Cookies()
+    private static bool IsGoogleUrl(string url)
     {
-        return "";
+        return url.Contains("google.com", StringComparison.OrdinalIgnoreCase)
+               || url.Contains("docs.google.", StringComparison.OrdinalIgnoreCase);
     }
+
+    private bool TryGetCoreWebView2(out object? coreWebView)
+    {
+        var coreWebViewProp = LoginPage.GetType().GetProperty("CoreWebView2");
+        coreWebView = coreWebViewProp?.GetValue(LoginPage);
+        return coreWebView is not null;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private void TextBox_OnTextChanged(object? sender, TextChangedEventArgs e)
     {
         doc_id = docidbox.Text;
+    }
+
+    private async void BindToDoc()
+    {
+    String url = GetBindReq(doc_id);
+    Console.WriteLine(url);
+    while (true)
+    {
+        Console.WriteLine("Binding...");
+        string json = await GetRequest(url);
+        var list = json.Split("15");
+        if (list.Length > 0)
+        {
+            foreach (var item in list)
+            {
+                if (item.Contains("noop"))
+                {
+                    doc.history.Edits.Add(new Edit(EditType.Noop,new string[0]));
+                    continue;
+                }
+                if (TryParseFirstJsonObject(item, out JObject? obj) && obj is not null)
+                {
+                    doc.history.Edits.Add(new Edit(obj));
+                }
+            }
+        }
+        MainText.Text = doc.GetText();
+        Console.WriteLine(json);
+        await Task.Delay(500);
+    }
     }
 
     private async void OpenDoc(object? sender, RoutedEventArgs e)
@@ -74,20 +240,42 @@ string url =  InitialReq(doc_id);
 Console.WriteLine(url);
 try
 {
+
+
     string json = await GetRequest(url);
     Console.WriteLine(json);
-    if (json.Contains("[{\"ty\":\"is\",\"ibi\":1,\"s\":\""))
+  // JObject parsed = JObject.Parse(json.Split("&")[2]);
+  string json2 = json.Split("3430&")[1];
+  TryParseFirstJsonObject(json, out JObject? parsed);
+  TryParseFirstJsonObject(json2, out JObject? parsed2);
+  Console.WriteLine("JSON:");
+   Console.WriteLine(parsed);
+   Console.WriteLine("End JSON");
+   Console.WriteLine("JSON2:");
+   Console.WriteLine(parsed2);
+   Console.WriteLine("End JSON2");
+   Console.WriteLine("Raw:");
+   Console.WriteLine(json);
+   Console.WriteLine("End Raw");
+   doc = new GoogleDoc(parsed, parsed2);
+   Console.WriteLine("Doc created");
+   /* if (json.Contains("[{\"ty\":\"is\",\"ibi\":1,\"s\":\""))
     {
+        Console.WriteLine("JSON is valid");
         string last = json.Split("[{\"ty\":\"is\",\"ibi\":1,\"s\":\"")[1];
-        string doc = last.Split("\"")[1];
+      //  Console.WriteLine(last);
+        string doc = last.Split("\"},")[0].Replace("\\n","\n");
         MainText.Text = doc;
-        Console.WriteLine(doc);
+     //   Console.WriteLine(doc);
+        BindToDoc();
     }
     else
     {
         MainText.Text = "JSON is invalid";
         Console.WriteLine("JSON is invalid");
-    }
+    }*/
+   MainText.Text = doc.GetText();
+   BindToDoc();
 }
 catch (HttpRequestException err)
 {
@@ -96,7 +284,31 @@ catch (HttpRequestException err)
 }
     }
 
+
     private async Task<string> GetRequest(string url)
+    {
+        var (statusCode, reasonPhrase, redirectLocation, body) = await SendRequestOnceAsync(url);
+
+        if (statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            Console.WriteLine($"Received {(int)statusCode}. Retrying once with fresh cookie read...");
+            await Task.Delay(200);
+            (statusCode, reasonPhrase, redirectLocation, body) = await SendRequestOnceAsync(url);
+        }
+
+        Console.WriteLine($"Status: {(int)statusCode} {reasonPhrase}");
+        if (redirectLocation is not null)
+            Console.WriteLine($"Redirect to: {redirectLocation}");
+
+        Console.WriteLine(body.Length > 500 ? body[..500] : body);
+
+        if ((int)statusCode < 200 || (int)statusCode >= 300)
+            throw new HttpRequestException($"Response status code does not indicate success: {(int)statusCode} ({reasonPhrase}).");
+
+        return body;
+    }
+
+    private async Task<(HttpStatusCode StatusCode, string? ReasonPhrase, Uri? RedirectLocation, string Body)> SendRequestOnceAsync(string url)
     {
         using var handler = new HttpClientHandler
         {
@@ -109,25 +321,75 @@ catch (HttpRequestException err)
         };
 
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
-        request.Headers.TryAddWithoutValidation("Cookie", cookie);
+
+        // Build cookies for this exact URL from WebView2 cookie jar
+
+        cookie = await GetCookiesAsync();
+            request.Headers.TryAddWithoutValidation("Cookie", cookie);
+            Console.WriteLine("Attached auth cookies to request.");
         request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0");
+        request.Headers.TryAddWithoutValidation("Accept", "*/*");
+        request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
 
         using var response = await localClient.SendAsync(request);
-
-        Console.WriteLine($"Status: {(int)response.StatusCode} {response.ReasonPhrase}");
-
-        if (response.Headers.Location is not null)
-            Console.WriteLine($"Redirect to: {response.Headers.Location}");
-
         var body = await response.Content.ReadAsStringAsync();
-        Console.WriteLine(body.Length > 500 ? body[..500] : body);
 
-        response.EnsureSuccessStatusCode();
-        return body;
+        return (response.StatusCode, response.ReasonPhrase, response.Headers.Location, body);
     }
+
+    private async Task<string> GetCookiesAsync()
+    {
+        // Make sure the page is loaded and you're on the right origin before calling this.
+        var result = await LoginPage.ExecuteScriptAsync("document.cookie");
+
+        if (string.IsNullOrWhiteSpace(result))
+            return string.Empty;
+
+        // Avalonia often returns a JSON-encoded JS result, so unwrap quotes if needed.
+        return JsonConvert.DeserializeObject<string>(result) ?? string.Empty;
+    }
+
+
+
+    private static bool TryParseFirstJsonObject(string input, out JObject? obj)
+    {
+     obj = null;
+     if (string.IsNullOrWhiteSpace(input)) return false;
+
+     var start = input.IndexOf('{');
+     if (start <0) return false;
+
+     var jsonPart = input[start..];
+
+     using var sr = new StringReader(jsonPart);
+     using var reader = new JsonTextReader(sr)
+     {
+     SupportMultipleContent = true };
+
+     var serializer = JsonSerializer.CreateDefault();
+
+     while (reader.Read())
+     {
+     if (reader.TokenType == JsonToken.StartObject)
+     {
+     obj = serializer.Deserialize<JObject>(reader);
+     return obj is not null;
+     }
+     }
+
+     return false;
+    }
+
 
     private String InitialReq(String docid)
     {
-        return $"https://docs.google.com/document/d/{docid}/mobile/edit?reason=2&sid=20e312e79cf3bc0e&smv=2147483647&mmv=1&smb=%5B2147483647%2C%20oAMQ%5D&fcs=1710";
+        // Avoid stale hardcoded session/query parameters. Use a clean authenticated endpoint.
+        return $"https://docs.google.com/document/d/{docid}/mobile/edit";
+    }
+
+    private String GetBindReq(String docid)
+    {
+        // Use only stable bind query parameters here. Session values must come from the current login session.
+        return $"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&VER=8&c=1&w=1&RID=rpc&CI=0&AID=1&TYPE=xmlhttp";
     }
 }

@@ -1,7 +1,5 @@
 ﻿using Avalonia;
 using System;
-using Avalonia.WebView.Desktop;
-using AvaloniaWebView;
 namespace GoogleDocs;
 
 class Program
@@ -18,6 +16,5 @@ class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .LogToTrace()
-            .UseWindowWebView();
+            .LogToTrace();
 }
