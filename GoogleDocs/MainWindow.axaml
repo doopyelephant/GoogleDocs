@@ -11,6 +11,6 @@
     <TextBox TextChanged="TextBox_OnTextChanged" Name="docidbox" Width="1000" Height="10"></TextBox>
     <Button Click="OpenDoc" Width="250" Height="50"></Button>
         <TextBlock Text="Please open a doc...." Name="MainText"  TextWrapping="Wrap"></TextBlock>
-        <WebView Name="LoginPage" Url="https://docs.google.com/document/u/0" Height="400" Width="600" ></WebView>
+
     </StackPanel>
 </Window>

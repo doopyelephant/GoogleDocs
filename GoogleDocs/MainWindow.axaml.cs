@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -142,46 +143,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        LoginPage.NavigationCompleted += LoginPage_OnNavigationCompleted;
-        LoginPage.Url = new Uri("https://docs.google.com/document/u/0");
     }
-
-    private async void LoginPage_OnNavigationCompleted(object? sender, EventArgs e)
-    {
-        string url = "";
-
-        var eventType = e.GetType();
-
-        var prop = eventType.GetProperty("Url")
-                   ?? eventType.GetProperty("Uri")
-                   ?? eventType.GetProperty("Address");
-
-        var value = prop?.GetValue(e);
-        if (value is Uri uri) url = uri.ToString();
-        else if (value is string s) url = s;
-
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            url = LoginPage.Url?.ToString() ?? "";
-        }
-
-        currentUrl = url;
-        Console.WriteLine($"Navigated: {currentUrl}");
-    }
-
-    private static bool IsGoogleUrl(string url)
-    {
-        return url.Contains("google.com", StringComparison.OrdinalIgnoreCase)
-               || url.Contains("docs.google.", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private bool TryGetCoreWebView2(out object? coreWebView)
-    {
-        var coreWebViewProp = LoginPage.GetType().GetProperty("CoreWebView2");
-        coreWebView = coreWebViewProp?.GetValue(LoginPage);
-        return coreWebView is not null;
-    }
-
 
 
 
@@ -202,6 +164,11 @@ public partial class MainWindow : Window
         doc_id = docidbox.Text;
     }
 
+    private Stream BindRequest(String url)
+    {
+        return client.GetStreamAsync(url).Result;
+    }
+
     private async void BindToDoc()
     {
     String url = GetBindReq(doc_id);
@@ -209,26 +176,34 @@ public partial class MainWindow : Window
     while (true)
     {
         Console.WriteLine("Binding...");
-        string json = await GetRequest(url);
-        var list = json.Split("15");
-        if (list.Length > 0)
+        Stream jsonstream = BindRequest(url);
+        StreamReader jsonreader = new StreamReader(jsonstream);
+        String blocksize = "";
+        while (true)
         {
-            foreach (var item in list)
+            if (jsonreader.Peek() == 38)
             {
-                if (item.Contains("noop"))
+                jsonreader.Read();
+                break;
+            }
+            blocksize += (char)jsonreader.Read();
+        }
+        int blocksizeint = Convert.ToInt32(blocksize);
+        char[] buffer = new char[blocksizeint];
+        jsonreader.Read(buffer, 0, blocksizeint);
+        string json = new string(buffer);
+        Console.WriteLine("JSON: " + json);
+                if (json.Contains("noop"))
                 {
                     doc.history.Edits.Add(new Edit(EditType.Noop,new string[0]));
                     continue;
                 }
-                if (TryParseFirstJsonObject(item, out JObject? obj) && obj is not null)
+                if (TryParseFirstJsonObject(json, out JObject? obj) && obj is not null)
                 {
                     doc.history.Edits.Add(new Edit(obj));
                 }
-            }
-        }
         MainText.Text = doc.GetText();
         Console.WriteLine(json);
-        await Task.Delay(500);
     }
     }
 
@@ -324,7 +299,7 @@ catch (HttpRequestException err)
 
         // Build cookies for this exact URL from WebView2 cookie jar
 
-        cookie = await GetCookiesAsync();
+
             request.Headers.TryAddWithoutValidation("Cookie", cookie);
             Console.WriteLine("Attached auth cookies to request.");
         request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0");
@@ -337,17 +312,7 @@ catch (HttpRequestException err)
         return (response.StatusCode, response.ReasonPhrase, response.Headers.Location, body);
     }
 
-    private async Task<string> GetCookiesAsync()
-    {
-        // Make sure the page is loaded and you're on the right origin before calling this.
-        var result = await LoginPage.ExecuteScriptAsync("document.cookie");
 
-        if (string.IsNullOrWhiteSpace(result))
-            return string.Empty;
-
-        // Avalonia often returns a JSON-encoded JS result, so unwrap quotes if needed.
-        return JsonConvert.DeserializeObject<string>(result) ?? string.Empty;
-    }
 
 
 
