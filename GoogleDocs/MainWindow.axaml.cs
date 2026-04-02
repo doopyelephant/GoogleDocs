@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -17,6 +18,33 @@ using Newtonsoft.Json.Linq;
 
 namespace GoogleDocs;
 
+public static class Utils
+{
+    public static string AddQuotes(this string str)
+    {
+        return "\"" + str + "\"";
+    }
+    public static string SubstringAfter(this string str, string after)
+    {
+        int index = str.IndexOf(after, StringComparison.Ordinal);
+        if (index == -1)
+        {
+            return "";
+        }
+        return str.Substring(index + after.Length);
+    }
+}
+public struct BrowserCookie
+{
+    public String host;
+    public String name;
+    public String value;
+}
+
+public struct BrowserCookieJar
+{
+    public List<BrowserCookie> cookies;
+}
 public enum EditType { Insert, Alter, Multi,Noop,Unknown}
 public class Edit
 {
@@ -139,10 +167,11 @@ public partial class MainWindow : Window
 
     // Keep this in memory only; it is refreshed from the embedded login WebView.
     private string cookie = "COMPASS=documents=CmIACWuJV_M2JW4onWZwfk4_q-pk0A6MjLy8TBhTJSgU4Zt1Q47bhL85atCH9VapgZ5voLIDa6Ca2rArWhkl2pBFGn08S9N1MCBaR6x9l0yX0STANN-4yj4kg5dJKuN8jTJMqBC4lLTOBhqEAQAJa4lX47p7yIL65SC2cOvZPN82BYj6UQ11C3-PgqXLqgBHHkv7AIkkpa0o_FhCwFmSAbl4LDoYeQZGxTI87B5ALQQRbiHZXDkv-jyyE44AT-yTT3eiDlipMNQPPHpB7KO6WyQB98ttqF2ArzjJIaF385NGKmVNr92cCfP1DuAZhEPeQw==; NID=530=SN0yLQ4HEAFhgfGsg77skdcqlZLArLBeHUwQFOvYQXZ-rnzWrRTV2oJiiQKjro9Bbdd2Rwgo-zqclFZuiYilgrilOE6lizG1ZrrItQoY95fYiuduEOcDbtvB4BJ27y6zEZTZg8qBMUG5rNcd-6RpzjfyT01vsrkbyiZEHUgmp4pMy_PfDs4nTTgJpJq8OxFOAaJBy6hjfMb8xh8w-49VlIt1Vb0lxFv2aM5wQLWPMTpfc2YV-SS-xlGeToAZPBEKnp39geXpfWbdc0x6T4UPKIacvHJyh6PiblzbEYBYVAq3qD1pUViLxuWpkgw5HTSXqRAETG5nEbEcxH5IrqYRlD9rT_Kz8wAWnt5LU3eTv4zVpdN1LalxRNPKRv7XeWPDTviHRDtgnu46tS-W8AQmY3Xh6j97XDI6I-i8Ns16YoC59OYH6FPLO944uXMX6KCFuEJI0KMJTTS-VsdSuODGjZ69SmUYmuYb3e3PF75awrVeku_zYAwyFWmhhugQsekKD0a1XaGEATPWFF9Ia7z63PwFLGhO_-OS3KNmdpyuI8cyrHHEwF3xtIqx4d4HtwUzRFri-qkmHWyWbAykIQ6Ow-W2LVfw2eNH58C3gAhuqEPSKylOQ4kMPQOOkmaSYuByuFPh5Zi56LA3YEbPaJEuV_dOzh6d_p6TLA4UwMxNyWzEPZfaVmOBqqvuZuwBIREj1ogLajt0KqIhUG6K5pvi2Fb99KUhD3L31wv_CmpF3hzbdSlatkBSoFu601nOdk-NJWniZa6iu9EU0rFhuf2Dfbh2kHrqWYpLHvCKgHk-U5rAOWFslYlGNg; SID=g.a0007whah4bEqXeFBsUe4RPuTfjxsah0lJmnVRH9DgReqWQDoWsLW2xS-mlmdSTxdkqK0speewACgYKAesSARQSFQHGX2MikkZ0ULg15goEz5t18SaJQhoVAUF8yKqw38t8PShDdOXclGh5Xqmd0076; __Secure-1PSID=g.a0007whah4bEqXeFBsUe4RPuTfjxsah0lJmnVRH9DgReqWQDoWsL6ZRevsd9Ur3JtMdtvR5KZQACgYKATcSARQSFQHGX2Mig7PWEJfanFzs3sU6xXAIRhoVAUF8yKpdpqwKBIJBxAVArr6POEMS0076; __Secure-3PSID=g.a0007whah4bEqXeFBsUe4RPuTfjxsah0lJmnVRH9DgReqWQDoWsLkCixmOgc2FMTH30xZ4HPfgACgYKAQcSARQSFQHGX2MiKkC64r090tldq8PQdZibGhoVAUF8yKpNnBAHaospDvlKRWIcqFnm0076; HSID=Ar3yC1mBUaa1a0Fpp; SSID=AYMr1tbyU9avtPX4-; APISID=ju4fB_YNuGgBT_Pp/AOm8LL5biEbGkOgc7; SAPISID=9MbuET2lqZp5FZ74/A1OrLj5oCIutPIflT; __Secure-1PAPISID=9MbuET2lqZp5FZ74/A1OrLj5oCIutPIflT; __Secure-3PAPISID=9MbuET2lqZp5FZ74/A1OrLj5oCIutPIflT; SIDCC=AKEyXzWlNlMRvES5s0VflPPUK2PhYouanpKAHreZL4KtSQZPTBDG2VDgxiHpV-yGR4MTlcHfwuA; __Secure-1PSIDCC=AKEyXzWy_62-91JO99hkQHvUFvgcrDdfbZGFe8rWpIDTDrS21TTSOPnIYrxtFQEQBiOh3YjLn2k; __Secure-3PSIDCC=AKEyXzVsVKbCVdC_LksLNRUqnuI5YvruuJo-hIpXbKbfNeCXDJTJCyq5ztmg_riI5MCEq4oGsaKJ; SEARCH_SAMESITE=CgQIxp8B; __Secure-1PSIDTS=sidts-CjEBWhotCTZWm83kA9ZY2inOhquktS_lVv8PY9RzeO0rKzwjcZ9OaScvZiXdFnzJG0GGEAA; __Secure-3PSIDTS=sidts-CjEBWhotCTZWm83kA9ZY2inOhquktS_lVv8PY9RzeO0rKzwjcZ9OaScvZiXdFnzJG0GGEAA; OSID=g.a0007whah5DbtxM3FlZi5AhyI6b5UlO5X0JDSVuos302vmQnljrYsCuqTMhL8n40u37mc4dxpwACgYKAeESARQSFQHGX2Mi1jzy-75FcNkhkBuiqj1WtBoVAUF8yKoK_-dbuCdEhcpq2O0dHC3A0076; __Secure-OSID=g.a0007whah5DbtxM3FlZi5AhyI6b5UlO5X0JDSVuos302vmQnljrYYTQ51tXRsmSQmEs5JHUkagACgYKASQSARQSFQHGX2MiHRqlE2y_S-eTYgU0SkXnzhoVAUF8yKoXponDY9K9aaaLyKLM36DV0076; __Secure-BUCKET=CLQC; AEC=AaJma5v23HIs1lldTWaW9Jk1pb9DgsXdLIOncmDNe3ZqBTcz9mJf0jf3huE; COMPASS=appsfrontendserver=CgAQ9M-pzgYafQAJa4lXNdK39218o12B2cPkLXlou9FGt4_7JcDYZ4-HgnOHpsw9ESh_LGoS2iw4ufcm7Le-EAe9qg2jQ_FjVcOYONRpfKTJK8oZUyehGLcAy5fnou7Xgkj9ZEGzM0PLMVq2kDG3lNned2sjr2ps1QJr6JHPPX7wCEiOThdXIAEwAQ; S=billing-ui-v3=fBvsBAkD9DHgOVj-4CaHL5ZCgXmzFNiQ4fTQFoqjMPw:billing-ui-v3-efe=fBvsBAkD9DHgOVj-4CaHL5ZCgXmzFNiQ4fTQFoqjMPw";   public GoogleDoc? doc;
+    private string cookiescript = "../../../browser_cookies.py";
     public MainWindow()
     {
         InitializeComponent();
-
+        Console.WriteLine(GetCookies().ToString());
     }
 
 
@@ -505,5 +534,43 @@ private static bool TryReadLengthPrefixedSegment(
     {
         // Use only stable bind query parameters here. Session values must come from the current login session.
         return $"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&VER=8&c=1&w=1&RID=rpc&CI=0&AID=1&TYPE=xmlhttp";
+    }
+
+    private String ExecuteScript(String cmd)
+    {
+        Process process = new Process();
+        process.StartInfo.FileName = "cmd.exe";
+        process.StartInfo.Arguments = "/c " + cmd; // Replace 'dir' with your command
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.CreateNoWindow = true;
+
+        process.Start();
+
+// Read the output stream
+        string output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+        return output;
+    }
+
+
+
+    private BrowserCookieJar GetCookies(String hostfilter = "")
+    {
+        string datadir = "C:\\Users\\nolan\\AppData\\Roaming\\GoogleDocs";
+        Console.WriteLine(ExecuteScript("mkdir " + datadir));
+        string cookiepath = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)\\cookies.sqlite";
+        string cpcmd = "copy " + cookiepath.AddQuotes() + " " + (datadir + "\\cookies.sqlite").AddQuotes();
+        Console.WriteLine(cpcmd);
+        Console.WriteLine(ExecuteScript(cpcmd));
+        cookiepath += ".docbackup";
+        string json = ExecuteScript("python " + cookiescript + " " + (datadir + "\\cookies.sqlite").AddQuotes() + " " + hostfilter);
+        json = "[" + json.SubstringAfter("[");
+        ExecuteScript("del " + cookiepath + "");
+        Console.WriteLine("JSON: " + json.Substring(0, 500) + "...");
+        var cookies = JsonConvert.DeserializeObject<List<BrowserCookie>>(json);
+        var cookiejar = new BrowserCookieJar();
+        cookiejar.cookies = cookies;
+        return cookiejar;
     }
 }
