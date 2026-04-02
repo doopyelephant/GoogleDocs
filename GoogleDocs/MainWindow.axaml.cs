@@ -45,6 +45,13 @@ public struct BrowserCookieJar
 {
     public List<BrowserCookie> cookies;
 }
+
+public struct UrlConfig
+{
+    public String docidkey;
+    public String bindurl;
+    public String initurl;
+}
 public enum EditType { Insert, Alter, Multi,Noop,Unknown}
 public class Edit
 {
@@ -155,6 +162,7 @@ public class GoogleDoc
 }
 public partial class MainWindow : Window
 {
+    private UrlConfig UrlConfig;
     private static String currentUrl = "";
     private static readonly HttpClient client = new HttpClient
     {
@@ -171,7 +179,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Console.WriteLine(GetCookies().ToString());
+        UrlConfig = GetUrlConfig();
+        //Console.WriteLine(GetCookies().ToString());
     }
 
 
@@ -200,7 +209,7 @@ public partial class MainWindow : Window
 
     private async void BindToDoc()
     {
-    String url = GetBindReq(doc_id);
+    String url = GetBindReq(doc_id,UrlConfig);
     Console.WriteLine(url);
     while (true)
     {
@@ -240,7 +249,7 @@ public partial class MainWindow : Window
     {
 MainText.Text = "Loading...";
 Console.WriteLine("Loading...");
-string url =  InitialReq(doc_id);
+string url =  InitialReq(doc_id,UrlConfig);
 Console.WriteLine(url);
 try
 {
@@ -374,7 +383,7 @@ private static bool TryExtractFirstJsonObject(
 private async void CookieValidate()
 {
     Console.WriteLine("Cookie validation...");
-    string url =  InitialReq(doc_id);
+    string url =  InitialReq(doc_id,UrlConfig);
     await GetRequest(url);
 }
 // Reads: [&]digits&payload  where payload length is exactly 'digits'.
@@ -524,16 +533,14 @@ private static bool TryReadLengthPrefixedSegment(
     }
 
 
-    private String InitialReq(String docid)
+    private String InitialReq(String docid,UrlConfig config)
     {
-        // Avoid stale hardcoded session/query parameters. Use a clean authenticated endpoint.
-        return $"https://docs.google.com/document/d/{docid}/mobile/edit";
+        return config.initurl.Replace(config.docidkey, docid);
     }
 
-    private String GetBindReq(String docid)
+    private String GetBindReq(String docid,UrlConfig config)
     {
-        // Use only stable bind query parameters here. Session values must come from the current login session.
-        return $"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&VER=8&c=1&w=1&RID=rpc&CI=0&AID=1&TYPE=xmlhttp";
+        return config.bindurl.Replace(config.docidkey, docid);
     }
 
     private String ExecuteScript(String cmd)
@@ -551,6 +558,13 @@ private static bool TryReadLengthPrefixedSegment(
         string output = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
         return output;
+    }
+
+    private UrlConfig GetUrlConfig()
+    {
+        string json = File.ReadAllText("../../../UrlConfig.json");
+        var UrlConfig = JsonConvert.DeserializeObject<UrlConfig>(json);
+        return UrlConfig;
     }
 
 
