@@ -48,6 +48,7 @@ public struct BrowserCookieJar
 
 public struct UrlConfig
 {
+    public int version;
     public String docidkey;
     public String bindurl;
     public String initurl;
@@ -160,17 +161,38 @@ public class GoogleDoc
         return content;
     }
 }
+
+public struct BrowserCookieKey
+{
+    public String key;
+    public String name;
+}
+
+public struct BrowserCookieConfig
+{
+    public String name;
+    public String winpath;
+    public String linpath;
+    public String type;
+}
+public struct BrowserCookiePaths
+{
+    public int version;
+    public List<BrowserCookieKey> keys;
+    public List<BrowserCookieConfig> browsers;
+}
 public partial class MainWindow : Window
 {
     private UrlConfig UrlConfig;
+    private BrowserCookiePaths browsercookiepaths;
     private static String currentUrl = "";
     private static readonly HttpClient client = new HttpClient
     {
         Timeout = TimeSpan.FromSeconds(20)
     };
     private string doc_id = "";
-
-
+    private const int urlconfig_version = 1;
+    private const int browsercookiepath_version = 1;
 
 
     // Keep this in memory only; it is refreshed from the embedded login WebView.
@@ -180,6 +202,15 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         UrlConfig = GetUrlConfig();
+        if (UrlConfig.version != urlconfig_version)
+        {
+            Console.WriteLine("WARNING, URL config version mismatch.");
+        }
+        browsercookiepaths = GetBrowserCookiePaths();
+        if (browsercookiepaths.version != browsercookiepath_version)
+        {
+            Console.WriteLine("WARNING, browser cookie paths version mismatch.");
+        }
         //Console.WriteLine(GetCookies().ToString());
     }
 
@@ -586,5 +617,11 @@ private static bool TryReadLengthPrefixedSegment(
         var cookiejar = new BrowserCookieJar();
         cookiejar.cookies = cookies;
         return cookiejar;
+    }
+    private BrowserCookiePaths GetBrowserCookiePaths()
+    {
+        string json = File.ReadAllText("../../../BrowserCookiePaths.json");
+        var BrowserCookiePaths = JsonConvert.DeserializeObject<BrowserCookiePaths>(json);
+        return BrowserCookiePaths;
     }
 }

@@ -1,68 +1,85 @@
-[
-    {
-        "name":"Chrome",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Chromium"
-    },
-    {
-        "name":"Firefox",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Firefox"
-    },
-    {
-        "name":"Zen",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Firefox"
-    },
-    {
-        "name":"Edge",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Chromium"
-    },
-    {
-        "name":"Brave",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Chromium"
-    },
-    {
-        "name":"Opera",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Chromium"
-    },
-    {
-        "name":"Arc",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Chromium"
-    },
-    {
-        "name":"Chromium",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Chromium"
-    },
-    {
-        "name":"Opera GX",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Chromium"
-    },
-    {
-        "name":"Tor",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Chromium"
-    },
-    {
-        "name":"Chrome",
-        "winpath":"",
-        "gnupath":"",
-        "type":"Chromium"
-    }
-]
+{
+    "version": 1,
+    "keys": [
+        {
+            "key": "##SYSUSER##",
+            "name": "SYSUSER"
+        },
+        {
+            "key": "##PKFIRST##",
+            "name": "PKFIRST"
+        },
+        {
+            "key": "##PKCONTAINS##",
+            "name": "PKCONTAINS"
+        }
+    ],
+    "browsers": [
+        {
+            "name": "Chrome",
+            "winpath": "",
+            "linpath": "",
+            "type": "Chromium"
+        },
+        {
+            "name": "Firefox",
+            "winpath": "",
+            "linpath": "",
+            "type": "Firefox"
+        },
+        {
+            "name": "Zen",
+            "winpath": "",
+            "linpath": "",
+            "type": "Firefox"
+        },
+        {
+            "name": "Edge",
+            "winpath": "",
+            "linpath": "",
+            "type": "Chromium"
+        },
+        {
+            "name": "Brave",
+            "winpath": "",
+            "linpath": "",
+            "type": "Chromium"
+        },
+        {
+            "name": "Opera",
+            "winpath": "",
+            "linpath": "",
+            "type": "Chromium"
+        },
+        {
+            "name": "Arc",
+            "winpath": "",
+            "linpath": "",
+            "type": "Chromium"
+        },
+        {
+            "name": "Chromium",
+            "winpath": "",
+            "linpath": "",
+            "type": "Chromium"
+        },
+        {
+            "name": "Opera GX",
+            "winpath": "",
+            "linpath": "",
+            "type": "Chromium"
+        },
+        {
+            "name": "Tor",
+            "winpath": "",
+            "linpath": "",
+            "type": "Chromium"
+        },
+        {
+            "name": "Chrome",
+            "winpath": "",
+            "linpath": "",
+            "type": "Chromium"
+        }
+    ]
+}

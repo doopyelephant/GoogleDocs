@@ -1,4 +1,5 @@
 ﻿{
+  "version": 1,
   "docidkey": "##DOCID##",
   "bindurl": "https://docs.google.com/document/d/##DOCID##/bind?id=##DOCID##&includes_info_params=true&VER=8&c=1&w=1&RID=rpc&CI=0&AID=1&TYPE=xmlhttp",
   "initurl": "https://docs.google.com/document/d/##DOCID##/mobile/edit"
