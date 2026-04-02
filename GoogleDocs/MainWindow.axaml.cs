@@ -1,186 +1,21 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace GoogleDocs;
 
-public static class Utils
-{
-    public static string AddQuotes(this string str)
-    {
-        return "\"" + str + "\"";
-    }
-    public static string SubstringAfter(this string str, string after)
-    {
-        int index = str.IndexOf(after, StringComparison.Ordinal);
-        if (index == -1)
-        {
-            return "";
-        }
-        return str.Substring(index + after.Length);
-    }
-}
-public struct BrowserCookie
-{
-    public String host;
-    public String name;
-    public String value;
-}
 
-public struct BrowserCookieJar
-{
-    public List<BrowserCookie> cookies;
-}
 
-public struct UrlConfig
-{
-    public int version;
-    public String docidkey;
-    public String bindurl;
-    public String initurl;
-}
-public enum EditType { Insert, Alter, Multi,Noop,Unknown}
-public class Edit
-{
-    public Edit(EditType type, String[] Params)
-    {
-        Type = type;
-        this.Params = Params;
-    }
-    public Edit(JObject json)
-    {
-        String typestring = json["ty"].ToString();
-        if (typestring == "is")
-        {
-            Type = EditType.Insert;
-            String[] paramstmp = new string[2];
-            paramstmp[0] = json["ibi"].ToString();
-            paramstmp[1] = json["s"].ToString();
-            Params = paramstmp;
-        }
-        else if (typestring == "as")
-        {
-            Type = EditType.Alter;
-            String[] paramstmp = new string[0];
-            Params = paramstmp;
-        }
-        else if (typestring == "ml") // Not sure code
-        {
-            Type = EditType.Multi;
-            String[] paramstmp = new string[0];
-            Params = paramstmp;
-        }
-        else if (typestring == "noop")
-        {
-            Type = EditType.Noop;
-            String[] paramstmp = new string[0];
-            Params = paramstmp;
-        }
-        else
-        {
-            Type = EditType.Unknown;
-            String[] paramstmp = new string[0];
-            Params = paramstmp;
-        }
 
-    }
-    public EditType Type { get; set; }
-    public String[] Params;
-}
-public class DocHistory
-{
-    public List<Edit> Edits { get; set; }
-
-    public DocHistory(JObject json)
-    {
-        Edits = new List<Edit>();
-        if (json is null) return;
-
-        var edits = json["sc"] as JArray;
-        if (edits is null) return;
-
-        foreach (var token in edits)
-        {
-            if (token is JObject obj)
-            {
-                Edits.Add(new Edit(obj));
-            }
-        }
-    }
-    private static JObject? AsJObject(JToken? token)
-    {
-        if (token is null)
-            return null;
-
-        if (token.Type == JTokenType.Object)
-            return (JObject)token;
-
-        // Optional: wrap non\-object token into an object // return new JObject { ["value"] = token };
-
-        return null;
-    }
-}
-public class GoogleDoc
-{
-    JObject? json1;
-    public DocHistory? history;
-
-    public GoogleDoc(JObject json1, JObject json2)
-    {
-        this.json1 = json1;
-        history = new DocHistory(json2);
-    }
-
-    public String GetText()
-    {
-        String content = "";
-        foreach (var edit in history.Edits)
-        {
-            if (edit.Type == EditType.Insert)
-            {
-                if (Convert.ToInt32(edit.Params[0]) == content.Length + 1)
-                {
-                    content += edit.Params[1].Replace("\\n","\n");
-                }
-            }
-        }
-        return content;
-    }
-}
-
-public struct BrowserCookieKey
-{
-    public String key;
-    public String name;
-}
-
-public struct BrowserCookieConfig
-{
-    public String name;
-    public String winpath;
-    public String linpath;
-    public String type;
-}
-public struct BrowserCookiePaths
-{
-    public int version;
-    public List<BrowserCookieKey> keys;
-    public List<BrowserCookieConfig> browsers;
-}
 public partial class MainWindow : Window
 {
     private UrlConfig UrlConfig;
