@@ -40,3 +40,15 @@ public struct BrowserCookiePaths
     public List<BrowserCookieKey> keys;
     public List<BrowserCookieConfig> browsers;
 }
+public struct SaveKeys
+{
+    public bool hasopened;
+    public string lastopened;
+    public bool acceptedbrowserscraping;
+    public bool ovveridecookie;
+    public string cookie;
+    public string password;
+    public string email;
+    public List<string> attachcookies;
+    public List<string> compass;
+}
