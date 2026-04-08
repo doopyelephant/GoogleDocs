@@ -9,12 +9,14 @@ namespace GoogleDocs;
 
 public static class CookieManager
 {
+    public static MainWindow mainWindow;
     private static string cookiescript = "../../../browser_cookies.py";
     private static string authcookie = "";
     private static bool hasinit = false;
     private static SaveKeys SaveKeys;
     private static UrlConfig UrlConfig = new UrlConfig();
-
+    private static string browsercookiepath = "";
+    private static bool CookieSelectorCallback = false;
     private static string ExecuteScript(string cmd)
     {
         Process process = new Process();
@@ -112,6 +114,81 @@ public static class CookieManager
             var cookiejar = GetCookies();
             authcookie = FilterForGoogleDocsCookies(cookiejar);
         }
+    }
+    private static async Task<string> GetBrowserCookiePath()
+    {
+        if(browsercookiepath != "")
+        {
+            return browsercookiepath;
+        }
+
+        List<int> ValidIndexes = new List<int>();
+        var browsers = JsonParsing.GetBrowserCookiePaths();
+        Console.WriteLine("Browser cookie paths: ");
+        foreach (var browser in browsers.browsers)
+        {
+            Console.WriteLine("- " + browser.name + ": " + browser.winpath + " (Windows), " + browser.linpath + " (Linux)");
+        }
+        Console.WriteLine("Validating browser cookie paths...");
+        foreach (var browser in browsers.browsers)
+        {
+            if(OperatingSystem.IsWindows())
+            {
+                if(File.Exists(browser.winpath))
+                {
+                    ValidIndexes.Add(browsers.browsers.IndexOf(browser));
+                    Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.winpath);
+                }
+            }
+            else if(OperatingSystem.IsLinux())
+            {
+                if(File.Exists(browser.linpath))
+                {
+                    ValidIndexes.Add(browsers.browsers.IndexOf(browser));
+                    Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.linpath);
+                }
+            }
+        }
+        if(ValidIndexes.Count == 0)
+        {
+            Console.WriteLine("No valid browser cookie paths found, requesting manual input.");
+            ManualBrowserCookieInput();
+            while(!CookieSelectorCallback)
+            {
+                await Task.Delay(100);
+            }
+            return browsercookiepath;
+        }
+        else if(ValidIndexes.Count == 1)
+        {
+            Console.WriteLine("One valid browser cookie path found, using " + browsers.browsers[ValidIndexes[0]].name);
+            browsercookiepath = OperatingSystem.IsWindows() ? browsers.browsers[ValidIndexes[0]].winpath : browsers.browsers[ValidIndexes[0]].linpath;
+            return browsercookiepath;
+        }
+        else
+        {
+            ShowBrowserSelector(ValidIndexes.ConvertAll(i => browsers.browsers[i].name));
+            while(!CookieSelectorCallback)
+            {
+                await Task.Delay(100);
+            }
+            return browsercookiepath;
+        }
+    }
+    public static void ManualInputCallback(string input)
+    {
+        browsercookiepath = input;
+        CookieSelectorCallback = true;
+    }
+    private static void ManualBrowserCookieInput()
+    {
+     mainWindow.SetOpenManualInput(true);
+     Console.WriteLine("Manual browser cookie path input requested.");
+     Console.WriteLine("Waiting for user input...");
+    }
+    private static void ShowBrowserSelector(List<String> list)
+    {
+        
     }
 
     private static string FilterForGoogleDocsCookies(BrowserCookieJar browserCookieJar)

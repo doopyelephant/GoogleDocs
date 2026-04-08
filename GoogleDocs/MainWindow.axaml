@@ -6,11 +6,26 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="GoogleDocs.MainWindow"
         Title="GoogleDocs">
-
+<Grid>
     <StackPanel Orientation="Vertical">
     <TextBox TextChanged="TextBox_OnTextChanged" Name="docidbox" Width="1000" Height="10"></TextBox>
-    <Button Click="OpenDoc" Width="250" Height="50"></Button>
+    <Button Click="OpenDoc" Width="250" Height="50" Name="OpenDocButton"></Button>
         <TextBlock Text="Please open a doc...." Name="MainText"  TextWrapping="Wrap"></TextBlock>
 
     </StackPanel>
+     <Popup x:Name="ManualCookiePopup"
+           PlacementTarget="{Binding #OpenDocButton}"
+           Placement="Bottom"
+           IsLightDismissEnabled="True">
+        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                BorderThickness="1" CornerRadius="4" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="No valid browser cookie paths found, please input your browser cookie path manually." Margin="0,0,0,10" />
+                    <TextBox Name="CookiePathInput" Width="400" Margin="0,0,0,10"/>
+                    <Button Content="Submit" HorizontalAlignment="Right" Click="SubmitCookiePath"/>
+                </StackPanel>
+        </Border>
+    </Popup>
+    </Grid>
 </Window>

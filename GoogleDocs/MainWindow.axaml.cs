@@ -36,6 +36,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        CookieManager.mainWindow = this;
         UrlConfig = JsonParsing.GetUrlConfig();
         if (UrlConfig.version != urlconfig_version)
         {
@@ -48,6 +49,20 @@ public partial class MainWindow : Window
         }
         //Console.WriteLine(GetCookies().ToString());
     }
+    private void SubmitCookiePath(object? sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(CookiePathInput.Text))
+        {
+            return;
+        }
+       CookieManager.ManualInputCallback(CookiePathInput.Text.Trim());
+        ManualCookiePopup.IsOpen = false;
+    }
+    public void SetOpenManualInput(bool val)
+    {
+        ManualCookiePopup.IsOpen = val;
+    }
+    
 
 
 
