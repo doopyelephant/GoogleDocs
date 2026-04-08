@@ -47,8 +47,9 @@ public struct SaveKeys
     public bool acceptedbrowserscraping;
     public bool ovveridecookie;
     public string cookie;
-    public string password;
-    public string email;
     public List<string> attachcookies;
     public List<string> compass;
+    public bool debugmenu;
+    public bool enablemask;
+    public List<bool> mask;
 }
