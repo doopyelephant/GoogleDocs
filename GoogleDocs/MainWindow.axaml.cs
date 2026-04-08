@@ -47,6 +47,12 @@ public partial class MainWindow : Window
         {
             Console.WriteLine("WARNING, browser cookie paths version mismatch.");
         }
+        var SaveKeys = JsonParsing.GetSaveKeys();
+        if (SaveKeys.debugmenu)
+        {
+            Console.WriteLine("Debug menu enabled.");
+            Program.DebugMenu();
+        }
         //Console.WriteLine(GetCookies().ToString());
     }
     private void SubmitCookiePath(object? sender, RoutedEventArgs e)

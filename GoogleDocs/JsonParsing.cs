@@ -184,6 +184,12 @@ public static bool TryReadLengthPrefixedSegment(
         return config.bindurl.Replace(config.docidkey, docid);
     }
 
+    public static void SaveKeys(SaveKeys keys)
+    {
+        string json = JsonConvert.SerializeObject(keys, Formatting.Indented);
+        File.WriteAllText("../../../SaveKeys.json", json);
+    }
+
 
 
     public static UrlConfig GetUrlConfig()

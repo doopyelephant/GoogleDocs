@@ -94,9 +94,13 @@ public static class CookieManager
         return await NetworkManager.TestEndpoint(url);
     }
 
-    public static void InitCookies()
+    public static void InitCookies(SaveKeys? keys = null)
     {
         SaveKeys = JsonParsing.GetSaveKeys();
+        if (keys != null)
+        {
+            SaveKeys = keys.Value;
+        }
         NetworkManager.SaveKeys = SaveKeys;
         UrlConfig = JsonParsing.GetUrlConfig();
         if (SaveKeys.ovveridecookie)
@@ -212,14 +216,22 @@ public static class CookieManager
 
                 if (SaveKeys.attachcookies.Contains(cookie.name))
                 {
-                    if (cookie.name == "COMPASS")
+                    if (SaveKeys.enablemask)
                     {
-                        Console.WriteLine("COMPASS cookie found. " + cookie.value);
-                        if (!SaveKeys.compass.Contains(cookie.value.Split('=')[0]))
+                        if (!SaveKeys.mask[SaveKeys.attachcookies.IndexOf(cookie.name)])
                         {
-                            Console.WriteLine("COMPASS cookie not in config, skipping.");
                             continue;
                         }
+                    }
+                    if (cookie.name == "COMPASS")
+                    {
+                            Console.WriteLine("COMPASS cookie found. " + cookie.value);
+                            if (!SaveKeys.compass.Contains(cookie.value.Split('=')[0]))
+                            {
+                                Console.WriteLine("COMPASS cookie not in config, skipping.");
+                                continue;
+                            }
+
                     }
                     if (!added.Contains(cookie.name))
                     {
@@ -230,8 +242,8 @@ public static class CookieManager
             }
         }
 
-        tmpauthcookie += "GFE_RTT=180; ";
-        added.Add("GFE_RTT");
+      /*  tmpauthcookie += "GFE_RTT=180; ";
+        added.Add("GFE_RTT");*/
 
         //Remove the last semicolon
         tmpauthcookie = tmpauthcookie.Substring(0, tmpauthcookie.Length - 2);
