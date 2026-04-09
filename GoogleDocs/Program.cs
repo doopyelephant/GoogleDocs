@@ -9,32 +9,6 @@ namespace GoogleDocs;
 
 class Program
 {
-private const int ATTACH_PARENT_PROCESS = -1;
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool AllocConsole();
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool AttachConsole(int dwProcessId);
-
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr GetConsoleWindow();
-
-    private static void EnsureConsole()
-    {
-        // Already has a console (e.g., launched from terminal)
-        if (GetConsoleWindow() != IntPtr.Zero)
-            return;
-
-        // Try parent console first; if none, allocate a new one
-        if (!AttachConsole(ATTACH_PARENT_PROCESS))
-            AllocConsole();
-
-        // Rebind stdio so ReadLine/WriteLine work reliably in WinExe
-        Console.SetIn(new StreamReader(Console.OpenStandardInput()) {});
-        Console.SetOut(new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true });
-        Console.SetError(new StreamWriter(Console.OpenStandardError()) { AutoFlush = true });
-    }
 
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -49,7 +23,7 @@ private const int ATTACH_PARENT_PROCESS = -1;
 
     public static void DebugMenu()
     {
-        EnsureConsole();
+
         List<string> Names = new List<string>();
         Names.Add("Analyse Cookie Header");
         Console.WriteLine("GOOGLE DOCS DEBUG MENU");

@@ -96,6 +96,7 @@ public static class CookieManager
 
     public static void InitCookies(SaveKeys? keys = null)
     {
+        GetBrowserCookiePath();
         SaveKeys = JsonParsing.GetSaveKeys();
         if (keys != null)
         {

@@ -27,5 +27,19 @@
                 </StackPanel>
         </Border>
     </Popup>
+    <Popup x:Name="DebugMenuPopup" Width="500" Height="300">
+        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                BorderThickness="1" CornerRadius="4" Padding="12">
+            <StackPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <TextBlock Name="DebugMenuTextBlock">
+                </TextBlock>
+            </ScrollViewer>
+                <TextBox Name="DebugMenuInput"></TextBox>
+                <Button Content="Submit" Click="SendDebugMenuText"></Button>
+            </StackPanel>
+        </Border>
+    </Popup>
     </Grid>
 </Window>
