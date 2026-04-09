@@ -78,10 +78,12 @@ public partial class MainWindow : Window
     {
         while (debugreader.Peek() == -1)
         {
+            PrintLineToDefault("Waiting for debug input...");
             await Task.Delay(100);
         }
         while (debugreader.Peek() != -1)
         {
+            PrintLineToDefault("Received on debug input...");
             char c = (char)debugreader.Read();
             DebugMenuTextBlock.Text += c;
             PrintToDefault(CharToString(c));

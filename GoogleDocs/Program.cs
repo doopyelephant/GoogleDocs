@@ -42,8 +42,6 @@ class Program
                 AnalyseCookieHeader();
                 break;
         }
-        Console.WriteLine("Press any key to exit...");
-        Console.ReadKey();
     }
 
     public static void AnalyseCookieHeader()
