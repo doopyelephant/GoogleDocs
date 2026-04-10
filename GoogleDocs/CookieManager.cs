@@ -63,7 +63,7 @@ public static class CookieManager
             InitCookies();
         }
 
-        return authcookie;
+        return AlphabeticallySortCookies(authcookie);
     }
 
     public static void IncomingCookies(IEnumerable<String> headers)
@@ -269,5 +269,11 @@ public static class CookieManager
         }
         Console.WriteLine(tmpauthcookie);
         return tmpauthcookie;
+        }
+        private static string AlphabeticallySortCookies(string cookie)
+        {
+            var cookies = cookie.Split("; ");
+            Array.Sort(cookies);
+            return string.Join("; ", cookies);
         }
 }
