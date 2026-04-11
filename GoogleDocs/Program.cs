@@ -4,37 +4,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace GoogleDocs;
 
-class Program
+public static class Program
 {
-
+    public static MainWindow? mainWindow;
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
     public static void Main(string[] args)
     {
-
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }
 
-    public static void DebugMenu()
+    public async static void DebugMenu()
     {
 
         List<string> Names = new List<string>();
         Names.Add("Analyse Cookie Header");
-        Console.WriteLine("GOOGLE DOCS DEBUG MENU");
-        Console.WriteLine("Please enter a command:");
+        WriteLine("GOOGLE DOCS DEBUG MENU");
+        WriteLine("Please enter a command:");
         int i = 1;
         foreach (var n in Names)
         {
-            Console.WriteLine(i + ": " + n);
+            WriteLine(i + ": " + n);
             i++;
         }
-        string command = Console.ReadLine();
+        string command = await Read();
         int index = Convert.ToInt32(command);
         switch (index)
         {
@@ -42,16 +42,16 @@ class Program
                 AnalyseCookieHeader();
                 break;
         }
-        Console.WriteLine("Press any key to exit...");
-        Console.ReadKey();
+        WriteLine("Press any key to exit...");
+        await Read();
     }
 
-    public static void AnalyseCookieHeader()
+    public async static void AnalyseCookieHeader()
     {
         var SaveKeys = JsonParsing.GetSaveKeys();
-        Console.WriteLine("Please Paste Cookie Header: ");
-        string cookie = Console.ReadLine();
-        Console.WriteLine("");
+        WriteLine("Please Paste Cookie Header: ");
+        string cookie = await Read();
+        WriteLine("");
         var cookies = cookie.Split(';');
         var cookienames = new List<string>();
         var cookievalues = new List<string>();
@@ -81,7 +81,7 @@ class Program
                 return "?";
             }
         ).ToList();
-        Console.WriteLine("Name                     Value     Listed");
+        WriteLine("Name                     Value     Listed");
         for (int i = 0; i < cookienames.Count; i++)
         {
             var truncatedvalue = "";
@@ -102,18 +102,18 @@ class Program
             {
                 whitespace += " ";
             }
-            Console.WriteLine(cookienames[i] + whitespace + truncatedvalue + "  " + (SaveKeys.attachcookies.Contains(cookienames[i].Trim()) ? "LISTED" : "XXXXXX"));
+            WriteLine(cookienames[i] + whitespace + truncatedvalue + "  " + (SaveKeys.attachcookies.Contains(cookienames[i].Trim()) ? "LISTED" : "XXXXXX"));
         }
-        Console.WriteLine("");
-        Console.WriteLine("Listed but not attached:");
+        WriteLine("");
+        WriteLine("Listed but not attached:");
         for (int i = 0; i < SaveKeys.attachcookies.Count; i++)
         {
             if (cookienames.Contains(SaveKeys.attachcookies[i].Trim()) == false)
             {
-                Console.WriteLine(SaveKeys.attachcookies[i].Trim());
+                WriteLine(SaveKeys.attachcookies[i].Trim());
             }
         }
-        Console.WriteLine("");
+        WriteLine("");
         bool missing = false;
         foreach (var name in cookienames)
         {
@@ -124,10 +124,10 @@ class Program
         }
         if (missing)
         {
-            Console.WriteLine("Add missing cookies to list?");
-            Console.WriteLine("1: Yes");
-            Console.WriteLine("2: No");
-            string add = Console.ReadLine();
+            WriteLine("Add missing cookies to list?");
+            WriteLine("1: Yes");
+            WriteLine("2: No");
+            string add = await Read();
             if (add == "1")
             {
                 foreach (var name in cookienames)
@@ -138,16 +138,16 @@ class Program
                     }
                 }
 
-                Console.WriteLine("Added.");
+                WriteLine("Added.");
             }
 
-            Console.WriteLine("");
+            WriteLine("");
         }
 
-        Console.WriteLine("Write to Mask?");
-        Console.WriteLine("1: Yes");
-        Console.WriteLine("2: No");
-        string mask = Console.ReadLine();
+        WriteLine("Write to Mask?");
+        WriteLine("1: Yes");
+        WriteLine("2: No");
+        string mask = await Read();
         if (mask == "1")
         {
             SaveKeys.enablemask = true;
@@ -170,27 +170,27 @@ class Program
             }
         }
         JsonParsing.SaveKeys(SaveKeys);
-        Console.WriteLine("Saved.");
-        Console.WriteLine("Comparing with generated cookie...");
+        WriteLine("Saved.");
+        WriteLine("Comparing with generated cookie...");
         CookieManager.InitCookies(SaveKeys);
         var generatedcookie = CookieManager.GetCookie();
         if (generatedcookie == cookie)
         {
-            Console.WriteLine("SUCCESS: Cookie is Identical.");
+            WriteLine("SUCCESS: Cookie is Identical.");
         }
         else
         {
-            Console.WriteLine("WARNING: Cookie is different.");
-            Console.WriteLine("Analysis: ");
-            Console.WriteLine("");
-            Console.WriteLine("Generated Cookie:");
-            Console.WriteLine(" ");
+            WriteLine("WARNING: Cookie is different.");
+            WriteLine("Analysis: ");
+            WriteLine("");
+            WriteLine("Generated Cookie:");
+            WriteLine(" ");
             PrintCookieTable(generatedcookie);
-            Console.WriteLine("");
-            Console.WriteLine("User Cookie:");
-            Console.WriteLine(" ");
+            WriteLine("");
+            WriteLine("User Cookie:");
+            WriteLine(" ");
             PrintCookieTable(cookie);
-            Console.WriteLine("");
+            WriteLine("");
         }
 
 
@@ -227,7 +227,7 @@ class Program
                 return "?";
             }
         ).ToList();
-        Console.WriteLine("Name                     Value");
+        WriteLine("Name                     Value");
         for (int i = 0; i < cookienames.Count; i++)
         {
             var truncatedvalue = "";
@@ -248,8 +248,25 @@ class Program
             {
                 whitespace += " ";
             }
-            Console.WriteLine(cookienames[i] + whitespace + truncatedvalue);
+            WriteLine(cookienames[i] + whitespace + truncatedvalue);
         }
+    }
+
+
+    private static async Task<string> Read()
+    {
+        return await mainWindow?.ReadDebugMenu();
+    }
+
+    private static async Task WriteLine(string s)
+    {
+        Console.WriteLine(s);
+        mainWindow?.PrintLineDebugMenu(s);
+    }
+
+    private static void Write(string s)
+    {
+        mainWindow?.PrintDebugMenu(s);
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
