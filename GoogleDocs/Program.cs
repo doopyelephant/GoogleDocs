@@ -39,14 +39,14 @@ public static class Program
         switch (index)
         {
             case 1:
-                AnalyseCookieHeader();
+                await AnalyseCookieHeader();
                 break;
         }
         WriteLine("Press any key to exit...");
         await Read();
     }
 
-    public async static void AnalyseCookieHeader()
+    public async static Task AnalyseCookieHeader()
     {
         var SaveKeys = JsonParsing.GetSaveKeys();
         WriteLine("Please Paste Cookie Header: ");
@@ -255,7 +255,10 @@ public static class Program
 
     private static async Task<string> Read()
     {
-        return await mainWindow?.ReadDebugMenu();
+        Console.WriteLine("Reading...");
+        string s = await mainWindow?.ReadDebugMenu();
+        Console.WriteLine("Read: " + s);
+        return s;
     }
 
     private static async Task WriteLine(string s)
