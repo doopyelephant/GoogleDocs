@@ -5,6 +5,7 @@ using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace GoogleDocs;
 
@@ -34,11 +35,14 @@ public static class Program
             WriteLine(i + ": " + n);
             i++;
         }
+        Console.WriteLine("Reading Command...");
         string command = await Read();
+        Console.WriteLine("Command: " + command);
         int index = Convert.ToInt32(command);
         switch (index)
         {
             case 1:
+                Console.WriteLine("Analysing Cookie Header...");
                 await AnalyseCookieHeader();
                 break;
         }
@@ -173,13 +177,74 @@ public static class Program
         WriteLine("Saved.");
         WriteLine("Comparing with generated cookie...");
         CookieManager.InitCookies(SaveKeys);
-        var generatedcookie = CookieManager.GetCookie();
+        var generatedcookie = CookieManager.GetCookie(true);
         if (generatedcookie == cookie)
         {
             WriteLine("SUCCESS: Cookie is Identical.");
         }
         else
         {
+            var gencookies = generatedcookie.Split(';');
+               var cookievaluesuser = cookies.Select((string s) =>
+            {
+                if (s.Split("=").Length >= 2)
+                {
+                    return s.SubstringAfter("=").Trim();
+                }
+                else if (s.Split("/").Length >= 2)
+                {
+                    return s.Split('/')[1].Trim();
+                }
+                return "?";
+            }
+        ).ToList();
+         var cookievaluesgen = gencookies.Select((string s) =>
+            {
+                if (s.Split("=").Length >= 2)
+                {
+                    return s.SubstringAfter("=").Trim();
+                }
+                else if (s.Split("/").Length >= 2)
+                {
+                    return s.Split('/')[1].Trim();
+                }
+                return "?";
+            }
+        ).ToList();
+            WriteLine("Generated Cookie:");
+            WriteLine(" ");
+          PrintCookieTable(generatedcookie);
+            WriteLine("");
+            WriteLine("User Cookie:");
+            WriteLine(" ");
+            PrintCookieTable(cookie);
+        //Alphabetically sort both lists
+       // var sorteduser = cookienames.Select((s, index) => new { Name = s.Trim(), Value = cookievaluesuser[index] }).OrderBy(s => s.Name).ToList();
+      //  var sortedgen = SaveKeys.attachcookies.Select((s, index) => new { Name = s.Trim(), Value = cookievaluesgen[index] }).OrderBy(s => s.Name).ToList();
+        var sorteduser = cookievaluesuser.OrderBy(x => x);
+        var sortedgen = cookievaluesgen.OrderBy(x => x);
+        bool identical = true;
+        
+        for(int i = 0; i < sorteduser.Count(); i++)
+        {
+            if(i >= sortedgen.Count())
+            {
+                WriteLine("Difference found: User cookie has more cookies than generated cookie.");
+                identical = false;
+                break;
+            }
+            if(sorteduser.ElementAt(i) != sortedgen.ElementAt(i))
+            {
+                WriteLine("Difference found: " + sorteduser.ElementAt(i) + " != " + sortedgen.ElementAt(i));
+                identical = false;
+            }
+        }
+        if (identical)        {
+            WriteLine("SUCCESS: Cookie is Identical (ignoring order).");
+        }
+        else{
+            WriteLine("Cookie is different.");
+        }
             WriteLine("WARNING: Cookie is different.");
             WriteLine("Analysis: ");
             WriteLine("");
@@ -191,6 +256,38 @@ public static class Program
             WriteLine(" ");
             PrintCookieTable(cookie);
             WriteLine("");
+            WriteLine("Send Test Auth Request with Cookie?");
+            WriteLine("1: Generated Cookie");
+            WriteLine("2: User Cookie");
+            WriteLine("3: No");
+            var test = await Read();
+            var result = false;
+            var istest = false;
+            if(test == "1")
+            {
+                istest = true;
+                CookieManager.GetCookie(true);
+                result = await CookieManager.CookieValidate();
+            }
+            if(test == "2")
+            {
+                istest = true;
+                CookieManager.CookieOvveride(cookie);
+                CookieManager.OvverideInit();
+                result = await CookieManager.CookieValidate();
+            }
+            if(istest)
+            {
+                if(result)
+                {
+                    WriteLine("SUCCESS: Cookie is Valid.");
+                }
+                else
+                {
+                    WriteLine("FAILURE: Cookie is Invalid.");
+                }
+            }
+
         }
 
 

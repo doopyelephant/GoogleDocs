@@ -79,6 +79,10 @@ public partial class MainWindow : Window
        CookieManager.ManualInputCallback(CookiePathInput.Text.Trim());
         ManualCookiePopup.IsOpen = false;
     }
+    private void CloseDebugMenu(object? sender, RoutedEventArgs e)
+    {
+        DebugMenuPopup.IsOpen = false;
+    }
     public void SetOpenManualInput(bool val)
     {
         ManualCookiePopup.IsOpen = val;
@@ -224,4 +228,5 @@ catch (HttpRequestException err)
                    // Console.WriteLine(DebugReadText);
                 }
     }
+
 }

@@ -49,6 +49,10 @@ public static class NetworkManager
     public static async Task<bool> TestEndpoint(string url)
     {
         var (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
+        if(statusCode != HttpStatusCode.OK)
+        {
+            Console.WriteLine($"Test endpoint returned {(int)statusCode} {reasonPhrase}");
+        }
         return statusCode == HttpStatusCode.OK;
     }
 

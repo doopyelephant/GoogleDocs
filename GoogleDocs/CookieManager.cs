@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -55,33 +56,74 @@ public static class CookieManager
         return cookiejar;
     }
 
-    public static string GetCookie()
+    public static string GetCookie(bool forcestay = false)
     {
+        if(forcestay)
+        {
+            InitCookies();
+        }
+        else{
         if (!hasinit)
         {
             hasinit = true;
             InitCookies();
         }
-
+        }
         return AlphabeticallySortCookies(authcookie);
     }
 
     public static void IncomingCookies(IEnumerable<String> headers)
     {
         Console.WriteLine("Incoming cookies.");
-        authcookie = "";
+        var currentcookies = authcookie.Split("; ").Select(s => s.Split('=')[0].Trim()).ToList();
+        var currentcookievalues = authcookie.Split("; ").Select(s => s.SubstringAfter("=").Trim()).ToList();
         foreach (var header in headers)
         {
-            authcookie += header.Split(';')[0] + "; ";
+            if(!currentcookies.Contains(header.Split('=')[0]))
+            {
+                if(header.Split(";")[0].SubstringAfter("=") != "EXPIRED")
+                {
+           currentcookies.Add(header.Split('=')[0].Trim());
+           currentcookievalues.Add(header.Split(";")[0].SubstringAfter("="));
+                }
+            }
+            else{
+                if(header.Split(";")[0].SubstringAfter("=") != "EXPIRED")
+                {
+                var index = currentcookies.IndexOf(header.Split('=')[0].Trim());
+                currentcookievalues[index] = header.Split(";")[0].SubstringAfter("=");
+                }
+                else{
+                    var index = currentcookies.IndexOf(header.Split('=')[0].Trim());
+                    currentcookies.Remove(header.Split('=')[0].Trim());
+                    currentcookievalues.RemoveAt(index);
+                }
+            }
             Console.WriteLine(header);
         }
+        var newcookie = "";
+        for(int i = 0; i < currentcookies.Count; i++)
+        {
+            newcookie += currentcookies[i] + "=" + currentcookievalues[i] + "; ";
+        }
+        authcookie = newcookie;
+        //Remove the last semicolon
+        authcookie = authcookie.Substring(0, authcookie.Length - 2);
 
         Console.WriteLine("Cookie: " + authcookie);
         Console.WriteLine("End of Set-Cookie headers.");
         CookieValidate();
     }
+    public static void CookieOvveride(string cookie)
+    {
+        authcookie = cookie;
+    }
+    public static void OvverideInit()
+    {
+        hasinit = true;
+    }
 
-    private static async Task<bool> CookieValidate()
+    public static async Task<bool> CookieValidate()
     {
         if (SaveKeys.hasopened == false)
         {
@@ -272,8 +314,40 @@ public static class CookieManager
         }
         private static string AlphabeticallySortCookies(string cookie)
         {
-            var cookies = cookie.Split("; ");
-            Array.Sort(cookies);
-            return string.Join("; ", cookies);
+                if (string.IsNullOrWhiteSpace(cookie))
+                {
+                    return cookie;
+                }
+
+                var cookies = cookie.Split("; ", StringSplitOptions.RemoveEmptyEntries);
+                Array.Sort(cookies, (left, right) =>
+                {
+                    string leftName = left.Split('=', 2)[0];
+                    string rightName = right.Split('=', 2)[0];
+
+                    if (leftName == "COMPASS")
+                    {
+                        return rightName == "COMPASS" ? 0 : -1;
+                    }
+
+                    if (rightName == "COMPASS")
+                    {
+                        return 1;
+                    }
+
+                    if (leftName == "OSID")
+                    {
+                        return rightName == "OSID" ? 0 : -1;
+                    }
+
+                    if (rightName == "OSID")
+                    {
+                        return 1;
+                    }
+
+                    return string.Compare(leftName, rightName, StringComparison.Ordinal);
+                });
+
+                return string.Join("; ", cookies);
         }
 }
