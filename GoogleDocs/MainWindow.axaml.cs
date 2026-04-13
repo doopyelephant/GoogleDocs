@@ -87,6 +87,15 @@ public partial class MainWindow : Window
     {
         ManualCookiePopup.IsOpen = val;
     }
+    public void OpenDebugMenu(object? sender, RoutedEventArgs e)
+    {
+        DebugMenuPopup.IsOpen = true;
+    }
+    public void FeelingLucky(object? sender, RoutedEventArgs e)
+    {
+        var tmpsavekeys = JsonParsing.GetSaveKeys();
+        OpenDoc(sender, e, tmpsavekeys.lastopened);
+    }
 
 
 
@@ -152,11 +161,19 @@ public partial class MainWindow : Window
     }
     }
 
-    private async void OpenDoc(object? sender, RoutedEventArgs e)
+    private async void OpenDoc(object? sender, RoutedEventArgs e,string docid = "")
     {
 MainText.Text = "Loading...";
 Console.WriteLine("Loading...");
-string url =  JsonParsing.InitialReq(doc_id,UrlConfig);
+string url = "";
+if (string.IsNullOrEmpty(docid))
+{
+    url = JsonParsing.InitialReq(doc_id, UrlConfig);
+}
+else
+{
+    url = JsonParsing.InitialReq(docid, UrlConfig);
+}
 Console.WriteLine(url);
 try
 {

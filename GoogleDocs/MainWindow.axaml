@@ -10,6 +10,8 @@
     <StackPanel Orientation="Vertical">
     <TextBox TextChanged="TextBox_OnTextChanged" Name="docidbox" Width="1000" Height="10"></TextBox>
     <Button Click="OpenDoc" Width="250" Height="50" Name="OpenDocButton"></Button>
+    <Button Click="OpenDebugMenu" Width="250" Height="50" Name="OpenDebugMenuButton"></Button>
+    <Button Click="FeelingLucky" Width="250" Height="50" Name="FeelingLuckyButton"></Button>
         <TextBlock Text="Please open a doc...." Name="MainText"  TextWrapping="Wrap"></TextBlock>
 
     </StackPanel>
