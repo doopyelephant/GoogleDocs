@@ -15,9 +15,17 @@ public static class Program
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
+[DllImport("kernel32.dll")]
+    static extern bool AttachConsole(int dwProcessId);
+    private const int ATTACH_PARENT_PROCESS = -1;
+
+
+
     [STAThread]
     public static void Main(string[] args)
     {
+AttachConsole(ATTACH_PARENT_PROCESS);
+
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }
@@ -274,6 +282,7 @@ public static class Program
                 istest = true;
                 CookieManager.CookieOvveride(cookie);
                 CookieManager.OvverideInit();
+                CookieManager.OvverideAlphabetical(false);
                 result = await CookieManager.CookieValidate();
             }
             if(istest)

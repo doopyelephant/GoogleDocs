@@ -18,6 +18,7 @@ public static class CookieManager
     private static UrlConfig UrlConfig = new UrlConfig();
     private static string browsercookiepath = "";
     private static bool CookieSelectorCallback = false;
+    private static bool alphabetical = true;
     private static string ExecuteScript(string cmd)
     {
         Process process = new Process();
@@ -33,6 +34,10 @@ public static class CookieManager
         string output = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
         return output;
+    }
+    public static void OvverideAlphabetical(bool val)
+    {
+        alphabetical = val;
     }
 
     private static BrowserCookieJar GetCookies(string hostfilter = "")
@@ -69,7 +74,10 @@ public static class CookieManager
             InitCookies();
         }
         }
+        if (alphabetical)
         return AlphabeticallySortCookies(authcookie);
+        else
+        return authcookie;
     }
 
     public static void IncomingCookies(IEnumerable<String> headers)
