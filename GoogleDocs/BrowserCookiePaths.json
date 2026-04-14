@@ -17,25 +17,37 @@
     "browsers": [
         {
             "name": "Chrome",
-            "winpath": "",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies",
             "linpath": "",
             "type": "Chromium"
         },
         {
             "name": "Firefox",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\##PKFIRST##\\cookies.sqlite",
+            "linpath": "~/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
+            "type": "Firefox"
+        },
+         {
+            "name": "Firefox Snap",
             "winpath": "",
-            "linpath": "",
+            "linpath": "~/snap/firefox/common/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
+            "type": "Firefox"
+        },
+         {
+            "name": "Firefox Flatpak",
+            "winpath": "",
+            "linpath": "~/.var/app/org.mozilla.firefox/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
             "type": "Firefox"
         },
         {
             "name": "Zen",
-            "winpath": "",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\zen\\Profiles\\##PKFIRST##\\cookies.sqlite",
             "linpath": "",
             "type": "Firefox"
         },
         {
             "name": "Edge",
-            "winpath": "",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Network\\Cookies",
             "linpath": "",
             "type": "Chromium"
         },
