@@ -85,6 +85,7 @@ public static class CookieManager
         Console.WriteLine("Incoming cookies.");
         var currentcookies = authcookie.Split("; ").Select(s => s.Split('=')[0].Trim()).ToList();
         var currentcookievalues = authcookie.Split("; ").Select(s => s.SubstringAfter("=").Trim()).ToList();
+        headers = headers.Select(s => s.SubstringBefore("=").Trim()).ToList();
         foreach (var header in headers)
         {
             if(!currentcookies.Contains(header.Split('=')[0]))

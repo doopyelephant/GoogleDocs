@@ -94,7 +94,7 @@ public partial class MainWindow : Window
     public void FeelingLucky(object? sender, RoutedEventArgs e)
     {
         var tmpsavekeys = JsonParsing.GetSaveKeys();
-        OpenDoc(sender, e, tmpsavekeys.lastopened);
+        OpenDoc(tmpsavekeys.lastopened);
     }
 
 
@@ -160,8 +160,11 @@ public partial class MainWindow : Window
         Console.WriteLine(json);
     }
     }
-
-    private async void OpenDoc(object? sender, RoutedEventArgs e,string docid = "")
+    private void OpenDocButtonCallback(object? sender, RoutedEventArgs e)
+    {
+        OpenDoc();
+    }
+    private async void OpenDoc(string docid = "")
     {
 MainText.Text = "Loading...";
 Console.WriteLine("Loading...");
@@ -172,6 +175,7 @@ if (string.IsNullOrEmpty(docid))
 }
 else
 {
+    doc_id = docid;
     url = JsonParsing.InitialReq(docid, UrlConfig);
 }
 Console.WriteLine(url);
@@ -206,6 +210,8 @@ try
 
   doc = new GoogleDoc(parsed!, parsed2!);
   MainText.Text = doc.GetText();
+  Console.WriteLine("Document loaded successfully.");
+  Console.WriteLine(doc.GetText());
   BindToDoc();
 
 }
