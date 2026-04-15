@@ -85,7 +85,7 @@
             "name": "Tor",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Firefox"
         },
         {
             "name": "Chrome",
