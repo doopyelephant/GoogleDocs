@@ -85,7 +85,7 @@ public static class CookieManager
         Console.WriteLine("Incoming cookies.");
         var currentcookies = authcookie.Split("; ").Select(s => s.Split('=')[0].Trim()).ToList();
         var currentcookievalues = authcookie.Split("; ").Select(s => s.SubstringAfter("=").Trim()).ToList();
-        headers = headers.Select(s => s.SubstringBefore("=").Trim()).ToList();
+        headers = headers.Select(s => s.SubstringBefore(";").Trim()).ToList();
         foreach (var header in headers)
         {
             if(!currentcookies.Contains(header.Split('=')[0]))
@@ -252,6 +252,7 @@ public static class CookieManager
         Console.WriteLine("Google Cookies: ");
         string tmpauthcookie = "";
         List<string> added = new List<string>();
+        List<string> compassvalues = new List<string>();
         foreach (var cookie in browserCookieJar.cookies)
         {
             if (cookie.host == ".google.com" || cookie.host == ".docs.google.com" || cookie.host == "accounts.google.com" || cookie.host == "docs.google.com")
@@ -283,7 +284,17 @@ public static class CookieManager
                                 Console.WriteLine("COMPASS cookie not in config, skipping.");
                                 continue;
                             }
-
+                        else
+                        {
+                            if(compassvalues.Contains(cookie.value.Split('=')[0]))
+                            {
+                               Console.WriteLine("COMPASS cookie value " + cookie.value.Split('=')[0] + " already added, skipping.");
+                                 continue; 
+                            }
+                            tmpauthcookie += cookie.name + "=" + cookie.value + "; ";
+                            compassvalues.Add(cookie.value.Split('=')[0]);
+                        }
+                        continue;
                     }
                     if (!added.Contains(cookie.name))
                     {

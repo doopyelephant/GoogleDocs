@@ -52,4 +52,5 @@ public struct SaveKeys
     public bool debugmenu;
     public bool enablemask;
     public List<bool> mask;
+    public bool bind;
 }
