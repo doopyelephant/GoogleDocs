@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Interactivity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -62,7 +63,50 @@ public partial class MainWindow : Window
         {
             DebugMenuPopup.IsOpen = false;
         }
+        CookieManager.OvverideAlphabetical(false);
         //Console.WriteLine(GetCookies().ToString());
+    }
+    private void SetMainText(string text,bool recurs = false)
+    {
+        Console.WriteLine("Setting main text: " + text + " " + recurs);
+        if(!recurs)
+        {
+            MainText.Text = "";
+        MainText.Inlines.Clear();
+        }
+        string[] inlines = new[] {"<Bl/>", "</Bl>"};
+        bool ctns = false;
+        int index = 0;
+        for (int i = 0; i < inlines.Length; i++)
+        {
+            ctns = ctns || text.Contains(inlines[i]);
+            if(ctns)
+            {
+                index = Math.Min(index, text.IndexOf(inlines[i]));
+            }
+        }
+        if (ctns)
+        {
+            Console.WriteLine("Adding plain text inline: " + text.Substring(0, index));
+            MainText.Inlines.Add(new Run(text.Substring(0, index)));
+            string remaining = text.Substring(index);
+            string after = "";
+            if(remaining.StartsWith("<Bl/>"))
+            {
+                string bld = remaining.Substring(5, remaining.IndexOf("</Bl>") - 5);
+                Console.WriteLine("Adding bold text inline: " + bld);
+                var bold = new Bold();
+                bold.Inlines.Add(new Run(bld));
+                MainText.Inlines.Add(bold);
+                after = remaining.Substring(5 + bld.Length + 6);
+                Console.WriteLine("Remaining text: " + after);
+            }
+            SetMainText(after,true);
+        }
+        else
+        {
+            MainText.Inlines.Add(new Run(text));
+        }
     }
 
 
@@ -157,7 +201,7 @@ public partial class MainWindow : Window
                 {
                     doc.history.Edits.Add(new Edit(obj));
                 }
-        MainText.Text = doc.GetText();
+        SetMainText(doc.GetText());
         Console.WriteLine(json);
     }
     }
@@ -210,7 +254,7 @@ try
   }
 
   doc = new GoogleDoc(parsed!, parsed2!);
-  MainText.Text = doc.GetText();
+  SetMainText(doc.GetText());
   Console.WriteLine("Document loaded successfully.");
   Console.WriteLine(doc.GetText());
   if(SaveKeys.bind)

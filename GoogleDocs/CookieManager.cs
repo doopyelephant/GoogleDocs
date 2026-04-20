@@ -43,17 +43,29 @@ public static class CookieManager
     private static BrowserCookieJar GetCookies(string hostfilter = "")
     {
         string datadir = "C:\\Users\\nolan\\AppData\\Roaming\\GoogleDocs";
+       // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
+        string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
         Console.WriteLine(ExecuteScript("mkdir " + datadir));
-        string cookiepath =
+        /*string cookiepath =
             "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)\\cookies.sqlite";
         string cpcmd = "copy " + cookiepath.AddQuotes() + " " + (datadir + "\\cookies.sqlite").AddQuotes();
+        
         Console.WriteLine(cpcmd);
         Console.WriteLine(ExecuteScript(cpcmd));
-        cookiepath += ".docbackup";
+        cpcmd = "copy " + cookiepath.AddQuotes() + " " + (datadir + "\\key4.db").AddQuotes();
+        cookiepath =
+            "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)\\key4.db";
+ Console.WriteLine(cpcmd);
+        Console.WriteLine(ExecuteScript(cpcmd));*/
+// Copy all three WAL files
+ExecuteScript("copy " + Path.Combine(profiledir, "cookies.sqlite").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite").AddQuotes());
+ExecuteScript("copy " + Path.Combine(profiledir, "key4.db").AddQuotes() + " " + Path.Combine(datadir, "key4.db").AddQuotes());
+ExecuteScript("copy " + Path.Combine(profiledir, "cookies.sqlite-wal").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-wal").AddQuotes());
+ExecuteScript("copy " + Path.Combine(profiledir, "cookies.sqlite-shm").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-shm").AddQuotes());
         string json = ExecuteScript("python " + cookiescript + " " + (datadir + "\\cookies.sqlite").AddQuotes() + " " +
                                     hostfilter);
         json = "[" + json.SubstringAfter("[");
-        ExecuteScript("del " + cookiepath + "");
+      //  ExecuteScript("del " + cookiepath + "");
         Console.WriteLine("JSON: " + json.Substring(0, 500) + "...");
         var cookies = JsonConvert.DeserializeObject<List<BrowserCookie>>(json);
         var cookiejar = new BrowserCookieJar();
@@ -297,10 +309,18 @@ public static class CookieManager
                         continue;
                     }
                     if (!added.Contains(cookie.name))
-                    {
-                        tmpauthcookie += cookie.name + "=" + cookie.value + "; ";
-                        added.Add(cookie.name);
-                    }
+{
+    added.Add(cookie.name);
+    tmpauthcookie += cookie.name + "=" + cookie.value + "; ";
+}
+else
+{
+    // Update to latest value
+    var parts = tmpauthcookie.Split("; ").ToList();
+    var idx = parts.FindIndex(p => p.StartsWith(cookie.name + "="));
+    if (idx >= 0) parts[idx] = cookie.name + "=" + cookie.value;
+    tmpauthcookie = string.Join("; ", parts);
+}
                 }
             }
         }
@@ -330,6 +350,13 @@ public static class CookieManager
             }
         }
         Console.WriteLine(tmpauthcookie);
+        foreach (var cookie in browserCookieJar.cookies)
+{
+    if (cookie.name == "HSID" || cookie.name == "SSID" || cookie.name == "SIDCC")
+    {
+        Console.WriteLine($"DEBUG {cookie.name} @ {cookie.host} = {cookie.value}");
+    }
+}
         return tmpauthcookie;
         }
         private static string AlphabeticallySortCookies(string cookie)

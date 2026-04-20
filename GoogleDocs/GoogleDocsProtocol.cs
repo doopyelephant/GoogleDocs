@@ -133,11 +133,15 @@ public class GoogleDoc
                             var bd = alteration["ts_bd"].GetValue<bool>();
                             if (bd)
                             {
-                                wrapstart += "<Bold>";
-                                wrapend += "</Bold>";
+                                wrapstart += "<Bl/>";
+                                wrapend += "</Bl>";
                                 //content = content.Substring(0, start - 1) + "<b>" + content.Substring(start - 1, end - start + 1) + "</b>" + content.Substring(end);
                             }
                         }
+                    }
+                    if(wrapstart == "" && wrapend == "")
+                    {
+                        continue;
                     }
                    
                     content = content.Substring(0, start - 1) + wrapstart + content.Substring(start);

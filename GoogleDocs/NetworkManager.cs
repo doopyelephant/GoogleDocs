@@ -35,12 +35,7 @@ public static class NetworkManager
     {
         var (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
 
-        if (statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-        {
-            Console.WriteLine($"Received {(int)statusCode}. Retrying once with fresh cookie read...");
-            await Task.Delay(200);
-            (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
-        }
+       
 
         Console.WriteLine("Headers:");
         foreach (var header in headers)
@@ -53,6 +48,12 @@ public static class NetworkManager
             Console.WriteLine("Found Set-Cookie header.");
            CookieManager.IncomingCookies(headers.GetValues("Set-Cookie"));
         }
+         if (statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            Console.WriteLine($"Received {(int)statusCode}. Retrying once with fresh cookie read...");
+            await Task.Delay(200);
+            (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
+        }
         Console.WriteLine("End of headers.");
 
         Console.WriteLine($"Status: {(int)statusCode} {reasonPhrase}");
@@ -64,6 +65,8 @@ public static class NetworkManager
         if ((int)statusCode < 200 || (int)statusCode >= 300)
             throw new HttpRequestException($"Response status code does not indicate success: {(int)statusCode} ({reasonPhrase}).");
 
+
+        
         return body;
     }
 
@@ -112,6 +115,7 @@ public static class NetworkManager
         request.Headers.TryAddWithoutValidation("Accept", "*/*");
         request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
 
+        PrintHttpRequestData(request);
         using var response = await localClient.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
 
@@ -122,6 +126,28 @@ public static class NetworkManager
             return await SendRequestOnceAsync(response.Headers.Location.AbsoluteUri);
         }
             return (response.StatusCode, response.ReasonPhrase, response.Headers.Location, body, response.Headers);
+    }
+    private static void PrintHttpRequestData(HttpRequestMessage msg)
+    {
+        //include url, headers, and body
+
+            Console.WriteLine($"Request URL: {msg.RequestUri}");
+            Console.WriteLine("Headers:");
+            foreach (var header in msg.Headers)
+            {
+                Console.WriteLine($"{header.Key}: {string.Join(", ", header.Value)}");
+            }
+            Console.WriteLine("");
+            Console.WriteLine("Body:");
+            if (msg.Content != null)
+            {
+                var body = msg.Content.ReadAsStringAsync().Result;
+                Console.WriteLine(body.Length > 500 ? body[..500] : body);
+            }
+            else
+            {
+                Console.WriteLine("No body content.");
+            }
     }
     public static void PrintDifferences(string oldText, string newText)
     {
