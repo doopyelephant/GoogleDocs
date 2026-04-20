@@ -101,7 +101,10 @@ public partial class MainWindow : Window
                 after = remaining.Substring(5 + bld.Length + 6);
                 Console.WriteLine("Remaining text: " + after);
             }
+            if(after.Trim().Length > 0)
+            {
             SetMainText(after,true);
+            }
         }
         else
         {
@@ -261,6 +264,7 @@ try
   {
       BindToDoc();
   }
+ // MainText.Inlines.Add(new Run("Hello World"));
 
 }
 catch (HttpRequestException err)
