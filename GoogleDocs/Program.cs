@@ -15,16 +15,16 @@ public static class Program
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
-[DllImport("kernel32.dll")]
+/*[DllImport("kernel32.dll")]
     static extern bool AttachConsole(int dwProcessId);
     private const int ATTACH_PARENT_PROCESS = -1;
-
+*/
 
 
     [STAThread]
     public static void Main(string[] args)
     {
-AttachConsole(ATTACH_PARENT_PROCESS);
+//AttachConsole(ATTACH_PARENT_PROCESS);
 
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);

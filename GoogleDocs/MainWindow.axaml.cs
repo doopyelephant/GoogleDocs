@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Newtonsoft.Json;
@@ -86,7 +87,31 @@ public partial class MainWindow : Window
     public void SetOpenManualInput(bool val)
     {
         ManualCookiePopup.IsOpen = val;
+
     }
+    public void SetOpenPickBrowser(bool val)
+    {
+        PickCookiePopup.IsOpen = val;
+    }
+    public void SetPickOptions(List<string> options)
+    {
+        BrowserList.Children.Clear();
+        foreach (string option in options)
+        {
+            Button button = new Button
+            {
+                Content = option,
+                Margin = new Thickness(5)
+            };
+            button.Click += (sender, e) =>
+            {
+                CookieManager.PickBrowserCallback(option);
+                PickCookiePopup.IsOpen = false;
+            };
+            BrowserList.Children.Add(button);
+        }
+    }
+
     public void OpenDebugMenu(object? sender, RoutedEventArgs e)
     {
         DebugMenuPopup.IsOpen = true;

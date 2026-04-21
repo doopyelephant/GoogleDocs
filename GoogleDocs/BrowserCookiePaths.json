@@ -8,10 +8,6 @@
         {
             "key": "##PKFIRST##",
             "name": "PKFIRST"
-        },
-        {
-            "key": "##PKCONTAINS##",
-            "name": "PKCONTAINS"
         }
     ],
     "browsers": [
