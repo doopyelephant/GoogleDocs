@@ -112,10 +112,7 @@ public partial class MainWindow : Window
         {
             MainText.Inlines.Add(new Run(text));
         }
-         MainText.Inlines.Add(new Run("Hi i am normal"));
-          var bld2 = new Bold();
-          bld2.Inlines.Add(new Run("Hi i am bold"));
-          MainText.Inlines.Add(bld2);
+        
           /* foreach(var inline in MainText.Inlines)
         {
            Console.WriteLine(inline);

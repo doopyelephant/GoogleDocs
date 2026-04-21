@@ -20,7 +20,7 @@ public class Edit
         {
             Type = EditType.Insert;
             string[] paramstmp = new string[2];
-            paramstmp[0] = json["ibi"].ToString();
+            paramstmp[0] = (Convert.ToInt32(json["ibi"]) - 1).ToString();
             paramstmp[1] = json["s"].ToString();
             Params = paramstmp;
         }
@@ -29,8 +29,8 @@ public class Edit
             Type = EditType.Alter;
             string[] paramstmp = new string[4];
             paramstmp[0] = json["st"].ToString();
-            paramstmp[1] = json["si"].ToString();
-            paramstmp[2] = json["ei"].ToString();
+            paramstmp[1] = (Convert.ToInt32(json["si"]) - 1).ToString();
+            paramstmp[2] = (Convert.ToInt32(json["ei"]) - 1).ToString();
             paramstmp[3] = json["sm"].ToString();
             Params = paramstmp;
         }
@@ -108,18 +108,20 @@ public class GoogleDoc
         {
             if (edit.Type == EditType.Insert)
             {
-                if (Convert.ToInt32(edit.Params[0]) == content.Length + 1)
+                if (Convert.ToInt32(edit.Params[0]) == content.Length)
                 {
                     content += edit.Params[1].Replace("\\n","\n");
                 }
             }
         }
+        int offset = 0;
         foreach(var edit in history.Edits)
         {
             if(edit.Type == EditType.Alter)
             {
                 int start = Convert.ToInt32(edit.Params[1]);
                 int end = Convert.ToInt32(edit.Params[2]);
+                end++;
                 if (start >= 1 && end <= content.Length)
                 {
                      var wrapstart = "";
@@ -144,8 +146,10 @@ public class GoogleDoc
                         continue;
                     }
                    
-                    content = content.Substring(0, start) + wrapstart + content.Substring(start);
-                    content = content.Substring(0, end) + wrapend + content.Substring(end);
+                    content = content.Substring(0, start + offset) + wrapstart + content.Substring(start + offset);
+                    offset += wrapstart.Length;
+                    content = content.Substring(0, end + offset) + wrapend + content.Substring(end + offset);
+                    offset += wrapend.Length;
                 }
             }
         }
