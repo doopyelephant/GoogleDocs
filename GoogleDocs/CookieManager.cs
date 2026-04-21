@@ -19,20 +19,30 @@ public static class CookieManager
     private static string browsercookiepath = "";
     private static bool CookieSelectorCallback = false;
     private static bool alphabetical = true;
-    private static string ExecuteScript(string cmd)
+    private static string ExecuteScript(string fileName, params string[] arguments)
     {
         Process process = new Process();
-        process.StartInfo.FileName = "cmd.exe";
-        process.StartInfo.Arguments = "/c " + cmd; // Replace 'dir' with your command
+        process.StartInfo.FileName = fileName;
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
         process.StartInfo.CreateNoWindow = true;
+
+        foreach (var argument in arguments)
+        {
+            process.StartInfo.ArgumentList.Add(argument);
+        }
 
         process.Start();
 
-// Read the output stream
         string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
         process.WaitForExit();
+        if (!string.IsNullOrWhiteSpace(error))
+        {
+            output += (output.Length > 0 ? Environment.NewLine : string.Empty) + error;
+        }
+
         return output;
     }
     public static void OvverideAlphabetical(bool val)
@@ -42,14 +52,35 @@ public static class CookieManager
 
     private static BrowserCookieJar GetCookies(string hostfilter = "")
     {
-        string datadir = "C:\\Users\\nolan\\AppData\\Roaming\\GoogleDocs";
+        string datadir = "";
+        if(OperatingSystem.IsWindows())
+        {
+         datadir = "C:\\Users\\nolan\\AppData\\Roaming\\GoogleDocs";
        // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
         string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
-        Console.WriteLine(ExecuteScript("mkdir " + datadir));
-        /*string cookiepath =
-            "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)\\cookies.sqlite";
-        string cpcmd = "copy " + cookiepath.AddQuotes() + " " + (datadir + "\\cookies.sqlite").AddQuotes();
+        }
+        else{
+            datadir = "~\\.config\\GoogleDocs";
+        }
+        Console.WriteLine(ExecuteScript("mkdir",datadir));
+        /*//string cookiepath =
+         //   "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)\\cookies.sqlite";
+         string cookiepath = GetBrowserCookiePath().Result;
+        string cpcmd = cookiepath.AddQuotes() + " " + (datadir + "\\cookies.sqlite").AddQuotes();
         
+        string file = "copy";
+        if(OperatingSystem.IsWindows())
+        {
+            file = "copy";
+        }
+        else if(OperatingSystem.IsLinux())
+        {
+            file = "cp";
+        }
+        else
+        {
+
+        }
         Console.WriteLine(cpcmd);
         Console.WriteLine(ExecuteScript(cpcmd));
         cpcmd = "copy " + cookiepath.AddQuotes() + " " + (datadir + "\\key4.db").AddQuotes();
@@ -159,7 +190,6 @@ ExecuteScript("copy " + Path.Combine(profiledir, "cookies.sqlite-shm").AddQuotes
 
     public static void InitCookies(SaveKeys? keys = null)
     {
-        GetBrowserCookiePath();
         SaveKeys = JsonParsing.GetSaveKeys();
         if (keys != null)
         {
@@ -254,9 +284,20 @@ ExecuteScript("copy " + Path.Combine(profiledir, "cookies.sqlite-shm").AddQuotes
      Console.WriteLine("Manual browser cookie path input requested.");
      Console.WriteLine("Waiting for user input...");
     }
+    public static void PickBrowserCallback(string option)
+    {
+        var browsers = JsonParsing.GetBrowserCookiePaths();
+        var browser = browsers.browsers.FirstOrDefault(b => b.name == option);
+        if(/*browser != null*/true)
+        {
+            browsercookiepath = OperatingSystem.IsWindows() ? browser.winpath : browser.linpath;
+            Console.WriteLine("Browser " + browser.name + " selected, using cookie path: " + browsercookiepath);
+            CookieSelectorCallback = true;
+        }
+    }
     private static void ShowBrowserSelector(List<String> list)
     {
-        
+        mainWindow.SetPickOptions(list);
     }
 
     private static string FilterForGoogleDocsCookies(BrowserCookieJar browserCookieJar)
@@ -397,4 +438,23 @@ else
 
                 return string.Join("; ", cookies);
         }
+        private string GetRealPath(string path)
+    {
+        var oldpath = path;
+        var browsercookiepathconfig = JsonParsing.GetBrowserCookiePaths();
+        foreach(var key in browsercookiepathconfig.keys)
+        {
+            var substitute = key.key;
+            switch(key.name)
+            {
+                case "PKFIRST":
+               //replace all of the substitutes in the path with the first child 
+                break;
+                case "SYSUSER":
+                oldpath = oldpath.Replace(substitute, Environment.UserName);
+                break;
+            }
+        }
+        return oldpath;
+    }
 }

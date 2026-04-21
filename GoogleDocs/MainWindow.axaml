@@ -31,6 +31,20 @@
                 </StackPanel>
         </Border>
     </Popup>
+    <Popup x:Name="PickCookiePopup"
+           PlacementTarget="{Binding #OpenDocButton}"
+           Placement="Bottom"
+           IsLightDismissEnabled="True">
+        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                BorderThickness="1" CornerRadius="4" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="Multiple browsers were found, please select one." Margin="0,0,0,10" />
+                    <StackPanel Name="BrowserList" Orientation="Vertical">
+                    </StackPanel>
+                </StackPanel>
+        </Border>
+    </Popup>
     <Popup x:Name="DebugMenuPopup" Width="1000" Height="1000">
         <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
                 BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
