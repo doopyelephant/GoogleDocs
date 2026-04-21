@@ -12,8 +12,10 @@
     <Button Click="OpenDocButtonCallback" Width="250" Height="50" Name="OpenDocButton" Content="Open Document"></Button>
     <Button Click="OpenDebugMenu" Width="250" Height="50" Name="OpenDebugMenuButton" Content="Open Debug Menu"></Button>
     <Button Click="FeelingLucky" Width="250" Height="50" Name="FeelingLuckyButton" Content="I'm Feeling Lucky"></Button>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="400"
+                      Width="1000">
         <TextBlock Text="Please open a doc...." Name="MainText"  TextWrapping="Wrap"></TextBlock>
-
+        </ScrollViewer>
     </StackPanel>
      <Popup x:Name="ManualCookiePopup"
            PlacementTarget="{Binding #OpenDocButton}"

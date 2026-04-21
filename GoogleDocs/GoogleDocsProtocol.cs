@@ -144,8 +144,8 @@ public class GoogleDoc
                         continue;
                     }
                    
-                    content = content.Substring(0, start - 1) + wrapstart + content.Substring(start);
-                    content = content.Substring(0, end - 1) + wrapend + content.Substring(end);
+                    content = content.Substring(0, start) + wrapstart + content.Substring(start);
+                    content = content.Substring(0, end) + wrapend + content.Substring(end);
                 }
             }
         }

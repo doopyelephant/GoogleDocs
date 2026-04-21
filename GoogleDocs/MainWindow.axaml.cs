@@ -68,6 +68,7 @@ public partial class MainWindow : Window
     }
     private void SetMainText(string text,bool recurs = false)
     {
+       
         Console.WriteLine("Setting main text: " + text + " " + recurs);
         if(!recurs)
         {
@@ -76,7 +77,7 @@ public partial class MainWindow : Window
         }
         string[] inlines = new[] {"<Bl/>", "</Bl>"};
         bool ctns = false;
-        int index = 0;
+        int index = int.MaxValue;
         for (int i = 0; i < inlines.Length; i++)
         {
             ctns = ctns || text.Contains(inlines[i]);
@@ -89,6 +90,7 @@ public partial class MainWindow : Window
         {
             Console.WriteLine("Adding plain text inline: " + text.Substring(0, index));
             MainText.Inlines.Add(new Run(text.Substring(0, index)));
+             // MainText.Inlines.Add(new Run("1237656544444"));
             string remaining = text.Substring(index);
             string after = "";
             if(remaining.StartsWith("<Bl/>"))
@@ -98,7 +100,7 @@ public partial class MainWindow : Window
                 var bold = new Bold();
                 bold.Inlines.Add(new Run(bld));
                 MainText.Inlines.Add(bold);
-                after = remaining.Substring(5 + bld.Length + 6);
+                after = remaining.Substring(5 + bld.Length + 5);
                 Console.WriteLine("Remaining text: " + after);
             }
             if(after.Trim().Length > 0)
@@ -110,6 +112,23 @@ public partial class MainWindow : Window
         {
             MainText.Inlines.Add(new Run(text));
         }
+         MainText.Inlines.Add(new Run("Hi i am normal"));
+          var bld2 = new Bold();
+          bld2.Inlines.Add(new Run("Hi i am bold"));
+          MainText.Inlines.Add(bld2);
+          /* foreach(var inline in MainText.Inlines)
+        {
+           Console.WriteLine(inline);
+            if(inline is Run run)
+            {
+                Console.WriteLine("Run text: " + run.Text);
+             //   run.Text = run.Text.Replace("\\n","\n");
+            }
+            else
+            {
+                Console.WriteLine("Not run");
+            }
+        }*/
     }
 
 
