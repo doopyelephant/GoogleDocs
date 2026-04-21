@@ -32,7 +32,8 @@
     "__Secure-BUCKET"
   ],
   "compass": [
-    "appsfrontendserver"
+    "appsfrontendserver",
+    "documents"
   ],
   "debugmenu": true,
   "enablemask": false,
@@ -62,5 +63,6 @@
     true,
     false,
     true
-  ]
+  ],
+  "bind": false
 }

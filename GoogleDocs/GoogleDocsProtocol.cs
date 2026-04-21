@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
+using DryIoc.ImTools;
 using Newtonsoft.Json.Linq;
 
 namespace GoogleDocs;
@@ -25,7 +27,11 @@ public class Edit
         else if (typestring == "as")
         {
             Type = EditType.Alter;
-            string[] paramstmp = new string[0];
+            string[] paramstmp = new string[4];
+            paramstmp[0] = json["st"].ToString();
+            paramstmp[1] = json["si"].ToString();
+            paramstmp[2] = json["ei"].ToString();
+            paramstmp[3] = json["sm"].ToString();
             Params = paramstmp;
         }
         else if (typestring == "ml") // Not sure code
@@ -105,6 +111,41 @@ public class GoogleDoc
                 if (Convert.ToInt32(edit.Params[0]) == content.Length + 1)
                 {
                     content += edit.Params[1].Replace("\\n","\n");
+                }
+            }
+        }
+        foreach(var edit in history.Edits)
+        {
+            if(edit.Type == EditType.Alter)
+            {
+                int start = Convert.ToInt32(edit.Params[1]);
+                int end = Convert.ToInt32(edit.Params[2]);
+                if (start >= 1 && end <= content.Length)
+                {
+                     var wrapstart = "";
+                    var wrapend ="";
+                    JsonObject alteration = JsonNode.Parse(edit.Params[3]).AsObject();
+                    if(alteration.ContainsKey("ts_bd_i"))
+                    {
+                        var isbd = alteration["ts_bd_i"].GetValue<bool>();
+                        if (!isbd && alteration.ContainsKey("ts_bd"))
+                        {
+                            var bd = alteration["ts_bd"].GetValue<bool>();
+                            if (bd)
+                            {
+                                wrapstart += "<Bl/>";
+                                wrapend += "</Bl>";
+                                //content = content.Substring(0, start - 1) + "<b>" + content.Substring(start - 1, end - start + 1) + "</b>" + content.Substring(end);
+                            }
+                        }
+                    }
+                    if(wrapstart == "" && wrapend == "")
+                    {
+                        continue;
+                    }
+                   
+                    content = content.Substring(0, start) + wrapstart + content.Substring(start);
+                    content = content.Substring(0, end) + wrapend + content.Substring(end);
                 }
             }
         }
