@@ -141,6 +141,20 @@ public class GoogleDoc
                             }
                         }
                     }
+                     if(alteration.ContainsKey("ts_it_i"))
+                    {
+                        var isbd = alteration["ts_it_i"].GetValue<bool>();
+                        if (!isbd && alteration.ContainsKey("ts_it"))
+                        {
+                            var bd = alteration["ts_it"].GetValue<bool>();
+                            if (bd)
+                            {
+                                wrapstart += "<It/>";
+                                wrapend += "</It>";
+                                //content = content.Substring(0, start - 1) + "<i>" + content.Substring(start - 1, end - start + 1) + "</i>" + content.Substring(end);
+                            }
+                        }
+                    }
                     if(wrapstart == "" && wrapend == "")
                     {
                         continue;

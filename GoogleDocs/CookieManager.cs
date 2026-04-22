@@ -19,10 +19,57 @@ public static class CookieManager
     private static string browsercookiepath = "";
     private static bool CookieSelectorCallback = false;
     private static bool alphabetical = true;
+
+    private static string ResolveExecutable(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            throw new ArgumentException("Executable name cannot be empty.", nameof(fileName));
+        }
+
+        // If caller passed an explicit path, use it directly.
+        if (Path.IsPathRooted(fileName) || fileName.Contains(Path.DirectorySeparatorChar) || fileName.Contains(Path.AltDirectorySeparatorChar))
+        {
+            if (File.Exists(fileName))
+            {
+                return fileName;
+            }
+
+            throw new FileNotFoundException($"Executable not found: {fileName}");
+        }
+
+        var pathValue = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+        var pathEntries = pathValue.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+        var candidateNames = new List<string> { fileName };
+
+        if (OperatingSystem.IsWindows() && string.IsNullOrEmpty(Path.GetExtension(fileName)))
+        {
+            var pathExt = Environment.GetEnvironmentVariable("PATHEXT") ?? ".EXE;.CMD;.BAT;.COM";
+            foreach (var ext in pathExt.Split(';', StringSplitOptions.RemoveEmptyEntries))
+            {
+                candidateNames.Add(fileName + ext);
+            }
+        }
+
+        foreach (var dir in pathEntries)
+        {
+            foreach (var candidateName in candidateNames)
+            {
+                var candidate = Path.Combine(dir.Trim(), candidateName);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        throw new FileNotFoundException($"Could not resolve executable '{fileName}' from PATH.");
+    }
+
     private static string ExecuteScript(string fileName, params string[] arguments)
     {
         Process process = new Process();
-        process.StartInfo.FileName = fileName;
+        process.StartInfo.FileName = ResolveExecutable(fileName);
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true;
@@ -53,16 +100,21 @@ public static class CookieManager
     private static BrowserCookieJar GetCookies(string hostfilter = "")
     {
         string datadir = "";
+        string profiledir = "";
         if(OperatingSystem.IsWindows())
         {
          datadir = "C:\\Users\\nolan\\AppData\\Roaming\\GoogleDocs";
        // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
-        string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
+        profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
         }
         else{
             datadir = "~\\.config\\GoogleDocs";
         }
-        Console.WriteLine(ExecuteScript("mkdir",datadir));
+        if(!Directory.Exists(datadir))
+        {
+            
+        Console.WriteLine(Directory.CreateDirectory(datadir));
+        }
         /*//string cookiepath =
          //   "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)\\cookies.sqlite";
          string cookiepath = GetBrowserCookiePath().Result;
@@ -89,13 +141,21 @@ public static class CookieManager
  Console.WriteLine(cpcmd);
         Console.WriteLine(ExecuteScript(cpcmd));*/
 // Copy all three WAL files
-ExecuteScript("copy " + Path.Combine(profiledir, "cookies.sqlite").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite").AddQuotes());
-ExecuteScript("copy " + Path.Combine(profiledir, "key4.db").AddQuotes() + " " + Path.Combine(datadir, "key4.db").AddQuotes());
-ExecuteScript("copy " + Path.Combine(profiledir, "cookies.sqlite-wal").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-wal").AddQuotes());
-ExecuteScript("copy " + Path.Combine(profiledir, "cookies.sqlite-shm").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-shm").AddQuotes());
-        string json = ExecuteScript("python " + cookiescript + " " + (datadir + "\\cookies.sqlite").AddQuotes() + " " +
-                                    hostfilter);
+//ExecuteScript("copy",Path.Combine(profiledir, "cookies.sqlite").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite").AddQuotes());
+//ExecuteScript("copy",Path.Combine(profiledir, "key4.db").AddQuotes() + " " + Path.Combine(datadir, "key4.db").AddQuotes());
+//ExecuteScript("copy",Path.Combine(profiledir, "cookies.sqlite-wal").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-wal").AddQuotes());
+//ExecuteScript("copy",Path.Combine(profiledir, "cookies.sqlite-shm").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-shm").AddQuotes());
+  File.Copy(Path.Combine(profiledir, "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
+        File.Copy(Path.Combine(profiledir, "key4.db"), Path.Combine(datadir, "key4.db"), true);
+        File.Copy(Path.Combine(profiledir, "cookies.sqlite-wal"), Path.Combine(datadir,"cookies.sqlite-wal"), true);
+        File.Copy(Path.Combine(profiledir, "cookies.sqlite-shm"), Path.Combine(datadir,"cookies.sqlite-shm"), true);
+        Console.WriteLine("Browser cookie files copied to data directory.");
+       
+        string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + "\\cookies.sqlite")/*.AddQuotes()*/, hostfilter };
+        string json = ExecuteScript("python",pyargs);
+                                    Console.WriteLine("PY OUT: " + json);
         json = "[" + json.SubstringAfter("[");
+        json = json.SubstringBefore("]") + "]";
       //  ExecuteScript("del " + cookiepath + "");
         Console.WriteLine("JSON: " + json.Substring(0, 500) + "...");
         var cookies = JsonConvert.DeserializeObject<List<BrowserCookie>>(json);
@@ -438,7 +498,7 @@ else
 
                 return string.Join("; ", cookies);
         }
-        private string GetRealPath(string path)
+        private static string GetRealPath(string path)
     {
         var oldpath = path;
         var browsercookiepathconfig = JsonParsing.GetBrowserCookiePaths();

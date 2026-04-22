@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -76,7 +77,7 @@ public partial class MainWindow : Window
             MainText.Text = "";
         MainText.Inlines.Clear();
         }
-        string[] inlines = new[] {"<Bl/>", "</Bl>"};
+        string[] inlines = new[] {"<Bl/>", "</Bl>", "<It/>", "</It>"};
         bool ctns = false;
         int index = int.MaxValue;
         for (int i = 0; i < inlines.Length; i++)
@@ -84,7 +85,12 @@ public partial class MainWindow : Window
             ctns = ctns || text.Contains(inlines[i]);
             if(ctns)
             {
-                index = Math.Min(index, text.IndexOf(inlines[i]));
+                int tmpindex = text.IndexOf(inlines[i]);
+                Console.WriteLine("Found inline " + inlines[i] + " at index " + tmpindex);
+                if(tmpindex != -1)
+                {
+                index = Math.Min(index, tmpindex);
+                }
             }
         }
         if (ctns)
@@ -103,6 +109,16 @@ public partial class MainWindow : Window
                 MainText.Inlines.Add(bold);
                 after = remaining.Substring(5 + bld.Length + 5);
                 Console.WriteLine("Remaining text: " + after);
+            }
+            else if(remaining.StartsWith("<It/>"))
+            {
+               string itl = remaining.Substring(5, remaining.IndexOf("</It>") - 5);
+                Console.WriteLine("Adding italic text inline: " + itl);
+                var italic = new Italic();
+                italic.Inlines.Add(new Run(itl));
+                MainText.Inlines.Add(italic);
+                after = remaining.Substring(5 + itl.Length + 5);
+                Console.WriteLine("Remaining text: " + after); 
             }
             if(after.Trim().Length > 0)
             {
