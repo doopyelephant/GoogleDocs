@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -77,7 +78,7 @@ public partial class MainWindow : Window
             MainText.Text = "";
         MainText.Inlines.Clear();
         }
-        string[] inlines = new[] {"<Bl/>", "</Bl>", "<It/>", "</It>"};
+        string[] inlines = new[] {"<Bl/>", "</Bl>", "<It/>", "</It>", "<Tb/>", "</Tb>"};
         bool ctns = false;
         int index = int.MaxValue;
         for (int i = 0; i < inlines.Length; i++)
@@ -120,7 +121,22 @@ public partial class MainWindow : Window
                 after = remaining.Substring(5 + itl.Length + 5);
                 Console.WriteLine("Remaining text: " + after); 
             }
-            if(after.Trim().Length > 0)
+            else if(remaining.StartsWith("<Tb/>"))
+            {
+                string tbl = remaining.Substring(5, remaining.IndexOf("</Tb>") - 5);
+                int height = Regex.Count(tbl,"\\u0012");
+                int total = Regex.Count(tbl,"\\u001c");
+                int width = total / height;
+                string[,] table = new string[width,height];
+                Console.WriteLine("Adding table text inline: " + tbl);
+                var tablecon = new InlineUIContainer();
+                var grid = new Grid();
+                tablecon.Child = grid;
+                MainText.Inlines.Add(tablecon);
+                after = remaining.Substring(5 + tbl.Length + 5);
+                Console.WriteLine("Remaining text: " + after);
+            }
+            else
             {
             SetMainText(after,true);
             }

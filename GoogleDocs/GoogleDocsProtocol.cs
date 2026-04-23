@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using DryIoc.ImTools;
 using Newtonsoft.Json.Linq;
 
@@ -167,6 +168,13 @@ public class GoogleDoc
                 }
             }
         }
+        // Tables
+        int countstart = Regex.Count(content, "\\u0010");
+        int countend = Regex.Count(content, "\\u0011"); 
+        content = content.Replace("\\u0010", "<Tb/>");
+        offset += 4 * countstart;
+        content = content.Replace("\\u0011","</Tb>");
+        offset += 4 * countend;
         return content;
     }
 }
