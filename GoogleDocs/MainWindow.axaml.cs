@@ -12,6 +12,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Interactivity;
+using DryIoc.ImTools;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -135,8 +136,8 @@ public partial class MainWindow : Window
                 var grid = new Grid();
                 grid.ColumnDefinitions = new ColumnDefinitions();
                 grid.RowDefinitions = new RowDefinitions();
-                int i = -1;
-                foreach(string cell in tbl.Split("\u001c"))
+                int i = 0;
+                foreach(string cell in tbl.Split("\u001c").RemoveAt(0))
                 {
                     int col = i % width;
                     int row = i / width;
@@ -149,7 +150,7 @@ public partial class MainWindow : Window
                         grid.ColumnDefinitions.Add(new ColumnDefinition());
                     }
                     var textblock = new TextBlock();
-                    string clean = cell.Replace("\\u0012","");
+                    string clean = cell.Replace("\u0012","");
                     textblock.Text = clean;
                     Grid.SetColumn(textblock,col);
                     Grid.SetRow(textblock,row);
@@ -161,7 +162,7 @@ public partial class MainWindow : Window
                 after = remaining.Substring(5 + tbl.Length + 5);
                 Console.WriteLine("Remaining text: " + after);
             }
-            else
+            if(!string.IsNullOrEmpty(after.Trim()))
             {
             SetMainText(after,true);
             }
