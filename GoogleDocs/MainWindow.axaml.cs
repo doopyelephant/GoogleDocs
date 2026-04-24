@@ -136,6 +136,7 @@ public partial class MainWindow : Window
                 var grid = new Grid();
                 grid.ColumnDefinitions = new ColumnDefinitions();
                 grid.RowDefinitions = new RowDefinitions();
+                //TODO: make lines appear in between cells
                 int i = 0;
                 foreach(string cell in tbl.Split("\u001c").RemoveAt(0))
                 {
