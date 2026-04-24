@@ -123,14 +123,39 @@ public partial class MainWindow : Window
             }
             else if(remaining.StartsWith("<Tb/>"))
             {
+                Console.WriteLine("Adding table inline");
                 string tbl = remaining.Substring(5, remaining.IndexOf("</Tb>") - 5);
-                int height = Regex.Count(tbl,"\\u0012");
-                int total = Regex.Count(tbl,"\\u001c");
+                int height = Regex.Count(tbl,"\u0012");
+                int total = Regex.Count(tbl,"\u001c");
                 int width = total / height;
+                Console.WriteLine("Adding table inline with width " + width + " and height " + height);
                 string[,] table = new string[width,height];
                 Console.WriteLine("Adding table text inline: " + tbl);
                 var tablecon = new InlineUIContainer();
                 var grid = new Grid();
+                grid.ColumnDefinitions = new ColumnDefinitions();
+                grid.RowDefinitions = new RowDefinitions();
+                int i = -1;
+                foreach(string cell in tbl.Split("\u001c"))
+                {
+                    int col = i % width;
+                    int row = i / width;
+                    if(col == 0)
+                    {
+                        grid.RowDefinitions.Add(new RowDefinition());
+                    }
+                    if(row == 0)
+                    {
+                        grid.ColumnDefinitions.Add(new ColumnDefinition());
+                    }
+                    var textblock = new TextBlock();
+                    string clean = cell.Replace("\\u0012","");
+                    textblock.Text = clean;
+                    Grid.SetColumn(textblock,col);
+                    Grid.SetRow(textblock,row);
+                    grid.Children.Add(textblock);
+                    i++;
+                }
                 tablecon.Child = grid;
                 MainText.Inlines.Add(tablecon);
                 after = remaining.Substring(5 + tbl.Length + 5);

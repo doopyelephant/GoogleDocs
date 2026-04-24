@@ -169,12 +169,15 @@ public class GoogleDoc
             }
         }
         // Tables
-        int countstart = Regex.Count(content, "\\u0010");
-        int countend = Regex.Count(content, "\\u0011"); 
-        content = content.Replace("\\u0010", "<Tb/>");
+        if(content.Contains("\u0011") && content.Contains("\u0010"))
+        {
+        int countstart = Regex.Count(content, "\u0010");
+        int countend = Regex.Count(content, "\u0011"); 
+        content = content.Replace("\u0010", "<Tb/>");
         offset += 4 * countstart;
-        content = content.Replace("\\u0011","</Tb>");
+        content = content.Replace("\u0011","</Tb>");
         offset += 4 * countend;
+        }
         return content;
     }
 }
