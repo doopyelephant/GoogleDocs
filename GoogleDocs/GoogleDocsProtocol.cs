@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using DryIoc.ImTools;
 using Newtonsoft.Json.Linq;
 
@@ -95,11 +96,26 @@ public class GoogleDoc
 {
     JObject? json1;
     public DocHistory? history;
+    public string id;
 
     public GoogleDoc(JObject json1, JObject json2)
     {
         this.json1 = json1;
         history = new DocHistory(json2);
+    }
+    public async Task<string> GetSessionId()
+    {
+        var config = JsonParsing.GetUrlConfig();
+        string bindurl = JsonParsing.GetBindPostReq(id,config);
+
+           bindurl += $"&xz={new Random().Next(100000,999999)}{new Random().Next(100000,999999)}";
+            bindurl += $"&RID={new Random().Next(10000,99999)}";
+        Console.WriteLine("BIND URL:");
+        Console.WriteLine(bindurl);
+        var response = await NetworkManager.PostRequest(bindurl);
+        Console.WriteLine("BIND POST RESPONSE:");
+        Console.WriteLine(response);
+        return "";
     }
 
     public string GetText()

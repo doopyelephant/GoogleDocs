@@ -178,6 +178,10 @@ public static bool TryReadLengthPrefixedSegment(
     {
         return config.initurl.Replace(config.docidkey, docid);
     }
+    public static String GetBindPostReq(String docid,UrlConfig config)
+    {
+         return config.bindposturl.Replace(config.docidkey, docid);
+    }
 
     public static String GetBindReq(String docid,UrlConfig config)
     {

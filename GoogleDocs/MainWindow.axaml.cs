@@ -73,7 +73,7 @@ public partial class MainWindow : Window
     private void SetMainText(string text,bool recurs = false)
     {
        
-        Console.WriteLine("Setting main text: " + text + " " + recurs);
+       // Console.WriteLine("Setting main text: " + text + " " + recurs);
         if(!recurs)
         {
             MainText.Text = "";
@@ -88,7 +88,7 @@ public partial class MainWindow : Window
             if(ctns)
             {
                 int tmpindex = text.IndexOf(inlines[i]);
-                Console.WriteLine("Found inline " + inlines[i] + " at index " + tmpindex);
+                // Console.WriteLine("Found inline " + inlines[i] + " at index " + tmpindex);
                 if(tmpindex != -1)
                 {
                 index = Math.Min(index, tmpindex);
@@ -97,7 +97,7 @@ public partial class MainWindow : Window
         }
         if (ctns)
         {
-            Console.WriteLine("Adding plain text inline: " + text.Substring(0, index));
+            //Console.WriteLine("Adding plain text inline: " + text.Substring(0, index));
             MainText.Inlines.Add(new Run(text.Substring(0, index)));
              // MainText.Inlines.Add(new Run("1237656544444"));
             string remaining = text.Substring(index);
@@ -105,12 +105,12 @@ public partial class MainWindow : Window
             if(remaining.StartsWith("<Bl/>"))
             {
                 string bld = remaining.Substring(5, remaining.IndexOf("</Bl>") - 5);
-                Console.WriteLine("Adding bold text inline: " + bld);
+               //Console.WriteLine("Adding bold text inline: " + bld);
                 var bold = new Bold();
                 bold.Inlines.Add(new Run(bld));
                 MainText.Inlines.Add(bold);
                 after = remaining.Substring(5 + bld.Length + 5);
-                Console.WriteLine("Remaining text: " + after);
+                //Console.WriteLine("Remaining text: " + after);
             }
             else if(remaining.StartsWith("<It/>"))
             {
@@ -120,18 +120,18 @@ public partial class MainWindow : Window
                 italic.Inlines.Add(new Run(itl));
                 MainText.Inlines.Add(italic);
                 after = remaining.Substring(5 + itl.Length + 5);
-                Console.WriteLine("Remaining text: " + after); 
+               // Console.WriteLine("Remaining text: " + after); 
             }
             else if(remaining.StartsWith("<Tb/>"))
             {
-                Console.WriteLine("Adding table inline");
+               // Console.WriteLine("Adding table inline");
                 string tbl = remaining.Substring(5, remaining.IndexOf("</Tb>") - 5);
                 int height = Regex.Count(tbl,"\u0012");
                 int total = Regex.Count(tbl,"\u001c");
                 int width = total / height;
-                Console.WriteLine("Adding table inline with width " + width + " and height " + height);
+                //Console.WriteLine("Adding table inline with width " + width + " and height " + height);
                 string[,] table = new string[width,height];
-                Console.WriteLine("Adding table text inline: " + tbl);
+              //  Console.WriteLine("Adding table text inline: " + tbl);
                 var tablecon = new InlineUIContainer();
                 var grid = new Grid();
                 grid.ColumnDefinitions = new ColumnDefinitions();
@@ -161,7 +161,7 @@ public partial class MainWindow : Window
                 tablecon.Child = grid;
                 MainText.Inlines.Add(tablecon);
                 after = remaining.Substring(5 + tbl.Length + 5);
-                Console.WriteLine("Remaining text: " + after);
+               // Console.WriteLine("Remaining text: " + after);
             }
             if(!string.IsNullOrEmpty(after.Trim()))
             {
@@ -357,6 +357,8 @@ try
   }
 
   doc = new GoogleDoc(parsed!, parsed2!);
+  doc.id = doc_id;
+ // doc.GetSessionId();
   SetMainText(doc.GetText());
   Console.WriteLine("Document loaded successfully.");
   Console.WriteLine(doc.GetText());

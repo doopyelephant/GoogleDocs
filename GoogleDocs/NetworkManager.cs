@@ -8,6 +8,7 @@ namespace GoogleDocs;
 
 public static class NetworkManager
 {
+    public static string sid = "";
     public static SaveKeys SaveKeys { get; set; } = new();
 
     private static string SanitizeCookieHeader(string cookie)
@@ -30,9 +31,63 @@ public static class NetworkManager
 
         return new string(filtered, 0, write);
     }
+    public static async Task<string> PostRequest(string url)
+    {
+        if(sid != "")
+        {
+            url += $"?sid={sid}";
+        }
+        using var handler = new HttpClientHandler
+        {
+            AllowAutoRedirect = false
+        };
+
+        using var localClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromSeconds(20)
+        };
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+
+        // Build cookies for this exact URL from WebView2 cookie jar
+        var rawCookie = CookieManager.GetCookie();
+        var sanitizedCookie = SanitizeCookieHeader(rawCookie);
+        if (string.IsNullOrWhiteSpace(sanitizedCookie))
+        {
+            throw new HttpRequestException("Cookie header is empty after sanitization.");
+        }
+
+        if (!string.Equals(rawCookie, sanitizedCookie, StringComparison.Ordinal))
+        {
+            Console.WriteLine("Cookie header contained non-ASCII or control characters; sanitized before request.");
+            PrintDifferences(rawCookie, sanitizedCookie);
+        }
+
+        request.Headers.TryAddWithoutValidation("Cookie", sanitizedCookie);
+        Console.WriteLine("Attached auth cookies to request.");
+        request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0");
+        request.Headers.TryAddWithoutValidation("Accept", "*/*");
+        request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
+
+        PrintHttpRequestData(request);
+        using var response = await localClient.SendAsync(request);
+        var body = await response.Content.ReadAsStringAsync();
+
+        if (response.StatusCode == HttpStatusCode.Found)
+        {
+            Console.WriteLine("Found Found Page");
+            Console.WriteLine($"Redirecting to {response.Headers.Location.AbsoluteUri}...");
+            return await GetRequest(response.Headers.Location.AbsoluteUri);
+        }
+            return body;
+    }
 
      public static async Task<string> GetRequest(string url)
     {
+        if(sid != "")
+        {
+            url += $"?sid={sid}";
+        }
         var (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
 
        
@@ -42,12 +97,29 @@ public static class NetworkManager
         {
             Console.WriteLine($"{header.Key}: {header.Value}");
         }
-
+if(headers.Contains("reporting-endpoints"))
+        {
+            Console.WriteLine("Found reporting-endpoints header:");
+            foreach(var val in headers.GetValues("reporting-endpoints"))
+            {
+               foreach(var part in val.Split('&'))
+                {
+                    if(part.StartsWith("sid="))
+                    {
+                        Console.WriteLine("Found sid in reporting-endpoints header.");
+                        sid = part.SubstringAfter("sid=");
+                        Console.WriteLine($"Extracted sid: {sid}");
+                    }
+                }
+                Console.WriteLine(val);
+            }            
+        }
         if (headers.Contains("Set-Cookie"))
         {
             Console.WriteLine("Found Set-Cookie header.");
            CookieManager.IncomingCookies(headers.GetValues("Set-Cookie"));
         }
+        
          if (statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
             Console.WriteLine($"Received {(int)statusCode}. Retrying once with fresh cookie read...");

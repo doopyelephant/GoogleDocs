@@ -19,6 +19,8 @@ public struct UrlConfig
     public int version;
     public string docidkey;
     public string bindurl;
+    
+    public string bindposturl;
     public string initurl;
 }
 public struct BrowserCookieKey

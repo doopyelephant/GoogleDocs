@@ -1,6 +1,7 @@
 ﻿{
   "version": 1,
   "docidkey": "##DOCID##",
-  "bindurl": "https://docs.google.com/document/d/##DOCID##/bind?id=##DOCID##&includes_info_params=true&VER=8&c=1&w=1&RID=rpc&CI=0&AID=1&TYPE=xmlhttp",
+  "bindurl": "https://docs.google.com/document/d/##DOCID##/bind?id=##DOCID##&includes_info_params=true&VER=8&c=1&w=1&CI=0&AID=1&TYPE=xmlhttp",
+  "bindposturl": "https://docs.google.com/document/d/1c9raUuFX7oqvaErcnVh0Nkz8WqLIcnfG5L81Oxn_VIo/bind?id=1c9raUuFX7oqvaErcnVh0Nkz8WqLIcnfG5L81Oxn_VIo&sid=21e9e597758481f7&includes_info_params=true&nded=false&VER=8&lsq=-1&vc=1&c=1&w=1&flr=0&gsi&cimpl=0&CVER=1&t=1&smv=2147483647&smb=%5B2147483647%2C%20oAMQ%5D",
   "initurl": "https://docs.google.com/document/d/##DOCID##/mobile/edit"
 }
