@@ -268,12 +268,20 @@ public partial class MainWindow : Window
 
     private Stream BindRequest(String url)
     {
+        string sid = NetworkManager.GetSid();
+        if (!string.IsNullOrEmpty(sid))
+        {
+            url += $"&sid={sid}";
+            Console.WriteLine($"Updated bind URL with sid: {url}");
+        }
         return client.GetStreamAsync(url).Result;
     }
 
     private async void BindToDoc()
     {
     String url = JsonParsing.GetBindReq(doc_id,UrlConfig);
+    url += $"&zx={new Random().Next(100000,999999)}";
+    url += $"&RID={new Random().Next(100000,999999)}";
     Console.WriteLine(url);
     while (true)
     {
@@ -358,7 +366,7 @@ try
 
   doc = new GoogleDoc(parsed!, parsed2!);
   doc.id = doc_id;
- // doc.GetSessionId();
+  await doc.GetSessionId();
   SetMainText(doc.GetText());
   Console.WriteLine("Document loaded successfully.");
   Console.WriteLine(doc.GetText());

@@ -105,10 +105,11 @@ public class GoogleDoc
     }
     public async Task<string> GetSessionId()
     {
+        Console.WriteLine("Getting session ID...");
         var config = JsonParsing.GetUrlConfig();
         string bindurl = JsonParsing.GetBindPostReq(id,config);
 
-           bindurl += $"&xz={new Random().Next(100000,999999)}{new Random().Next(100000,999999)}";
+           bindurl += $"&zx={new Random().Next(100000,999999)}{new Random().Next(100000,999999)}";
             bindurl += $"&RID={new Random().Next(10000,99999)}";
         Console.WriteLine("BIND URL:");
         Console.WriteLine(bindurl);

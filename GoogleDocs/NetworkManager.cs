@@ -35,7 +35,9 @@ public static class NetworkManager
     {
         if(sid != "")
         {
+            Console.WriteLine($"Appending sid to URL: {sid}");
             url += $"?sid={sid}";
+            Console.WriteLine($"Updated URL: {url}");
         }
         using var handler = new HttpClientHandler
         {
@@ -79,15 +81,18 @@ public static class NetworkManager
             Console.WriteLine($"Redirecting to {response.Headers.Location.AbsoluteUri}...");
             return await GetRequest(response.Headers.Location.AbsoluteUri);
         }
+        Console.WriteLine($"POST REQ RETURNED: {response.StatusCode}");
             return body;
     }
 
      public static async Task<string> GetRequest(string url)
     {
-        if(sid != "")
+         if(sid != "")
         {
-            url += $"?sid={sid}";
-        }
+            url += $"&sid={sid}";
+            Console.WriteLine($"Updated URL with sid: {url}");
+        }     
+        
         var (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
 
        
@@ -112,7 +117,12 @@ if(headers.Contains("reporting-endpoints"))
                     }
                 }
                 Console.WriteLine(val);
-            }            
+            }   
+               
+        }
+        else
+        {
+            Console.WriteLine("No reporting-endpoints header found.");
         }
         if (headers.Contains("Set-Cookie"))
         {
@@ -274,6 +284,10 @@ if(headers.Contains("reporting-endpoints"))
 
         Console.ResetColor();
         Console.WriteLine();
+    }
+    public static string GetSid()
+    {
+        return sid;
     }
 
 }
