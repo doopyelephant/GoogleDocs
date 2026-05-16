@@ -7,10 +7,12 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using DryIoc.ImTools;
 using Newtonsoft.Json;
@@ -23,6 +25,7 @@ namespace GoogleDocs;
 
 public partial class MainWindow : Window
 {
+    private static int cursorupdateinterval = (1000 / 120);
     private UrlConfig UrlConfig;
     private BrowserCookiePaths browsercookiepaths;
     private static String currentUrl = "";
@@ -36,16 +39,25 @@ public partial class MainWindow : Window
     private bool DebugReadSephamore = false;
     private string DebugReadText = "";
     private static SaveKeys SaveKeys;
+    private readonly object debugLogLock = new();
 
     // Keep this in memory only; it is refreshed from the embedded login WebView.
     private string cookie = "COMPASS=documents=CmIACWuJV_M2JW4onWZwfk4_q-pk0A6MjLy8TBhTJSgU4Zt1Q47bhL85atCH9VapgZ5voLIDa6Ca2rArWhkl2pBFGn08S9N1MCBaR6x9l0yX0STANN-4yj4kg5dJKuN8jTJMqBC4lLTOBhqEAQAJa4lX47p7yIL65SC2cOvZPN82BYj6UQ11C3-PgqXLqgBHHkv7AIkkpa0o_FhCwFmSAbl4LDoYeQZGxTI87B5ALQQRbiHZXDkv-jyyE44AT-yTT3eiDlipMNQPPHpB7KO6WyQB98ttqF2ArzjJIaF385NGKmVNr92cCfP1DuAZhEPeQw==; NID=530=SN0yLQ4HEAFhgfGsg77skdcqlZLArLBeHUwQFOvYQXZ-rnzWrRTV2oJiiQKjro9Bbdd2Rwgo-zqclFZuiYilgrilOE6lizG1ZrrItQoY95fYiuduEOcDbtvB4BJ27y6zEZTZg8qBMUG5rNcd-6RpzjfyT01vsrkbyiZEHUgmp4pMy_PfDs4nTTgJpJq8OxFOAaJBy6hjfMb8xh8w-49VlIt1Vb0lxFv2aM5wQLWPMTpfc2YV-SS-xlGeToAZPBEKnp39geXpfWbdc0x6T4UPKIacvHJyh6PiblzbEYBYVAq3qD1pUViLxuWpkgw5HTSXqRAETG5nEbEcxH5IrqYRlD9rT_Kz8wAWnt5LU3eTv4zVpdN1LalxRNPKRv7XeWPDTviHRDtgnu46tS-W8AQmY3Xh6j97XDI6I-i8Ns16YoC59OYH6FPLO944uXMX6KCFuEJI0KMJTTS-VsdSuODGjZ69SmUYmuYb3e3PF75awrVeku_zYAwyFWmhhugQsekKD0a1XaGEATPWFF9Ia7z63PwFLGhO_-OS3KNmdpyuI8cyrHHEwF3xtIqx4d4HtwUzRFri-qkmHWyWbAykIQ6Ow-W2LVfw2eNH58C3gAhuqEPSKylOQ4kMPQOOkmaSYuByuFPh5Zi56LA3YEbPaJEuV_dOzh6d_p6TLA4UwMxNyWzEPZfaVmOBqqvuZuwBIREj1ogLajt0KqIhUG6K5pvi2Fb99KUhD3L31wv_CmpF3hzbdSlatkBSoFu601nOdk-NJWniZa6iu9EU0rFhuf2Dfbh2kHrqWYpLHvCKgHk-U5rAOWFslYlGNg; SID=g.a0007whah4bEqXeFBsUe4RPuTfjxsah0lJmnVRH9DgReqWQDoWsLW2xS-mlmdSTxdkqK0speewACgYKAesSARQSFQHGX2MikkZ0ULg15goEz5t18SaJQhoVAUF8yKqw38t8PShDdOXclGh5Xqmd0076; __Secure-1PSID=g.a0007whah4bEqXeFBsUe4RPuTfjxsah0lJmnVRH9DgReqWQDoWsL6ZRevsd9Ur3JtMdtvR5KZQACgYKATcSARQSFQHGX2Mig7PWEJfanFzs3sU6xXAIRhoVAUF8yKpdpqwKBIJBxAVArr6POEMS0076; __Secure-3PSID=g.a0007whah4bEqXeFBsUe4RPuTfjxsah0lJmnVRH9DgReqWQDoWsLkCixmOgc2FMTH30xZ4HPfgACgYKAQcSARQSFQHGX2MiKkC64r090tldq8PQdZibGhoVAUF8yKpNnBAHaospDvlKRWIcqFnm0076; HSID=Ar3yC1mBUaa1a0Fpp; SSID=AYMr1tbyU9avtPX4-; APISID=ju4fB_YNuGgBT_Pp/AOm8LL5biEbGkOgc7; SAPISID=9MbuET2lqZp5FZ74/A1OrLj5oCIutPIflT; __Secure-1PAPISID=9MbuET2lqZp5FZ74/A1OrLj5oCIutPIflT; __Secure-3PAPISID=9MbuET2lqZp5FZ74/A1OrLj5oCIutPIflT; SIDCC=AKEyXzWlNlMRvES5s0VflPPUK2PhYouanpKAHreZL4KtSQZPTBDG2VDgxiHpV-yGR4MTlcHfwuA; __Secure-1PSIDCC=AKEyXzWy_62-91JO99hkQHvUFvgcrDdfbZGFe8rWpIDTDrS21TTSOPnIYrxtFQEQBiOh3YjLn2k; __Secure-3PSIDCC=AKEyXzVsVKbCVdC_LksLNRUqnuI5YvruuJo-hIpXbKbfNeCXDJTJCyq5ztmg_riI5MCEq4oGsaKJ; SEARCH_SAMESITE=CgQIxp8B; __Secure-1PSIDTS=sidts-CjEBWhotCTZWm83kA9ZY2inOhquktS_lVv8PY9RzeO0rKzwjcZ9OaScvZiXdFnzJG0GGEAA; __Secure-3PSIDTS=sidts-CjEBWhotCTZWm83kA9ZY2inOhquktS_lVv8PY9RzeO0rKzwjcZ9OaScvZiXdFnzJG0GGEAA; OSID=g.a0007whah5DbtxM3FlZi5AhyI6b5UlO5X0JDSVuos302vmQnljrYsCuqTMhL8n40u37mc4dxpwACgYKAeESARQSFQHGX2Mi1jzy-75FcNkhkBuiqj1WtBoVAUF8yKoK_-dbuCdEhcpq2O0dHC3A0076; __Secure-OSID=g.a0007whah5DbtxM3FlZi5AhyI6b5UlO5X0JDSVuos302vmQnljrYYTQ51tXRsmSQmEs5JHUkagACgYKASQSARQSFQHGX2MiHRqlE2y_S-eTYgU0SkXnzhoVAUF8yKoXponDY9K9aaaLyKLM36DV0076; __Secure-BUCKET=CLQC; AEC=AaJma5v23HIs1lldTWaW9Jk1pb9DgsXdLIOncmDNe3ZqBTcz9mJf0jf3huE; COMPASS=appsfrontendserver=CgAQ9M-pzgYafQAJa4lXNdK39218o12B2cPkLXlou9FGt4_7JcDYZ4-HgnOHpsw9ESh_LGoS2iw4ufcm7Le-EAe9qg2jQ_FjVcOYONRpfKTJK8oZUyehGLcAy5fnou7Xgkj9ZEGzM0PLMVq2kDG3lNned2sjr2ps1QJr6JHPPX7wCEiOThdXIAEwAQ; S=billing-ui-v3=fBvsBAkD9DHgOVj-4CaHL5ZCgXmzFNiQ4fTQFoqjMPw:billing-ui-v3-efe=fBvsBAkD9DHgOVj-4CaHL5ZCgXmzFNiQ4fTQFoqjMPw";   public GoogleDoc? doc;
-
+    private string debugmenulog = "";
 
     public MainWindow()
     {
         InitializeComponent();
+        this.AddHandler(InputElement.KeyDownEvent, MainTextKeyDown, RoutingStrategies.Tunnel);
+        this.AddHandler(InputElement.KeyUpEvent, MainTextKeyUp, RoutingStrategies.Tunnel);
+
         Program.mainWindow = this;
         CookieManager.mainWindow = this;
+        SaveKeys = JsonParsing.GetSaveKeys();
+        if (SaveKeys.log)
+        {
+            InitLogThread();
+        }
         UrlConfig = JsonParsing.GetUrlConfig();
         if (UrlConfig.version != urlconfig_version)
         {
@@ -56,7 +68,7 @@ public partial class MainWindow : Window
         {
             Console.WriteLine("WARNING, browser cookie paths version mismatch.");
         }
-        SaveKeys = JsonParsing.GetSaveKeys();
+
         if (SaveKeys.debugmenu)
         {
             Console.WriteLine("Debug menu enabled.");
@@ -68,7 +80,101 @@ public partial class MainWindow : Window
             DebugMenuPopup.IsOpen = false;
         }
         CookieManager.OvverideAlphabetical(false);
-        //Console.WriteLine(GetCookies().ToString());
+        SetMainText("Ready to go!");
+        InitCursorManager();
+       //SetCursorOffsets(50, 0);
+       //Console.WriteLine(GetCookies().ToString());
+
+    }
+
+    public void InitLogThread()
+    {
+        Thread logthread = new Thread(new ThreadStart(LogThread));
+        logthread.Start();
+    }
+
+    public void LogThread()
+    {
+        while (true)
+        {
+            string snapshot;
+            lock (debugLogLock)
+            {
+               // debugmenulog += $"[LOG SAVED {DateTime.Now}]";
+                snapshot = debugmenulog;
+            }
+
+            File.WriteAllText("./log.txt", snapshot);
+            Thread.Sleep(1000);
+        }
+    }
+
+    public void InitCursorManager()
+    {
+       /* MainText.KeyDown += (object? sender, KeyEventArgs? e) =>
+        {
+            switch (e.Key)
+            {
+                case Key.Left:
+                    CursorManager.KeyDown(Move.Left);
+                    break;
+                case Key.Right:
+                    CursorManager.KeyDown(Move.Right);
+                    break;
+                case Key.Up:
+                    CursorManager.KeyDown(Move.Up);
+                    break;
+                case Key.Down:
+                    CursorManager.KeyDown(Move.Down);
+                    break;
+                default:
+                    break;
+            }
+        };
+        MainText.KeyUp += (object? sender, KeyEventArgs? e) =>
+        {
+            switch (e.Key)
+            {
+                case Key.Left:
+                    CursorManager.KeyUp(Move.Left);
+                    break;
+                case Key.Right:
+                    CursorManager.KeyUp(Move.Right);
+                    break;
+                case Key.Up:
+                    CursorManager.KeyUp(Move.Up);
+                    break;
+                case Key.Down:
+                    CursorManager.KeyUp(Move.Down);
+                    break;
+                default:
+                    break;
+            }
+        };*/
+        CursorManager.Init(this);
+        Thread cursorthread = new Thread(new ThreadStart(UpdateCursorThread));
+        cursorthread.Start();
+    }
+
+    public static void UpdateCursorThread()
+    {
+        while (true)
+        {
+            CursorManager.UpdateCursor();
+            CursorManager.UpdateCursorPosition();
+            Thread.Sleep(100);
+        }
+    }
+
+    public TextBlock GetMainText()
+    {
+        return MainText;
+    }
+
+    public void SetCursorOffsets(float x, float y)
+    {
+        var margin = new Thickness(x, y, 0, 0);
+      Cursor.Margin = margin;
     }
     private void SetMainText(string text,bool recurs = false)
     {
@@ -186,6 +292,10 @@ public partial class MainWindow : Window
                 Console.WriteLine("Not run");
             }
         }*/
+          if (!recurs)
+          {
+              CursorManager.SetTextLayout(MainText.TextLayout);
+          }
     }
 
 
@@ -322,7 +432,7 @@ public partial class MainWindow : Window
     }
     private async void OpenDoc(string docid = "")
     {
-MainText.Text = "Loading...";
+SetMainText("Loading...");
 Console.WriteLine("Loading...");
 string url = "";
 if (string.IsNullOrEmpty(docid))
@@ -343,13 +453,13 @@ try
     Console.WriteLine(json);
   if (!JsonParsing.TryExtractFirstJsonObject(json, out JObject? parsed, out int firstStart, out int firstEnd, out string rawFirst))
   {
-      MainText.Text = "Failed to parse first JSON object";
+      SetMainText("Failed to parse first JSON object");
       return;
   }
 
   if (!JsonParsing.TryReadLengthPrefixedSegment(json, firstEnd, out string json2Raw, out int _))
   {
-      MainText.Text = "Failed to parse length-prefixed second segment";
+     SetMainText("Failed to parse length-prefixed second segment");
       return;
   }
 
@@ -360,7 +470,7 @@ try
 // If json2Raw itself contains wrappers, extract first object from it:
   if (!JsonParsing.TryExtractFirstJsonObject(json2Raw, out JObject? parsed2, out _, out _, out _))
   {
-      MainText.Text = "Failed to parse second JSON object";
+      SetMainText("Failed to parse second JSON object");
       return;
   }
 
@@ -380,18 +490,26 @@ try
 catch (HttpRequestException err)
 {
     Console.WriteLine(err.Message);
-    MainText.Text = err.Message;
+    SetMainText(err.Message);
 }
     }
 
     public void PrintDebugMenu(string s)
     {
         DebugMenuTextBlock.Text += s;
+        lock (debugLogLock)
+        {
+            debugmenulog += s;
+        }
     }
 
     public void PrintLineDebugMenu(string s)
     {
         DebugMenuTextBlock.Text += s + "\n";
+        lock (debugLogLock)
+        {
+            debugmenulog += s + "\n";
+        }
     }
 
     private void SendDebugMenuText(object? sender, RoutedEventArgs e)
@@ -414,4 +532,45 @@ catch (HttpRequestException err)
                 }
     }
 
+    private void MainTextKeyDown(object? sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Left:
+                CursorManager.KeyDown(Move.Left);
+                break;
+            case Key.Right:
+                CursorManager.KeyDown(Move.Right);
+                break;
+            case Key.Up:
+                CursorManager.KeyDown(Move.Up);
+                break;
+            case Key.Down:
+                CursorManager.KeyDown(Move.Down);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void MainTextKeyUp(object? sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Left:
+                CursorManager.KeyUp(Move.Left);
+                break;
+            case Key.Right:
+                CursorManager.KeyUp(Move.Right);
+                break;
+            case Key.Up:
+                CursorManager.KeyUp(Move.Up);
+                break;
+            case Key.Down:
+                CursorManager.KeyUp(Move.Down);
+                break;
+            default:
+                break;
+        }
+    }
 }

@@ -55,4 +55,5 @@ public struct SaveKeys
     public bool enablemask;
     public List<bool> mask;
     public bool bind;
+    public bool log;
 }

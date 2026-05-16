@@ -35,7 +35,7 @@
     "appsfrontendserver",
     "documents"
   ],
-  "debugmenu": true,
+  "debugmenu": false,
   "enablemask": false,
   "mask": [
     true,
@@ -64,5 +64,6 @@
     false,
     true
   ],
-  "bind": true
+  "bind": false,
+  "log": true
 }

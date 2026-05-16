@@ -6,7 +6,10 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="GoogleDocs.MainWindow"
         Title="GoogleDocs">
-<Grid>
+    <!-- <Window.KeyBindings>
+        <KeyBinding Gesture=""></KeyBinding>
+    </Window.KeyBindings> -->
+    <Grid>
     <StackPanel Orientation="Vertical">
     <TextBox TextChanged="TextBox_OnTextChanged" Name="docidbox" Width="1000" Height="10"></TextBox>
     <Button Click="OpenDocButtonCallback" Width="250" Height="50" Name="OpenDocButton" Content="Open Document"></Button>
@@ -14,7 +17,10 @@
     <Button Click="FeelingLucky" Width="250" Height="50" Name="FeelingLuckyButton" Content="I'm Feeling Lucky"></Button>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="400"
                       Width="1000">
-        <TextBlock Text="Please open a doc...." Name="MainText"  TextWrapping="Wrap"></TextBlock>
+            <Panel>
+            <TextBlock Text="Loading..." Name="MainText"  TextWrapping="Wrap" ></TextBlock>
+                <Rectangle Name="Cursor" Fill="Red" Width="2" Height="20" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            </Panel>
         </ScrollViewer>
     </StackPanel>
      <Popup x:Name="ManualCookiePopup"
