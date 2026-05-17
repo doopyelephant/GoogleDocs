@@ -6,12 +6,15 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Net;
+using System.Threading;
 
 namespace GoogleDocs;
 
 public static class Program
 {
     public static MainWindow? mainWindow;
+
+    public static List<Thread> CleanUp;
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
@@ -25,9 +28,13 @@ public static class Program
     public static void Main(string[] args)
     {
 //AttachConsole(ATTACH_PARENT_PROCESS);
-
+CleanUp = new List<Thread>();
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
+        foreach (var thread in CleanUp)
+        {
+            thread.Abort();
+        }
     }
 
     public async static void DebugMenu()

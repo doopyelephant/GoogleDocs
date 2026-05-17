@@ -64,7 +64,7 @@ public static class CursorManager
      x = ((float)Math.Pow(dt, 2f) * 0.2f + 5) * x;
      y = ((float)Math.Pow(dt, 2f) * 0.2f + 5) * y;
         Acceleration = new Vector2(x,y);
-        PrintLineDebugMenu($"Acceleration: {Acceleration}");
+        PrintDebugMenu($"Acceleration: {Acceleration} ");
     }
 
     public static Vector2 GetOffsetFromCharacter()
@@ -76,10 +76,12 @@ public static class CursorManager
 
        // var textlayout = mainText.TextLayout;
         var length = textlayout.TextLines[(int)Position.Y].Length;
+        PrintDebugMenu($"Length: {length} ");
         if (length < Position.X)
         {
         Position.X = 0;
         Position.Y++;
+        PrintDebugMenu($"Moved to next line: {Position} ");
         }
         int index = 0;
         int charcnt = 0;
@@ -96,7 +98,13 @@ public static class CursorManager
         }
 
         var box = textlayout.HitTestTextPosition(charcnt);
-
+        PrintLineDebugMenu($"Hit test position: {box.X}, {box.Y}");
+        for (int i = 0; i < textlayout.TextLines.Count; i++)
+        {
+            var line = textlayout.TextLines[i];
+            PrintDebugMenu($"Line {i}: {line.Length} chars");
+        }
+        PrintDebugMenu("\n");
         return new Vector2((float)box.X, (float)box.Y);
     }
 

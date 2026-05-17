@@ -90,6 +90,7 @@ public partial class MainWindow : Window
     public void InitLogThread()
     {
         Thread logthread = new Thread(new ThreadStart(LogThread));
+        Program.CleanUp.Add(logthread);
         logthread.Start();
     }
 
@@ -151,9 +152,23 @@ public partial class MainWindow : Window
                     break;
             }
         };*/
+         MainText.LayoutUpdated += OnTextLayoutUpdated;
+         CursorManager.SetTextLayout(MainText.TextLayout);
         CursorManager.Init(this);
+        foreach( var line in MainText.TextLayout.TextLines)
+        {
+            PrintLineDebugMenu($"Line Length: {line.Length}");
+        }
         Thread cursorthread = new Thread(new ThreadStart(UpdateCursorThread));
+        Program.CleanUp.Add(cursorthread);
         cursorthread.Start();
+    }
+    public static void OnTextLayoutUpdated(object? sender, EventArgs e)
+    {
+        Program.mainWindow.PrintLineDebugMenu("\n Text layout updated");
+        var mainText = Program.mainWindow.GetMainText();
+        var textlayout = mainText.TextLayout;
+        CursorManager.SetTextLayout(textlayout);
     }
 
     public static void UpdateCursorThread()
@@ -292,10 +307,7 @@ public partial class MainWindow : Window
                 Console.WriteLine("Not run");
             }
         }*/
-          if (!recurs)
-          {
-              CursorManager.SetTextLayout(MainText.TextLayout);
-          }
+        
     }
 
 
