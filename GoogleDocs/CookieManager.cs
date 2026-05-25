@@ -20,6 +20,32 @@ public static class CookieManager
     private static bool CookieSelectorCallback = false;
     private static bool alphabetical = true;
 
+    private static string GetSysUser()
+    {
+        string sysuser = "";
+        if (OperatingSystem.IsWindows())
+        {
+            sysuser = System.Environment.UserName;
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (path.Contains("home/"))
+            {
+                sysuser = path.SubstringAfter("home/");
+            }
+            else
+            {
+                //Trust Environment.UserName is correct.
+                sysuser = Environment.UserName;
+            }
+        }
+        else
+        {
+            sysuser = "unknown";
+        }
+        return sysuser;
+    }
     private static string ResolveExecutable(string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))
@@ -103,9 +129,9 @@ public static class CookieManager
         string profiledir = "";
         if(OperatingSystem.IsWindows())
         {
-         datadir = "C:\\Users\\nolan\\AppData\\Roaming\\GoogleDocs";
+         datadir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\GoogleDocs";
        // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
-        profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
+        profiledir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
         }
         else{
             datadir = "~\\.config\\GoogleDocs";

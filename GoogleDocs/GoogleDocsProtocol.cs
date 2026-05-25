@@ -103,6 +103,40 @@ public class GoogleDoc
         this.json1 = json1;
         history = new DocHistory(json2);
     }
+
+    public void OffsetAltersAfter(int offset, int after)
+    {
+        foreach (var edit in history.Edits)
+        {
+            if (edit.Type == EditType.Alter)
+            {
+                int start = Convert.ToInt32(edit.Params[1]);
+                int end = Convert.ToInt32(edit.Params[2]);
+                if (start - 1 >= after)
+                {
+                    edit.Params[1] = (start + offset).ToString();
+                }
+                if (end >= after)
+                {
+                    edit.Params[2] = (end + offset).ToString();
+                }
+            }
+        }
+    }
+
+    public void OffsetAlters(int offset)
+    {
+        foreach (var edit in history.Edits)
+        {
+            if (edit.Type == EditType.Alter)
+            {
+                int start = Convert.ToInt32(edit.Params[1]);
+                int end = Convert.ToInt32(edit.Params[2]);
+                edit.Params[1] = (start + offset).ToString();
+                edit.Params[2] = (end + offset).ToString();
+            }
+        }
+    }
     public async Task<string> GetSessionId()
     {
         Console.WriteLine("Getting session ID...");
@@ -129,6 +163,10 @@ public class GoogleDoc
                 if (Convert.ToInt32(edit.Params[0]) == content.Length)
                 {
                     content += edit.Params[1].Replace("\\n","\n");
+                }
+                else if (Convert.ToInt32(edit.Params[0]) < content.Length)
+                {
+                    content = content.Substring(0, Convert.ToInt32(edit.Params[0])) + edit.Params[1].Replace("\\n","\n") + content.Substring(Convert.ToInt32(edit.Params[0]));
                 }
             }
         }

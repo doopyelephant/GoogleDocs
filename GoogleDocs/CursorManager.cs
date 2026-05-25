@@ -40,10 +40,13 @@ public static class CursorManager
     private static MainWindow window;
     private static TextBlock? mainText = null;
     private static TextLayout textlayout;
+    private static Vector2 LastCursorPosition = new(0f,0f);
+    private static SaveKeys SaveKeys;
 
     public static void Init(MainWindow _window)
     {
         window = _window;
+        SaveKeys = JsonParsing.GetSaveKeys();
     }
 
     public static void SetTextLayout(TextLayout _textlayout)
@@ -61,43 +64,110 @@ public static class CursorManager
        // window.PrintLineDebugMenu($"x: {x} y: {y}");
      /*   x = (float)Math.Pow(x, 2f) * 0.2f * (x < 0 ? -1f : 0f) + (x > 0 ? 5f : 0f) - (x < 0 ? 5f : 0f);
         y = (float)Math.Pow(y, 2f) * 0.2f * (y < 0 ? -1f : 0f) + (y > 0 ? 5f : 0f) - (y < 0 ? 5f : 0f);*/
-     x = ((float)Math.Pow(dt, 2f) * 0.2f + 5) * x;
-     y = ((float)Math.Pow(dt, 2f) * 0.2f + 5) * y;
+     x = ((float)Math.Pow(dt, 2f) * 0.3f) * x;
+     y = ((float)Math.Pow(dt, 2f) * 0.3f) * y;
         Acceleration = new Vector2(x,y);
         PrintDebugMenu($"Acceleration: {Acceleration} ");
     }
-
-    public static Vector2 GetOffsetFromCharacter()
+    public static int GetCursorPosition()
     {
+       UpdateCursor();
+         var tmp = Position;
         if (mainText == null)
         {
             mainText = window.GetMainText();
         }
 
        // var textlayout = mainText.TextLayout;
-        var length = textlayout.TextLines[(int)Position.Y].Length;
-        PrintDebugMenu($"Length: {length} ");
-        if (length < Position.X)
+        
+        var length = 0;
+        if(tmp.Y < textlayout.TextLines.Count)
         {
+            length = textlayout.TextLines[(int)tmp.Y].Length;
+        }
+
+        PrintDebugMenu($"Length: {length} ");
+        while (length < tmp.X)
+        {
+        tmp.X = 0;
+        tmp.Y++;
         Position.X = 0;
         Position.Y++;
-        PrintDebugMenu($"Moved to next line: {Position} ");
+        length = 0;
+        if(tmp.Y < textlayout.TextLines.Count)
+        {
+            length = textlayout.TextLines[(int)tmp.Y].Length;
+        }
+        PrintDebugMenu($"Moved to next line: {tmp} ");
         }
         int index = 0;
         int charcnt = 0;
         foreach (var line in textlayout.TextLines)
         {
-            if (index == (int)Position.Y)
+            if (index == (int)tmp.Y)
             {
-                charcnt += line.Length;
+                charcnt += (int)tmp.X;
                 break;
             }
             charcnt += line.Length + 1;
 
             index++;
         }
+        return charcnt;
+    }
+    public static Vector2 GetOffsetFromCharacter()
+    {
+        var tmp = Position;
+        if (mainText == null)
+        {
+            mainText = window.GetMainText();
+        }
 
-        var box = textlayout.HitTestTextPosition(charcnt);
+       // var textlayout = mainText.TextLayout;
+        
+        var length = 0;
+        if(tmp.Y < textlayout.TextLines.Count)
+        {
+            length = textlayout.TextLines[(int)tmp.Y].Length;
+        }
+
+        PrintDebugMenu($"Length: {length} ");
+        while (length < tmp.X)
+        {
+        tmp.X = 0;
+        tmp.Y++;
+        Position.X = 0;
+        Position.Y++;
+        length = 0;
+        if(tmp.Y < textlayout.TextLines.Count)
+        {
+            length = textlayout.TextLines[(int)tmp.Y].Length;
+        }
+        PrintDebugMenu($"Moved to next line: {tmp} ");
+        }
+        int index = 0;
+        int charcnt = 0;
+        foreach (var line in textlayout.TextLines)
+        {
+            if (index == (int)tmp.Y)
+            {
+                charcnt += (int)tmp.X;
+                break;
+            }
+            charcnt += line.Length + 1;
+
+            index++;
+        }
+         var box = new Avalonia.Rect();
+        try
+        {
+        box = textlayout.HitTestTextPosition(charcnt);
+        }
+        catch(Exception ex)
+        {
+            PrintDebugMenu($"[WARNING] Textlayout is too small: {ex.Message}");
+            return LastCursorPosition;
+        }
         PrintLineDebugMenu($"Hit test position: {box.X}, {box.Y}");
         for (int i = 0; i < textlayout.TextLines.Count; i++)
         {
@@ -108,19 +178,32 @@ public static class CursorManager
         return new Vector2((float)box.X, (float)box.Y);
     }
 
+    public static void MoveCursor(Vector2 offset)
+    {
+        Position += offset;
+    }
+
+    public static void MoveCursor()
+    {
+        MoveCursor(new Vector2(1,0));
+    }
+
     public static void UpdateCursorPosition()
     {
         var dt = (float)(DateTime.Now - lastupdate).TotalSeconds;
-        Position += Acceleration * dt;
+        var delta = Acceleration * dt;
+       
+        Position += delta;
         Position.X = Math.Clamp(Position.X, 0, int.MaxValue);
         Position.Y = Math.Clamp(Position.Y, 0, int.MaxValue);
-        Position.X = (int)Position.X;
-        Position.Y = (int)Position.Y;
-        Position = GetOffsetFromCharacter();
+     /*   Position.X = (int)Position.X;
+        Position.Y = (int)Position.Y;*/
+ PrintLineDebugMenu($"Delta: {delta} Position: {Position}  ");
+        var cursorPosition = GetOffsetFromCharacter();
         Dispatcher.UIThread.InvokeAsync(() =>
         {
           //  window.PrintLineDebugMenu($"Position: {Position.X} {Position.Y}");
-            window.SetCursorOffsets(Position.X, Position.Y);
+            window.SetCursorOffsets(cursorPosition.X, cursorPosition.Y);
         });
         lastupdate = DateTime.Now;
     }
@@ -132,15 +215,19 @@ public static class CursorManager
         {
             case Move.Up:
                 keystate.up = true;
+                MoveCursor(new Vector2(0,-1));
                 break;
             case Move.Down:
                 keystate.down = true;
+                MoveCursor(new Vector2(0,1));
                 break;
             case Move.Left:
                 keystate.left = true;
+                MoveCursor(new Vector2(-1,0));
                 break;
             case Move.Right:
                 keystate.right = true;
+                MoveCursor(new Vector2(1,0));
                 break;
         }
         PrintLineDebugMenu(keystate.ToString());
@@ -169,16 +256,16 @@ public static class CursorManager
 
     public static void PrintLineDebugMenu(string text)
     {
-        Dispatcher.UIThread.InvokeAsync(() =>
+        if (SaveKeys.log)
         {
-           window.PrintLineDebugMenu(text);
-        });
+            Dispatcher.UIThread.InvokeAsync(() => { window.PrintLineDebugMenu(text); });
+        }
     }
     public static void PrintDebugMenu(string text)
     {
-        Dispatcher.UIThread.InvokeAsync(() =>
+        if (SaveKeys.log)
         {
-            window.PrintDebugMenu(text);
-        });
+            Dispatcher.UIThread.InvokeAsync(() => { window.PrintDebugMenu(text); });
+        }
     }
 }

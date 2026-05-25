@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
         x:Class="GoogleDocs.MainWindow"
         Title="GoogleDocs">
     <!-- <Window.KeyBindings>
@@ -15,7 +15,7 @@
     <Button Click="OpenDocButtonCallback" Width="250" Height="50" Name="OpenDocButton" Content="Open Document"></Button>
     <Button Click="OpenDebugMenu" Width="250" Height="50" Name="OpenDebugMenuButton" Content="Open Debug Menu"></Button>
     <Button Click="FeelingLucky" Width="250" Height="50" Name="FeelingLuckyButton" Content="I'm Feeling Lucky"></Button>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="400"
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="1800"
                       Width="1000">
             <Panel>
             <TextBlock Text="Loading..." Name="MainText"  TextWrapping="Wrap" ></TextBlock>
