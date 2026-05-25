@@ -83,6 +83,8 @@ public partial class MainWindow : Window
         CookieManager.OvverideAlphabetical(false);
         SetMainText("Ready to go!");
         InitCursorManager();
+        ActivePanel(Toolbar,false);
+    //    ActiveElement(Toolbar, false);
        /* var items = NetworkManager.PostRequest("https://docs.google.com/v1/items:get").GetAwaiter().GetResult();
         Console.WriteLine("ITEMS: " + items);*/
         //SetCursorOffsets(50, 0);
@@ -507,6 +509,7 @@ try
   ActiveElement(OpenDebugMenuButton,false);
   ActiveElement(OpenDocButton,false);
   ActiveElement(docidbox,false);
+    ActivePanel(Toolbar,true);
  // MainText.Inlines.Add(new Run("Hello World"));
 
 }
@@ -533,6 +536,12 @@ catch (HttpRequestException err)
     {
         element.IsEnabled = false;
         element.IsVisible = false;
+    }
+
+    public void ActivePanel(Panel panel, bool active)
+    {
+        panel.IsEnabled = active;
+        panel.IsVisible = active;
     }
 
     public void PrintLineDebugMenu(string s)
