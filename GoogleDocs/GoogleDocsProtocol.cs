@@ -36,7 +36,7 @@ public class Edit
             paramstmp[3] = json["sm"].ToString();
             Params = paramstmp;
         }
-        else if (typestring == "ml") // Not sure code
+        else if (typestring == "ml") // Not sure code could be mt,mlt or smth
         {
             Type = EditType.Multi;
             string[] paramstmp = new string[0];
@@ -58,6 +58,48 @@ public class Edit
     }
     public EditType Type { get; set; }
     public string[] Params;
+
+    public void Save()
+    {
+
+    }
+    public string Serialize()
+    {
+        string json = $"[" +
+               $"\"ty\":\"{GetEditTypeCode(Type)}\"," + // Edit type
+               $"{(Type == EditType.Alter ? $"\"st\" : {Params[0]}" : "")}," + //Alteration string type
+               $"{(Type == EditType.Alter ? $"\"si\" : {int.Parse(Params[1]) + 1}" : "")}," + // Alteration start index
+               $"{(Type == EditType.Alter ? $"\"ei\" : {int.Parse(Params[2]) + 1}" : "")}," + // Alteration end index
+               $"{(Type == EditType.Alter ? $"\"sm\" : {Params[3]}" : "")}," + // Alteration property json string
+               $"{(Type == EditType.Insert ? $"\"ibi\" : {int.Parse(Params[0]) + 1}" : "")}," + // Insertion index
+               $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1]}\"" : "")}," // Insertion string
+               ;
+        json = json.TrimEnd(',');
+        json += "]";
+        return json;
+    }
+
+    private string GetEditTypeCode(EditType type)
+    {
+        switch (Type)
+        {
+            case EditType.Alter:
+                return "as";
+                break;
+            case EditType.Insert:
+                return "is";
+                break;
+            case EditType.Multi:
+                return "ml";
+                break;
+            case EditType.Noop:
+                return "noop";
+                break;
+            case EditType.Unknown:
+                return "unk";
+                break;
+        }
+    }
 }
 public class DocHistory
 {
