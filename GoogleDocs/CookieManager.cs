@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using Newtonsoft.Json;
 
 namespace GoogleDocs;
@@ -136,14 +137,16 @@ public static class CookieManager
         {
          datadir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\GoogleDocs";
        // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
-        profiledir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
+      // profiledir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release"; hardcoded browser path YOLO
         }
         else{
             datadir = "~\\.config\\GoogleDocs";
         }
+        profiledir = GetBrowserCookiePath().Result.SubstringBeforeLast("\\");
+
+
         if(!Directory.Exists(datadir))
         {
-            
         Console.WriteLine(Directory.CreateDirectory(datadir));
         }
         /*//string cookiepath =
@@ -176,13 +179,28 @@ public static class CookieManager
 //ExecuteScript("copy",Path.Combine(profiledir, "key4.db").AddQuotes() + " " + Path.Combine(datadir, "key4.db").AddQuotes());
 //ExecuteScript("copy",Path.Combine(profiledir, "cookies.sqlite-wal").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-wal").AddQuotes());
 //ExecuteScript("copy",Path.Combine(profiledir, "cookies.sqlite-shm").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-shm").AddQuotes());
-  File.Copy(Path.Combine(profiledir, "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
-        File.Copy(Path.Combine(profiledir, "key4.db"), Path.Combine(datadir, "key4.db"), true);
-        File.Copy(Path.Combine(profiledir, "cookies.sqlite-wal"), Path.Combine(datadir,"cookies.sqlite-wal"), true);
-        File.Copy(Path.Combine(profiledir, "cookies.sqlite-shm"), Path.Combine(datadir,"cookies.sqlite-shm"), true);
+        foreach (var file in Directory.GetFiles(datadir))
+        {
+            File.Delete(file);
+        }
+        Console.WriteLine("Deleting old cookie files.");
+        if (HostBrowserType == BrowserType.Firefox)
+        {
+            File.Copy(Path.Combine(profiledir, "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
+            File.Copy(Path.Combine(profiledir, "key4.db"), Path.Combine(datadir, "key4.db"), true);
+            File.Copy(Path.Combine(profiledir, "cookies.sqlite-wal"), Path.Combine(datadir, "cookies.sqlite-wal"),
+                true);
+            File.Copy(Path.Combine(profiledir, "cookies.sqlite-shm"), Path.Combine(datadir, "cookies.sqlite-shm"),
+                true);
+        }
+        else
+        {
+            File.Copy(Path.Combine(profiledir, "Cookies"), Path.Combine(datadir, "Cookies"), true);
+        }
+
         Console.WriteLine("Browser cookie files copied to data directory.");
        
-        string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + "\\cookies.sqlite")/*.AddQuotes()*/, hostfilter };
+        string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + (HostBrowserType == BrowserType.Firefox ? "\\cookies.sqlite" : "\\Cookies"))/*.AddQuotes()*/, hostfilter };
         string json = ExecuteScript("python",pyargs);
                                     Console.WriteLine("PY OUT: " + json);
         json = "[" + json.SubstringAfter("[");
@@ -358,6 +376,7 @@ public static class CookieManager
         }
         else
         {
+            Console.WriteLine("Multiple valid browser cookie paths found, please select one:");
             ShowBrowserSelector(ValidIndexes.ConvertAll(i => browsers.browsers[i].name));
             while(!CookieSelectorCallback)
             {
@@ -399,12 +418,17 @@ public static class CookieManager
         {
             browsercookiepath = OperatingSystem.IsWindows() ? browser.winpath : browser.linpath;
             Console.WriteLine("Browser " + browser.name + " selected, using cookie path: " + browsercookiepath);
+            mainWindow.SetOpenPickBrowser(false);
             CookieSelectorCallback = true;
         }
     }
-    private static void ShowBrowserSelector(List<String> list)
+    private static void ShowBrowserSelector(List<string> list)
     {
-        mainWindow.SetPickOptions(list);
+        Dispatcher.UIThread.Post(() =>
+        {
+            mainWindow.SetPickOptions(list);      // populate first
+            mainWindow.SetOpenPickBrowser(true);  // then open
+        });
     }
 
     private static string FilterForGoogleDocsCookies(BrowserCookieJar browserCookieJar)

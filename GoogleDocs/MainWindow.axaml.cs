@@ -350,21 +350,33 @@ public partial class MainWindow : Window
     }
     public void SetPickOptions(List<string> options)
     {
-        BrowserList.Children.Clear();
+      //  Console.WriteLine($"SetPickOptions called. options={options.Count}, existingChildren={BrowserList.Children.Count}");
+        if (BrowserList.Children.Count > 1)
+        {
+            while (BrowserList.Children.Count > 1)
+            {
+                BrowserList.Children.RemoveAt(1);
+            }
+        }
+
         foreach (string option in options)
         {
             Button button = new Button
             {
                 Content = option,
-                Margin = new Thickness(5)
+                Margin = new Thickness(5),
+                Width = 100,
+                Height = 50
             };
             button.Click += (sender, e) =>
             {
                 CookieManager.PickBrowserCallback(option);
                 PickCookiePopup.IsOpen = false;
             };
+            Console.WriteLine("Adding browser option: " + option);
             BrowserList.Children.Add(button);
         }
+      //  Console.WriteLine($"BrowserList now has {BrowserList.Children.Count} children.");
     }
 
     public void OpenDebugMenu(object? sender, RoutedEventArgs e)
