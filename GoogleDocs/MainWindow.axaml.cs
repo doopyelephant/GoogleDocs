@@ -84,6 +84,7 @@ public partial class MainWindow : Window
         SetMainText("Ready to go!");
         InitCursorManager();
         ActivePanel(Toolbar,false);
+      //  PrintLineDebugMenu("C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies".GetRealPath());
     //    ActiveElement(Toolbar, false);
        /* var items = NetworkManager.PostRequest("https://docs.google.com/v1/items:get").GetAwaiter().GetResult();
         Console.WriteLine("ITEMS: " + items);*/

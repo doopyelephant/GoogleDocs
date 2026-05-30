@@ -8,6 +8,10 @@ using Newtonsoft.Json;
 
 namespace GoogleDocs;
 
+public enum BrowserType
+{
+    Firefox,Chromium
+}
 public static class CookieManager
 {
     public static MainWindow mainWindow;
@@ -19,6 +23,7 @@ public static class CookieManager
     private static string browsercookiepath = "";
     private static bool CookieSelectorCallback = false;
     private static bool alphabetical = true;
+    private static BrowserType HostBrowserType;
 
     private static string GetSysUser()
     {
@@ -318,7 +323,7 @@ public static class CookieManager
         {
             if(OperatingSystem.IsWindows())
             {
-                if(File.Exists(browser.winpath))
+                if(File.Exists(browser.winpath.GetRealPath()))
                 {
                     ValidIndexes.Add(browsers.browsers.IndexOf(browser));
                     Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.winpath);
@@ -326,7 +331,7 @@ public static class CookieManager
             }
             else if(OperatingSystem.IsLinux())
             {
-                if(File.Exists(browser.linpath))
+                if(File.Exists(browser.linpath.GetRealPath()))
                 {
                     ValidIndexes.Add(browsers.browsers.IndexOf(browser));
                     Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.linpath);
@@ -341,13 +346,15 @@ public static class CookieManager
             {
                 await Task.Delay(100);
             }
-            return browsercookiepath;
+            EvalHostBrowserType();
+            return browsercookiepath.GetRealPath();
         }
         else if(ValidIndexes.Count == 1)
         {
             Console.WriteLine("One valid browser cookie path found, using " + browsers.browsers[ValidIndexes[0]].name);
             browsercookiepath = OperatingSystem.IsWindows() ? browsers.browsers[ValidIndexes[0]].winpath : browsers.browsers[ValidIndexes[0]].linpath;
-            return browsercookiepath;
+            EvalHostBrowserType();
+            return browsercookiepath.GetRealPath();
         }
         else
         {
@@ -356,7 +363,21 @@ public static class CookieManager
             {
                 await Task.Delay(100);
             }
-            return browsercookiepath;
+            EvalHostBrowserType();
+
+            return browsercookiepath.GetRealPath();
+        }
+    }
+
+    public static void EvalHostBrowserType()
+    {
+        if (browsercookiepath.Contains("sqlite"))
+        {
+            HostBrowserType = BrowserType.Firefox;
+        }
+        else
+        {
+            HostBrowserType = BrowserType.Chromium;
         }
     }
     public static void ManualInputCallback(string input)
@@ -524,7 +545,8 @@ else
 
                 return string.Join("; ", cookies);
         }
-        private static string GetRealPath(string path)
+
+        public static string GetRealPath(this string path)
     {
         var oldpath = path;
         var browsercookiepathconfig = JsonParsing.GetBrowserCookiePaths();
@@ -534,8 +556,14 @@ else
             switch(key.name)
             {
                 case "PKFIRST":
-               //replace all of the substitutes in the path with the first child 
-                break;
+                    while (oldpath.Contains(substitute))
+                    {
+                        //replace all of the substitutes in the path with the first child
+                        oldpath = oldpath.ReplaceFirst(substitute,
+                            Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
+                    }
+
+                    break;
                 case "SYSUSER":
                 oldpath = oldpath.Replace(substitute, Environment.UserName);
                 break;
