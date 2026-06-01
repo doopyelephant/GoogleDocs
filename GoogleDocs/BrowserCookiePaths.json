@@ -8,6 +8,10 @@
         {
             "key": "##PKFIRST##",
             "name": "PKFIRST"
+        },
+        {
+            "key": "##FIREFOXPROFILE##",
+            "name": "FIREFOXPROFILE"
         }
     ],
     "browsers": [
@@ -15,25 +19,37 @@
             "name": "Chrome",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": [
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1\\Network\\Cookies",
+                    "linpath": ""
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 2\\Network\\Cookies",
+                    "linpath": ""
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 3\\Network\\Cookies",
+                    "linpath": ""
+                }
+            ]
         },
         {
             "name": "Firefox",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\##PKFIRST##\\cookies.sqlite",
             "linpath": "~/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
-            "type": "Firefox"
-        },
-         {
-            "name": "Firefox Snap",
-            "winpath": "",
-            "linpath": "~/snap/firefox/common/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
-            "type": "Firefox"
-        },
-         {
-            "name": "Firefox Flatpak",
-            "winpath": "",
-            "linpath": "~/.var/app/org.mozilla.firefox/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
-            "type": "Firefox"
+            "type": "Firefox",
+            "altpaths": [
+                {
+                    "winpath": "",
+                    "linpath": "~/snap/firefox/common/.mozilla/firefox/##PKFIRST##/cookies.sqlite"
+                },
+                {
+                    "winpath": "",
+                    "linpath": "~/.var/app/org.mozilla.firefox/.mozilla/firefox/##PKFIRST##/cookies.sqlite"
+                }
+            ]
         },
         {
             "name": "Zen",

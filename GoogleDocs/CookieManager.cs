@@ -98,38 +98,44 @@ public static class CookieManager
         throw new FileNotFoundException($"Could not resolve executable '{fileName}' from PATH.");
     }
 
-    private static string ExecuteScript(string fileName, params string[] arguments)
+   private static async Task<string> ExecuteScript(string fileName, params string[] arguments)
+{
+    using var process = new Process();
+    process.StartInfo = new ProcessStartInfo
     {
-        Process process = new Process();
-        process.StartInfo.FileName = ResolveExecutable(fileName);
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-        process.StartInfo.CreateNoWindow = true;
+        FileName = ResolveExecutable(fileName),
+        UseShellExecute = false,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        CreateNoWindow = true
+    };
 
-        foreach (var argument in arguments)
-        {
-            process.StartInfo.ArgumentList.Add(argument);
-        }
+    foreach (var argument in arguments)
+        process.StartInfo.ArgumentList.Add(argument);
 
-        process.Start();
+    Console.WriteLine("Executing: " + process.StartInfo.FileName + " " + string.Join(" ", arguments));
 
-        string output = process.StandardOutput.ReadToEnd();
-        string error = process.StandardError.ReadToEnd();
-        process.WaitForExit();
-        if (!string.IsNullOrWhiteSpace(error))
-        {
-            output += (output.Length > 0 ? Environment.NewLine : string.Empty) + error;
-        }
+    process.Start();
 
-        return output;
-    }
+    var stdoutTask = process.StandardOutput.ReadToEndAsync();
+    var stderrTask = process.StandardError.ReadToEndAsync();
+
+    await Task.WhenAll(stdoutTask, stderrTask, process.WaitForExitAsync());
+
+    var output = await stdoutTask;
+    var error = await stderrTask;
+
+    if (!string.IsNullOrWhiteSpace(error))
+        output += (output.Length > 0 ? Environment.NewLine : string.Empty) + error;
+
+    return output;
+}
     public static void OvverideAlphabetical(bool val)
     {
         alphabetical = val;
     }
 
-    private static BrowserCookieJar GetCookies(string hostfilter = "")
+    private static async Task<BrowserCookieJar> GetCookies(string hostfilter = "")
     {
         string datadir = "";
         string profiledir = "";
@@ -142,7 +148,8 @@ public static class CookieManager
         else{
             datadir = "~\\.config\\GoogleDocs";
         }
-        profiledir = GetBrowserCookiePath().Result.SubstringBeforeLast("\\");
+        profiledir = await GetBrowserCookiePath();
+            profiledir = profiledir.SubstringBeforeLast("\\");
 
 
         if(!Directory.Exists(datadir))
@@ -201,16 +208,44 @@ public static class CookieManager
         Console.WriteLine("Browser cookie files copied to data directory.");
        
         string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + (HostBrowserType == BrowserType.Firefox ? "\\cookies.sqlite" : "\\Cookies"))/*.AddQuotes()*/, hostfilter };
-        string json = ExecuteScript("python",pyargs);
-                                    Console.WriteLine("PY OUT: " + json);
+        string json = await ExecuteScript("python",pyargs);
+                              //      Console.WriteLine("PY OUT: " + json);
         json = "[" + json.SubstringAfter("[");
-        json = json.SubstringBefore("]") + "]";
+        json = json.RemoveAfterBrackets();
+
+        // json = json.SubstringBefore("]") + "]";
       //  ExecuteScript("del " + cookiepath + "");
         Console.WriteLine("JSON: " + json.Substring(0, 500) + "...");
+     // Console.WriteLine("JSON: " + json);
         var cookies = JsonConvert.DeserializeObject<List<BrowserCookie>>(json);
         var cookiejar = new BrowserCookieJar();
         cookiejar.cookies = cookies;
         return cookiejar;
+    }
+
+    public static string RemoveAfterBrackets(this string str)
+    {
+        int opencnt = 0;
+        int closecnt = 0;
+        int idx = 0;
+        foreach (var c in str)
+        {
+            if (c == '[')
+            {
+                opencnt++;
+            }
+            else if (c == ']')
+            {
+                closecnt++;
+            }
+            if(opencnt > 0 && closecnt > 0 && opencnt == closecnt)
+            {
+                return str.Substring(0, idx + 1);
+            }
+
+            idx++;
+        }
+        return str;
     }
 
     public static string GetCookie(bool forcestay = false)
@@ -297,7 +332,7 @@ public static class CookieManager
         return await NetworkManager.TestEndpoint(url);
     }
 
-    public static void InitCookies(SaveKeys? keys = null)
+    public static async void InitCookies(SaveKeys? keys = null)
     {
         SaveKeys = JsonParsing.GetSaveKeys();
         if (keys != null)
@@ -318,7 +353,7 @@ public static class CookieManager
         }
         else
         {
-            var cookiejar = GetCookies();
+            var cookiejar = await GetCookies();
             authcookie = FilterForGoogleDocsCookies(cookiejar);
         }
     }
@@ -424,7 +459,7 @@ public static class CookieManager
     }
     private static void ShowBrowserSelector(List<string> list)
     {
-        Dispatcher.UIThread.Post(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             mainWindow.SetPickOptions(list);      // populate first
             mainWindow.SetOpenPickBrowser(true);  // then open

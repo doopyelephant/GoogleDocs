@@ -350,7 +350,7 @@ public partial class MainWindow : Window
     }
     public void SetPickOptions(List<string> options)
     {
-      //  Console.WriteLine($"SetPickOptions called. options={options.Count}, existingChildren={BrowserList.Children.Count}");
+        Console.WriteLine($"SetPickOptions called. options={options.Count}, existingChildren={BrowserList.Children.Count}");
         if (BrowserList.Children.Count > 1)
         {
             while (BrowserList.Children.Count > 1)
@@ -376,7 +376,7 @@ public partial class MainWindow : Window
             Console.WriteLine("Adding browser option: " + option);
             BrowserList.Children.Add(button);
         }
-      //  Console.WriteLine($"BrowserList now has {BrowserList.Children.Count} children.");
+        Console.WriteLine($"BrowserList now has {BrowserList.Children.Count} children.");
     }
 
     public void OpenDebugMenu(object? sender, RoutedEventArgs e)
