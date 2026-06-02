@@ -22,4 +22,4 @@ Heavily Work In Progress, many things might break
 ## Known Issues
 - Zen "works" but sometimes decides it doesnt want to work(very unreliable)(I have 0 clue why this happens)
 ## AI Disclaimer
-I use Github Copilot to write the odd snippet or to bounce ideas off of, but 95% of code is human written
+I use Github Copilot to write the odd snippet or to bounce ideas off of (large % of commit messages are AI Generated), but 95% of code is human written
