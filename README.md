@@ -8,7 +8,7 @@ Heavily Work In Progress, many things might break
 - Text Underline Support 🕛
 - Text Color Support 🕛
 - Text Highlight(with colors) Support 🕛
-- Dynamic browser paths(removing hardcoded browser cookie path)
+- Dynamic browser paths(removing hardcoded browser cookie path) 🚧
 ### Need reverse engineering & Implementation
 - Syncing with Google Docs backend (Saving & Realtime Collaboration)(Roadblock is on Google's cookie authentication) 🚧
 ## Features
