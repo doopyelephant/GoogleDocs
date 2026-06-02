@@ -25,6 +25,9 @@ public static class CookieManager
     private static bool CookieSelectorCallback = false;
     private static bool alphabetical = true;
     private static BrowserType HostBrowserType;
+    private static bool CanStartPrompt = true;
+    private static string PromptCallbackValue = "";
+
 
     private static string GetSysUser()
     {
@@ -399,6 +402,7 @@ public static class CookieManager
             {
                 await Task.Delay(100);
             }
+            CookieSelectorCallback = false;
             EvalHostBrowserType();
             return browsercookiepath.GetRealPath();
         }
@@ -417,6 +421,7 @@ public static class CookieManager
             {
                 await Task.Delay(100);
             }
+            CookieSelectorCallback = false;
             EvalHostBrowserType();
 
             return browsercookiepath.GetRealPath();
@@ -605,7 +610,7 @@ else
                 return string.Join("; ", cookies);
         }
 
-        public static string GetRealPath(this string path)
+        public static string GetRealPath(this string path,bool includeprofileselect = false)
     {
         var oldpath = path;
         var browsercookiepathconfig = JsonParsing.GetBrowserCookiePaths();
@@ -621,13 +626,47 @@ else
                         oldpath = oldpath.ReplaceFirst(substitute,
                             Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
                     }
-
                     break;
                 case "SYSUSER":
                 oldpath = oldpath.Replace(substitute, Environment.UserName);
                 break;
+                case "FIREFOXPROFILE":
+                    if (includeprofileselect)
+                    {
+
+                    }
+                    else
+                    {
+                        while (oldpath.Contains(substitute))
+                        {
+                            //replace all of the substitutes in the path with the first child
+                            oldpath = oldpath.ReplaceFirst(substitute,
+                                Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
+                        }
+                    }
+                    break;
             }
         }
         return oldpath;
+    }
+
+    public static Task<int> Prompt(string[] options, string q)
+    {
+        while (CanStartPrompt == false)
+        {
+            Task.Delay(100).Wait();
+        }
+
+        CanStartPrompt = false;
+
+        string value = PromptCallbackValue;
+        int idx  = options.ToList().IndexOf(value);
+        CanStartPrompt = true;
+        return Task.FromResult(idx);
+    }
+
+    public static void PromptCallback(string option)
+    {
+        PromptCallbackValue = option;
     }
 }
