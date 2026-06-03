@@ -6,6 +6,7 @@
  - They are stored across domains, right now i am using ".docs.google.com", "accounts.google.com", and "docs.google.com"
    
  *My list of cookie types are the below(there is probably more)*
+ 
     "__Secure-1PAPISID"
     
     "__Secure-1PSID"
