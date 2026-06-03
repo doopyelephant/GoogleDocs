@@ -1,6 +1,7 @@
 # Unofficial Google Docs Client
 An unofficial Google Doc's Client built using Avalonia in C# that can open Google Docs with authentication from the cookie files of a logged in browser
 Heavily Work In Progress, many things might break
+[Technical Documentation here](GoogleDocsProtocol.md)
 ## TODO
 🕛 Planned
 🚧 WIP
