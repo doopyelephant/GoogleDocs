@@ -191,21 +191,21 @@ public static bool TryReadLengthPrefixedSegment(
     public static void SaveKeys(SaveKeys keys)
     {
         string json = JsonConvert.SerializeObject(keys, Formatting.Indented);
-        File.WriteAllText("../../../SaveKeys.json", json);
+        File.WriteAllText("SaveKeys.json", json);
     }
 
 
 
     public static UrlConfig GetUrlConfig()
     {
-        string json = File.ReadAllText("../../../UrlConfig.json");
+        string json = File.ReadAllText("UrlConfig.json");
         var UrlConfig = JsonConvert.DeserializeObject<UrlConfig>(json);
         return UrlConfig;
     }
 
     public static SaveKeys GetSaveKeys()
     {
-        string json = File.ReadAllText("../../../SaveKeys.json");
+        string json = File.ReadAllText("SaveKeys.json");
         var SaveKeys = JsonConvert.DeserializeObject<SaveKeys>(json);
         return SaveKeys;
     }
@@ -215,7 +215,7 @@ public static bool TryReadLengthPrefixedSegment(
 
     public static BrowserCookiePaths GetBrowserCookiePaths()
     {
-        string json = File.ReadAllText("../../../BrowserCookiePaths.json");
+        string json = File.ReadAllText("BrowserCookiePaths.json");
         var BrowserCookiePaths = JsonConvert.DeserializeObject<BrowserCookiePaths>(json);
         return BrowserCookiePaths;
     }
