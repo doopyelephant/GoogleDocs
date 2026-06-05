@@ -348,6 +348,33 @@ public partial class MainWindow : Window
     {
         PickCookiePopup.IsOpen = val;
     }
+
+    public void SetPromptOptions(List<String> options)
+    {
+        if (PromptList.Children.Count > 1)
+        {
+            while (PromptList.Children.Count > 1)
+            {
+                PromptList.Children.RemoveAt(1);
+            }
+        }
+
+        foreach (string option in options)
+        {
+            Button button = new Button
+            {
+                Content = option,
+                Margin = new Thickness(5),
+                Width = 100,
+                Height = 50
+            };
+            button.Click += (sender, e) =>
+            {
+                CookieManager.PromptCallback(option);
+            };
+            PromptList.Children.Add(button);
+        }
+    }
     public void SetPickOptions(List<string> options)
     {
         Console.WriteLine($"SetPickOptions called. options={options.Count}, existingChildren={BrowserList.Children.Count}");

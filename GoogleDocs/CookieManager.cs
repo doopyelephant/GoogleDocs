@@ -27,6 +27,8 @@ public static class CookieManager
     private static BrowserType HostBrowserType;
     private static bool CanStartPrompt = true;
     private static string PromptCallbackValue = "";
+    private static List<string> RealCacheRequests;
+    private static List<string> RealCache;
 
 
     private static string GetSysUser()
@@ -610,8 +612,12 @@ else
                 return string.Join("; ", cookies);
         }
 
-        public static string GetRealPath(this string path,bool includeprofileselect = false)
+        public static string GetRealPath(this string path)
     {
+        if (RealCacheRequests.Contains(path))
+        {
+            return RealCache[RealCacheRequests.IndexOf(path)];
+        }
         var oldpath = path;
         var browsercookiepathconfig = JsonParsing.GetBrowserCookiePaths();
         foreach(var key in browsercookiepathconfig.keys)
@@ -631,22 +637,17 @@ else
                 oldpath = oldpath.Replace(substitute, Environment.UserName);
                 break;
                 case "FIREFOXPROFILE":
-                    if (includeprofileselect)
-                    {
-
-                    }
-                    else
-                    {
                         while (oldpath.Contains(substitute))
                         {
                             //replace all of the substitutes in the path with the first child
                             oldpath = oldpath.ReplaceFirst(substitute,
                                 Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
                         }
-                    }
                     break;
             }
         }
+        RealCacheRequests.Add(path);
+        RealCache.Add(oldpath);
         return oldpath;
     }
 
@@ -656,11 +657,14 @@ else
         {
             Task.Delay(100).Wait();
         }
+        mainWindow.SetPromptOptions(options.ToList());
+        mainWindow.PickPrompt.IsOpen = true;
 
         CanStartPrompt = false;
 
         string value = PromptCallbackValue;
         int idx  = options.ToList().IndexOf(value);
+        mainWindow.PickPrompt.IsOpen = false;
         CanStartPrompt = true;
         return Task.FromResult(idx);
     }
