@@ -55,55 +55,64 @@
             "name": "Zen",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\zen\\Profiles\\##PKFIRST##\\cookies.sqlite",
             "linpath": "",
-            "type": "Firefox"
+            "type": "Firefox",
+            "altpaths": []
         },
         {
             "name": "Edge",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Network\\Cookies",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Brave",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Opera",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Arc",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Chromium",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Opera GX",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Tor",
             "winpath": "",
             "linpath": "",
-            "type": "Firefox"
+            "type": "Firefox",
+            "altpaths": []
         },
         {
             "name": "Chrome",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         }
     ]
 }
