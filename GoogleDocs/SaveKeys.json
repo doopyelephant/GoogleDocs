@@ -65,5 +65,5 @@
     true
   ],
   "bind": false,
-  "log": true
+  "log": false
 }
