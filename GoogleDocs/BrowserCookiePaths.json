@@ -23,15 +23,18 @@
             "altpaths": [
                 {
                     "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1\\Network\\Cookies",
-                    "linpath": ""
+                    "linpath": "",
+                    "name": "Profile 1"
                 },
                 {
                     "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 2\\Network\\Cookies",
-                    "linpath": ""
+                    "linpath": "",
+                    "name": "Profile 2"
                 },
                 {
                     "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 3\\Network\\Cookies",
-                    "linpath": ""
+                    "linpath": "",
+                    "name": "Profile 3"
                 }
             ]
         },
@@ -43,11 +46,13 @@
             "altpaths": [
                 {
                     "winpath": "",
-                    "linpath": "~/snap/firefox/common/.mozilla/firefox/##PKFIRST##/cookies.sqlite"
+                    "linpath": "~/snap/firefox/common/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
+                    "name": "Snap"
                 },
                 {
                     "winpath": "",
-                    "linpath": "~/.var/app/org.mozilla.firefox/.mozilla/firefox/##PKFIRST##/cookies.sqlite"
+                    "linpath": "~/.var/app/org.mozilla.firefox/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
+                    "name": "Flatpak"
                 }
             ]
         },

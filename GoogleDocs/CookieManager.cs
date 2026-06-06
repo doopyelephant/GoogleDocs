@@ -29,6 +29,7 @@ public static class CookieManager
     private static string PromptCallbackValue = "";
     private static List<string> RealCacheRequests;
     private static List<string> RealCache;
+    private static bool PromptCallbackSephamore = false;
 
 
     private static string GetSysUser()
@@ -339,6 +340,8 @@ public static class CookieManager
 
     public static async void InitCookies(SaveKeys? keys = null)
     {
+        RealCacheRequests = new List<string>();
+        RealCache = new List<string>();
         SaveKeys = JsonParsing.GetSaveKeys();
         if (keys != null)
         {
@@ -411,7 +414,20 @@ public static class CookieManager
         else if(ValidIndexes.Count == 1)
         {
             Console.WriteLine("One valid browser cookie path found, using " + browsers.browsers[ValidIndexes[0]].name);
-            browsercookiepath = OperatingSystem.IsWindows() ? browsers.browsers[ValidIndexes[0]].winpath : browsers.browsers[ValidIndexes[0]].linpath;
+            int alt = 0;
+            if (browsers.browsers[ValidIndexes[0]].altpaths.Count > 0)
+            {
+                alt = await Prompt(new []{"Default"}.ToList().Concat(browsers.browsers[ValidIndexes[0]].altpaths.Select(path => path.name).ToArray()).ToArray(), "Pick a path:");
+            }
+
+            if (alt == 0)
+            {
+                browsercookiepath = OperatingSystem.IsWindows()
+                    ? browsers.browsers[ValidIndexes[0]].winpath
+                    : browsers.browsers[ValidIndexes[0]].linpath;
+            }
+
+
             EvalHostBrowserType();
             return browsercookiepath.GetRealPath();
         }
@@ -452,13 +468,30 @@ public static class CookieManager
      Console.WriteLine("Manual browser cookie path input requested.");
      Console.WriteLine("Waiting for user input...");
     }
-    public static void PickBrowserCallback(string option)
+    public static async void PickBrowserCallback(string option)
     {
         var browsers = JsonParsing.GetBrowserCookiePaths();
         var browser = browsers.browsers.FirstOrDefault(b => b.name == option);
         if(/*browser != null*/true)
         {
-            browsercookiepath = OperatingSystem.IsWindows() ? browser.winpath : browser.linpath;
+            int alt = 0;
+            if (browser.altpaths.Count > 0)
+            {
+                var options = new[] { "Default" }.ToList().Concat(browser.altpaths.Select(path => path.name).ToArray())
+                    .ToArray();
+                foreach (var op in options)
+                {
+                    Console.WriteLine("- " + op);
+                }
+                alt = await Prompt(options, "Pick a path:");
+            }
+
+            if (alt == 0)
+            {
+                browsercookiepath = OperatingSystem.IsWindows()
+                    ? browser.winpath
+                    : browser.linpath;
+            }
             Console.WriteLine("Browser " + browser.name + " selected, using cookie path: " + browsercookiepath);
             mainWindow.SetOpenPickBrowser(false);
             CookieSelectorCallback = true;
@@ -651,26 +684,30 @@ else
         return oldpath;
     }
 
-    public static Task<int> Prompt(string[] options, string q)
+    public static async Task<int> Prompt(string[] options, string q)
     {
         while (CanStartPrompt == false)
         {
-            Task.Delay(100).Wait();
+            await Task.Delay(100);
         }
         mainWindow.SetPromptOptions(options.ToList());
         mainWindow.PickPrompt.IsOpen = true;
-
         CanStartPrompt = false;
-
+        while (PromptCallbackSephamore == false)
+        {
+            await Task.Delay(100);
+        }
+        PromptCallbackSephamore = false;
         string value = PromptCallbackValue;
         int idx  = options.ToList().IndexOf(value);
         mainWindow.PickPrompt.IsOpen = false;
         CanStartPrompt = true;
-        return Task.FromResult(idx);
+        return idx;
     }
 
     public static void PromptCallback(string option)
     {
         PromptCallbackValue = option;
+        PromptCallbackSephamore = true;
     }
 }

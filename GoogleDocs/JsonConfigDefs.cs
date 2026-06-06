@@ -33,6 +33,7 @@ public struct AltPath
 {
     public string winpath;
     public string linpath;
+    public string name;
 }
 
 public struct BrowserCookieConfig
