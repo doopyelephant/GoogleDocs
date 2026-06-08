@@ -4,6 +4,8 @@
     <option name="projectPerEditor">
       <map>
         <entry key="GoogleDocs/MainWindow.axaml" value="GoogleDocs/GoogleDocs.csproj" />
+        <entry key="GoogleDocsInstaller/App.axaml" value="GoogleDocsInstaller/GoogleDocsInstaller.csproj" />
+        <entry key="GoogleDocsInstaller/MainWindow.axaml" value="GoogleDocsInstaller/GoogleDocsInstaller.csproj" />
       </map>
     </option>
   </component>

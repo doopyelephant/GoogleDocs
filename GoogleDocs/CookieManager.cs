@@ -134,12 +134,12 @@ public static class CookieManager
         string profiledir = "";
         if(OperatingSystem.IsWindows())
         {
-         datadir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\GoogleDocs";
+         datadir = $"C:\\Users\\{GetSysUser()}\\AppData\\Local\\GoogleDocs";
        // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
         profiledir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
         }
         else{
-            datadir = "~\\.config\\GoogleDocs";
+            datadir = "~\\.cache\\GoogleDocs";
         }
         if(!Directory.Exists(datadir))
         {
