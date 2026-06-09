@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Rendering.Composition;
@@ -22,6 +24,8 @@ public partial class MainWindow : Window
         Disable(PathSelectWindow);
         Disable(ModeSelectWindow);
         Disable(ConfirmWindow);
+        Disable(ProgressWindow);
+        Disable(FinishWindow);
     }
 
     private async void StartSetup(object? sender, RoutedEventArgs e)
@@ -89,8 +93,40 @@ public partial class MainWindow : Window
 
     }
 
-    private void Confirm(object? sender, RoutedEventArgs e)
+    private async void Confirm(object? sender, RoutedEventArgs e)
     {
+        AnimateOut(ConfirmWindow, ProgressWindow);
+        var info = new ProcessStartInfo("cmd.exe", "/c start pwsh -ExecutionPolicy Bypass -File ./Install.ps1");
+        var process = Process.Start(info);
+        ProgressBar.Value = 5;
+        while (!process.HasExited)
+        {
+            if (process.StandardOutput.Peek() != -1)
+            {
+                string s = "";
+                s += process.StandardOutput.Read();
+                while (process.StandardOutput.Peek() == -1)
+                {
+                    await Task.Delay(10);
+                }
+
+                s += process.StandardOutput.Read();
+                int progress = int.Parse(s);
+                ProgressBar.Value = progress;
+            }
+
+            await Task.Delay(50);
+        }
+    }
+
+    private async void Quit(object? sender, RoutedEventArgs e)
+    {
+
+            if (Application.Current?.ApplicationLifetime is IControlledApplicationLifetime lifetime)
+            {
+                lifetime.Shutdown();
+            }
+
 
     }
 
