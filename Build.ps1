@@ -1,3 +1,7 @@
+param (
+    [string]$Project = "GoogleDocs"
+)
+
 function Test-IsDotNetDll {
     param (
         [Parameter(Mandatory=$true)]
@@ -37,9 +41,7 @@ function Test-IsDotNetDll {
         Write-Error "Could not analyze file: $_"
     }
 }
-param (
-[string]$Project = "GoogleDocs"
-)
+
 Set-Location $Project
 if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     Write-Host ".NET is installed."
@@ -57,7 +59,6 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     else{
         Write-Error "Invalid. Exiting..."
     }
-    Remove-Item -Path "./BuildDeps" -Recurse -Force
     Remove-Item -Path "./Build" -Recurse -Force
     mkdir ./Build
     mkdir ./BuildDeps
@@ -89,16 +90,18 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
         }
     }
     Write-Host "Executing IlRepack /zeropekind /internalize out:../Build/$Project.dll ./$Project.dll $dotnetdlls"
-    IlRepack /zeropekind /internalize /out:../Build/GoogleDocs.dll ./GoogleDocs.dll $dotnetdlls
+    IlRepack /zeropekind /internalize /out:../Build/$Project.dll ./$Project.dll $dotnetdlls
     foreach($dll in $notdotnetdlls)
     {
         Copy-Item $dll "../Build/"
     }
     Set-Location ..
     $jsons = Get-ChildItem -Filter *.json
-    foreach ($json in ($jsons -split '\s+'))
+    $scripts = Get-ChildItem -Filter *.ps1
+    $files = $jsons + $scripts
+    foreach ($file in ($files -split '\s+'))
     {
-    Copy-Item $json "./Build"
+    Copy-Item $file "./Build"
     }
     Copy-Item "./BuildDeps/$Project.exe" "./Build/"
     Remove-Item "./BuildDeps" -R
