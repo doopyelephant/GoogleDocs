@@ -37,8 +37,8 @@
     </StackPanel>
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="ModeSelectWindow">
             <TextBlock Text="Please Select a Mode" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top"></TextBlock>
-            <RadioButton GroupName="Mode" Content="Internal" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True"></RadioButton>
-            <RadioButton GroupName="Mode" Content="External" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
+            <RadioButton GroupName="Mode" Content="Internal" HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="False"></RadioButton>
+            <RadioButton GroupName="Mode" Content="External" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True"></RadioButton>
             <Button HorizontalAlignment="Center" Classes="InstallerBtn" Width="100" Height="30" CornerRadius="15" Margin="0,20,0,0" Click="NextMode">
                 <TextBlock Text="Next" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Bottom"></TextBlock>
             </Button>
