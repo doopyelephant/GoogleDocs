@@ -65,5 +65,6 @@
     true
   ],
   "bind": false,
-  "log": false
+  "log": false,
+  "usedynamicpaths": false
 }

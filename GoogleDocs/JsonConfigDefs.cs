@@ -64,4 +64,5 @@ public struct SaveKeys
     public List<bool> mask;
     public bool bind;
     public bool log;
+    public bool usedynamicpaths;
 }

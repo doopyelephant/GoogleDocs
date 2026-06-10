@@ -148,15 +148,18 @@ public static class CookieManager
         if(OperatingSystem.IsWindows())
         {
          datadir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\GoogleDocs";
-       // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
+        profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
       // profiledir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release"; hardcoded browser path YOLO
         }
         else{
             datadir = "~\\.config\\GoogleDocs";
         }
-        profiledir = await GetBrowserCookiePath();
-            profiledir = profiledir.SubstringBeforeLast("\\");
 
+        if (SaveKeys.usedynamicpaths)
+        {
+            profiledir = await GetBrowserCookiePath();
+            profiledir = profiledir.SubstringBeforeLast("\\");
+        }
 
         if(!Directory.Exists(datadir))
         {
