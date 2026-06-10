@@ -53,11 +53,12 @@
             </Button>
         </StackPanel>
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="ProgressWindow">
-           <ProgressBar HorizontalAlignment="Center" VerticalAlignment="Center" Width="350" Height="8" Name="ProgressBar" Minimum="0" Maximum="100" Value="1"></ProgressBar>
+           <ProgressBar HorizontalAlignment="Center" VerticalAlignment="Center" Width="350" Height="8" Name="ProgressBar" Minimum="0" Maximum="100" Value="1" Background="Gray" Foreground="DodgerBlue"></ProgressBar>
         </StackPanel>
 
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="FinishWindow">
-            <Button HorizontalAlignment="Center" Classes="InstallerBtn" Width="150" Height="60" CornerRadius="30" Margin="0,30,0,0" Click="Quit">
+            <TextBlock Text="Finished!" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top"></TextBlock>
+            <Button HorizontalAlignment="Center" Classes="InstallerBtn" Width="120" Height="60" CornerRadius="30" Margin="0,30,0,0" Click="Quit">
                 <TextBlock Text="Exit" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
             </Button>
         </StackPanel>

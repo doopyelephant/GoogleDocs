@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
@@ -93,41 +94,48 @@ public partial class MainWindow : Window
 
     }
 
-    private async void Confirm(object? sender, RoutedEventArgs e)
+    private void ProgressThread()
     {
-        AnimateOut(ConfirmWindow, ProgressWindow);
-        var info = new ProcessStartInfo("cmd.exe", "/c start pwsh -ExecutionPolicy Bypass -File ./Install.ps1");
+        var info = new ProcessStartInfo("pwsh.exe", "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ./Install.ps1");
+        info.RedirectStandardOutput = true;
+        info.CreateNoWindow = true;
         var process = Process.Start(info);
-        ProgressBar.Value = 5;
+        Dispatcher.UIThread.Post(() =>
+        {
+            ProgressBar.Value = 5;
+        });
         while (!process.HasExited)
         {
             if (process.StandardOutput.Peek() != -1)
             {
-                string s = "";
-                s += process.StandardOutput.Read();
-                while (process.StandardOutput.Peek() == -1)
-                {
-                    await Task.Delay(10);
-                }
+                string s = process.StandardOutput.ReadLine();
 
-                s += process.StandardOutput.Read();
+                Console.WriteLine(s);
                 int progress = int.Parse(s);
-                ProgressBar.Value = progress;
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ProgressBar.Value = progress;
+                });
             }
 
-            await Task.Delay(50);
+            Thread.Sleep(50);
         }
+
+        Dispatcher.UIThread.Post(() => { AnimateOut(ProgressWindow, FinishWindow); });
+    }
+    private async void Confirm(object? sender, RoutedEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() => { AnimateOut(ConfirmWindow, ProgressWindow); });
+        var thread = new Thread(ProgressThread);
+        thread.Start();
     }
 
     private async void Quit(object? sender, RoutedEventArgs e)
     {
-
             if (Application.Current?.ApplicationLifetime is IControlledApplicationLifetime lifetime)
             {
                 lifetime.Shutdown();
             }
-
-
     }
 
     private void AddOffset(Visual item, Vector3 offset)
