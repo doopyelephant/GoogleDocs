@@ -37,6 +37,15 @@ public static class Utils
         }
         return str.Substring(0, index);
     }
+    public static string SubstringBeforeLast(this string str, string before)
+    {
+        int index = str.LastIndexOf(before, StringComparison.Ordinal);
+        if (index == -1)
+        {
+            return "";
+        }
+        return str.Substring(0, index);
+    }
     public static string ReplaceFirst(this string str, string search, string replace)
     {
         int index = str.IndexOf(search, StringComparison.Ordinal);

@@ -8,6 +8,10 @@
         {
             "key": "##PKFIRST##",
             "name": "PKFIRST"
+        },
+        {
+            "key": "##FIREFOXPROFILE##",
+            "name": "FIREFOXPROFILE"
         }
     ],
     "browsers": [
@@ -15,79 +19,105 @@
             "name": "Chrome",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": [
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 1"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 2\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 2"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 3\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 3"
+                }
+            ]
         },
         {
             "name": "Firefox",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\##PKFIRST##\\cookies.sqlite",
             "linpath": "~/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
-            "type": "Firefox"
-        },
-         {
-            "name": "Firefox Snap",
-            "winpath": "",
-            "linpath": "~/snap/firefox/common/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
-            "type": "Firefox"
-        },
-         {
-            "name": "Firefox Flatpak",
-            "winpath": "",
-            "linpath": "~/.var/app/org.mozilla.firefox/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
-            "type": "Firefox"
+            "type": "Firefox",
+            "altpaths": [
+                {
+                    "winpath": "",
+                    "linpath": "~/snap/firefox/common/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
+                    "name": "Snap"
+                },
+                {
+                    "winpath": "",
+                    "linpath": "~/.var/app/org.mozilla.firefox/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
+                    "name": "Flatpak"
+                }
+            ]
         },
         {
             "name": "Zen",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\zen\\Profiles\\##PKFIRST##\\cookies.sqlite",
             "linpath": "",
-            "type": "Firefox"
+            "type": "Firefox",
+            "altpaths": []
         },
         {
             "name": "Edge",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Network\\Cookies",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Brave",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Opera",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Arc",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Chromium",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Opera GX",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         },
         {
             "name": "Tor",
             "winpath": "",
             "linpath": "",
-            "type": "Firefox"
+            "type": "Firefox",
+            "altpaths": []
         },
         {
             "name": "Chrome",
             "winpath": "",
             "linpath": "",
-            "type": "Chromium"
+            "type": "Chromium",
+            "altpaths": []
         }
     ]
 }

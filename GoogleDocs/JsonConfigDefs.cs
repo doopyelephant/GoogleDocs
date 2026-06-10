@@ -29,12 +29,20 @@ public struct BrowserCookieKey
     public string name;
 }
 
+public struct AltPath
+{
+    public string winpath;
+    public string linpath;
+    public string name;
+}
+
 public struct BrowserCookieConfig
 {
     public string name;
     public string winpath;
     public string linpath;
     public string type;
+    public List<AltPath> altpaths;
 }
 public struct BrowserCookiePaths
 {
@@ -56,4 +64,5 @@ public struct SaveKeys
     public List<bool> mask;
     public bool bind;
     public bool log;
+    public bool usedynamicpaths;
 }

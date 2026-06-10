@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using Newtonsoft.Json;
 
 namespace GoogleDocs;
@@ -24,6 +25,12 @@ public static class CookieManager
     private static bool CookieSelectorCallback = false;
     private static bool alphabetical = true;
     private static BrowserType HostBrowserType;
+    private static bool CanStartPrompt = true;
+    private static string PromptCallbackValue = "";
+    private static List<string> RealCacheRequests;
+    private static List<string> RealCache;
+    private static bool PromptCallbackSephamore = false;
+
 
     private static string GetSysUser()
     {
@@ -97,53 +104,65 @@ public static class CookieManager
         throw new FileNotFoundException($"Could not resolve executable '{fileName}' from PATH.");
     }
 
-    private static string ExecuteScript(string fileName, params string[] arguments)
+   private static async Task<string> ExecuteScript(string fileName, params string[] arguments)
+{
+    using var process = new Process();
+    process.StartInfo = new ProcessStartInfo
     {
-        Process process = new Process();
-        process.StartInfo.FileName = ResolveExecutable(fileName);
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-        process.StartInfo.CreateNoWindow = true;
+        FileName = ResolveExecutable(fileName),
+        UseShellExecute = false,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        CreateNoWindow = true
+    };
 
-        foreach (var argument in arguments)
-        {
-            process.StartInfo.ArgumentList.Add(argument);
-        }
+    foreach (var argument in arguments)
+        process.StartInfo.ArgumentList.Add(argument);
 
-        process.Start();
+    Console.WriteLine("Executing: " + process.StartInfo.FileName + " " + string.Join(" ", arguments));
 
-        string output = process.StandardOutput.ReadToEnd();
-        string error = process.StandardError.ReadToEnd();
-        process.WaitForExit();
-        if (!string.IsNullOrWhiteSpace(error))
-        {
-            output += (output.Length > 0 ? Environment.NewLine : string.Empty) + error;
-        }
+    process.Start();
 
-        return output;
-    }
+    var stdoutTask = process.StandardOutput.ReadToEndAsync();
+    var stderrTask = process.StandardError.ReadToEndAsync();
+
+    await Task.WhenAll(stdoutTask, stderrTask, process.WaitForExitAsync());
+
+    var output = await stdoutTask;
+    var error = await stderrTask;
+
+    if (!string.IsNullOrWhiteSpace(error))
+        output += (output.Length > 0 ? Environment.NewLine : string.Empty) + error;
+
+    return output;
+}
     public static void OvverideAlphabetical(bool val)
     {
         alphabetical = val;
     }
 
-    private static BrowserCookieJar GetCookies(string hostfilter = "")
+    private static async Task<BrowserCookieJar> GetCookies(string hostfilter = "")
     {
         string datadir = "";
         string profiledir = "";
         if(OperatingSystem.IsWindows())
         {
          datadir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\GoogleDocs";
-       // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
-        profiledir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
+        profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
+      // profiledir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release"; hardcoded browser path YOLO
         }
         else{
             datadir = "~\\.config\\GoogleDocs";
         }
+
+        if (SaveKeys.usedynamicpaths)
+        {
+            profiledir = await GetBrowserCookiePath();
+            profiledir = profiledir.SubstringBeforeLast("\\");
+        }
+
         if(!Directory.Exists(datadir))
         {
-            
         Console.WriteLine(Directory.CreateDirectory(datadir));
         }
         /*//string cookiepath =
@@ -176,23 +195,66 @@ public static class CookieManager
 //ExecuteScript("copy",Path.Combine(profiledir, "key4.db").AddQuotes() + " " + Path.Combine(datadir, "key4.db").AddQuotes());
 //ExecuteScript("copy",Path.Combine(profiledir, "cookies.sqlite-wal").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-wal").AddQuotes());
 //ExecuteScript("copy",Path.Combine(profiledir, "cookies.sqlite-shm").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite-shm").AddQuotes());
-  File.Copy(Path.Combine(profiledir, "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
-        File.Copy(Path.Combine(profiledir, "key4.db"), Path.Combine(datadir, "key4.db"), true);
-        File.Copy(Path.Combine(profiledir, "cookies.sqlite-wal"), Path.Combine(datadir,"cookies.sqlite-wal"), true);
-        File.Copy(Path.Combine(profiledir, "cookies.sqlite-shm"), Path.Combine(datadir,"cookies.sqlite-shm"), true);
+        foreach (var file in Directory.GetFiles(datadir))
+        {
+            File.Delete(file);
+        }
+        Console.WriteLine("Deleting old cookie files.");
+        if (HostBrowserType == BrowserType.Firefox)
+        {
+            File.Copy(Path.Combine(profiledir, "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
+            File.Copy(Path.Combine(profiledir, "key4.db"), Path.Combine(datadir, "key4.db"), true);
+            File.Copy(Path.Combine(profiledir, "cookies.sqlite-wal"), Path.Combine(datadir, "cookies.sqlite-wal"),
+                true);
+            File.Copy(Path.Combine(profiledir, "cookies.sqlite-shm"), Path.Combine(datadir, "cookies.sqlite-shm"),
+                true);
+        }
+        else
+        {
+            File.Copy(Path.Combine(profiledir, "Cookies"), Path.Combine(datadir, "Cookies"), true);
+        }
+
         Console.WriteLine("Browser cookie files copied to data directory.");
        
-        string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + "\\cookies.sqlite")/*.AddQuotes()*/, hostfilter };
-        string json = ExecuteScript("python",pyargs);
-                                    Console.WriteLine("PY OUT: " + json);
+        string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + (HostBrowserType == BrowserType.Firefox ? "\\cookies.sqlite" : "\\Cookies"))/*.AddQuotes()*/, hostfilter };
+        string json = await ExecuteScript("python",pyargs);
+                              //      Console.WriteLine("PY OUT: " + json);
         json = "[" + json.SubstringAfter("[");
-        json = json.SubstringBefore("]") + "]";
+        json = json.RemoveAfterBrackets();
+
+        // json = json.SubstringBefore("]") + "]";
       //  ExecuteScript("del " + cookiepath + "");
         Console.WriteLine("JSON: " + json.Substring(0, 500) + "...");
+     // Console.WriteLine("JSON: " + json);
         var cookies = JsonConvert.DeserializeObject<List<BrowserCookie>>(json);
         var cookiejar = new BrowserCookieJar();
         cookiejar.cookies = cookies;
         return cookiejar;
+    }
+
+    public static string RemoveAfterBrackets(this string str)
+    {
+        int opencnt = 0;
+        int closecnt = 0;
+        int idx = 0;
+        foreach (var c in str)
+        {
+            if (c == '[')
+            {
+                opencnt++;
+            }
+            else if (c == ']')
+            {
+                closecnt++;
+            }
+            if(opencnt > 0 && closecnt > 0 && opencnt == closecnt)
+            {
+                return str.Substring(0, idx + 1);
+            }
+
+            idx++;
+        }
+        return str;
     }
 
     public static string GetCookie(bool forcestay = false)
@@ -279,8 +341,10 @@ public static class CookieManager
         return await NetworkManager.TestEndpoint(url);
     }
 
-    public static void InitCookies(SaveKeys? keys = null)
+    public static async void InitCookies(SaveKeys? keys = null)
     {
+        RealCacheRequests = new List<string>();
+        RealCache = new List<string>();
         SaveKeys = JsonParsing.GetSaveKeys();
         if (keys != null)
         {
@@ -300,7 +364,7 @@ public static class CookieManager
         }
         else
         {
-            var cookiejar = GetCookies();
+            var cookiejar = await GetCookies();
             authcookie = FilterForGoogleDocsCookies(cookiejar);
         }
     }
@@ -346,23 +410,39 @@ public static class CookieManager
             {
                 await Task.Delay(100);
             }
+            CookieSelectorCallback = false;
             EvalHostBrowserType();
             return browsercookiepath.GetRealPath();
         }
         else if(ValidIndexes.Count == 1)
         {
             Console.WriteLine("One valid browser cookie path found, using " + browsers.browsers[ValidIndexes[0]].name);
-            browsercookiepath = OperatingSystem.IsWindows() ? browsers.browsers[ValidIndexes[0]].winpath : browsers.browsers[ValidIndexes[0]].linpath;
+            int alt = 0;
+            if (browsers.browsers[ValidIndexes[0]].altpaths.Count > 0)
+            {
+                alt = await Prompt(new []{"Default"}.ToList().Concat(browsers.browsers[ValidIndexes[0]].altpaths.Select(path => path.name).ToArray()).ToArray(), "Pick a path:");
+            }
+
+            if (alt == 0)
+            {
+                browsercookiepath = OperatingSystem.IsWindows()
+                    ? browsers.browsers[ValidIndexes[0]].winpath
+                    : browsers.browsers[ValidIndexes[0]].linpath;
+            }
+
+
             EvalHostBrowserType();
             return browsercookiepath.GetRealPath();
         }
         else
         {
+            Console.WriteLine("Multiple valid browser cookie paths found, please select one:");
             ShowBrowserSelector(ValidIndexes.ConvertAll(i => browsers.browsers[i].name));
             while(!CookieSelectorCallback)
             {
                 await Task.Delay(100);
             }
+            CookieSelectorCallback = false;
             EvalHostBrowserType();
 
             return browsercookiepath.GetRealPath();
@@ -391,20 +471,42 @@ public static class CookieManager
      Console.WriteLine("Manual browser cookie path input requested.");
      Console.WriteLine("Waiting for user input...");
     }
-    public static void PickBrowserCallback(string option)
+    public static async void PickBrowserCallback(string option)
     {
         var browsers = JsonParsing.GetBrowserCookiePaths();
         var browser = browsers.browsers.FirstOrDefault(b => b.name == option);
         if(/*browser != null*/true)
         {
-            browsercookiepath = OperatingSystem.IsWindows() ? browser.winpath : browser.linpath;
+            int alt = 0;
+            if (browser.altpaths.Count > 0)
+            {
+                var options = new[] { "Default" }.ToList().Concat(browser.altpaths.Select(path => path.name).ToArray())
+                    .ToArray();
+                foreach (var op in options)
+                {
+                    Console.WriteLine("- " + op);
+                }
+                alt = await Prompt(options, "Pick a path:");
+            }
+
+            if (alt == 0)
+            {
+                browsercookiepath = OperatingSystem.IsWindows()
+                    ? browser.winpath
+                    : browser.linpath;
+            }
             Console.WriteLine("Browser " + browser.name + " selected, using cookie path: " + browsercookiepath);
+            mainWindow.SetOpenPickBrowser(false);
             CookieSelectorCallback = true;
         }
     }
-    private static void ShowBrowserSelector(List<String> list)
+    private static void ShowBrowserSelector(List<string> list)
     {
-        mainWindow.SetPickOptions(list);
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            mainWindow.SetPickOptions(list);      // populate first
+            mainWindow.SetOpenPickBrowser(true);  // then open
+        });
     }
 
     private static string FilterForGoogleDocsCookies(BrowserCookieJar browserCookieJar)
@@ -548,6 +650,10 @@ else
 
         public static string GetRealPath(this string path)
     {
+        if (RealCacheRequests.Contains(path))
+        {
+            return RealCache[RealCacheRequests.IndexOf(path)];
+        }
         var oldpath = path;
         var browsercookiepathconfig = JsonParsing.GetBrowserCookiePaths();
         foreach(var key in browsercookiepathconfig.keys)
@@ -562,13 +668,49 @@ else
                         oldpath = oldpath.ReplaceFirst(substitute,
                             Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
                     }
-
                     break;
                 case "SYSUSER":
                 oldpath = oldpath.Replace(substitute, Environment.UserName);
                 break;
+                case "FIREFOXPROFILE":
+                        while (oldpath.Contains(substitute))
+                        {
+                            //replace all of the substitutes in the path with the first child
+                            oldpath = oldpath.ReplaceFirst(substitute,
+                                Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
+                        }
+                    break;
             }
         }
+        RealCacheRequests.Add(path);
+        RealCache.Add(oldpath);
         return oldpath;
+    }
+
+    public static async Task<int> Prompt(string[] options, string q)
+    {
+        while (CanStartPrompt == false)
+        {
+            await Task.Delay(100);
+        }
+        mainWindow.SetPromptOptions(options.ToList());
+        mainWindow.PickPrompt.IsOpen = true;
+        CanStartPrompt = false;
+        while (PromptCallbackSephamore == false)
+        {
+            await Task.Delay(100);
+        }
+        PromptCallbackSephamore = false;
+        string value = PromptCallbackValue;
+        int idx  = options.ToList().IndexOf(value);
+        mainWindow.PickPrompt.IsOpen = false;
+        CanStartPrompt = true;
+        return idx;
+    }
+
+    public static void PromptCallback(string option)
+    {
+        PromptCallbackValue = option;
+        PromptCallbackSephamore = true;
     }
 }
