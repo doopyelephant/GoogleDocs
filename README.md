@@ -26,3 +26,7 @@ An unofficial Google Doc's Client built using Avalonia in C# that can open Googl
 - Zen "works" but sometimes decides it doesnt want to work(very unreliable)(I have 0 clue why this happens)
 ## AI Disclaimer
 I use Github Copilot to write the odd snippet or to bounce ideas off of (large % of commit messages are AI Generated), but 95% of code is human written
+
+## Credits
+- browser_cookies.py comes from [akkana/scripts](https://github.com/akkana/scripts)
+- some RE was done by [James Somers](https://features.jsomers.net/how-i-reverse-engineered-google-docs/)
