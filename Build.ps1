@@ -1,3 +1,7 @@
+param (
+    [string]$Project = "GoogleDocs"
+)
+
 function Test-IsDotNetDll {
     param (
         [Parameter(Mandatory=$true)]
@@ -38,6 +42,7 @@ function Test-IsDotNetDll {
     }
 }
 
+Set-Location $Project
 if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     Write-Host ".NET is installed."
     $CC = Read-Host -Prompt "Cross Compile? [y/n] (If running on current machine say n)"
@@ -54,7 +59,6 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     else{
         Write-Error "Invalid. Exiting..."
     }
-    Remove-Item -Path "./BuildDeps" -Recurse -Force
     Remove-Item -Path "./Build" -Recurse -Force
     mkdir ./Build
     mkdir ./BuildDeps
@@ -67,7 +71,7 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
         $isdotnet = Test-IsDotNetDll $dll
         Write-Host $isdotnet
         Write-Host $isdotnet.Type
-        if($isdotnet.Type -match ".NET" -and !($dll -match "GoogleDocs") `
+        if($isdotnet.Type -match ".NET" -and !($dll -match $Project) `
     -and !($dll -match "^System\.") `
     -and !($dll -match "^Microsoft\.") `
     -and !($dll -match "^mscorlib") `
@@ -80,25 +84,28 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
         Write-Host ".NET Assembly found"
         $dotnetdlls += "./$dll"
         }
-        elseif(!($dll -match "GoogleDocs")){
+        elseif(!($dll -match $Project)){
             Write-Host "Assembly is not .NET"
             $notdotnetdlls += "./$dll"
         }
     }
-    Write-Host "Executing IlRepack /zeropekind /internalize out:../Build/GoogleDocs.dll ./GoogleDocs.dll $dotnetdlls"
-    IlRepack /zeropekind /internalize /out:../Build/GoogleDocs.dll ./GoogleDocs.dll $dotnetdlls
+    Write-Host "Executing IlRepack /zeropekind /internalize out:../Build/$Project.dll ./$Project.dll $dotnetdlls"
+    IlRepack /zeropekind /internalize /out:../Build/$Project.dll ./$Project.dll $dotnetdlls
     foreach($dll in $notdotnetdlls)
     {
         Copy-Item $dll "../Build/"
     }
     Set-Location ..
     $jsons = Get-ChildItem -Filter *.json
-    foreach ($json in ($jsons -split '\s+'))
+    $scripts = Get-ChildItem -Filter *.ps1
+    $files = $jsons + $scripts
+    foreach ($file in ($files -split '\s+'))
     {
-    Copy-Item $json "./Build"
+    Copy-Item $file "./Build"
     }
-    Copy-Item "./BuildDeps/GoogleDocs.exe" "./Build/"
+    Copy-Item "./BuildDeps/$Project.exe" "./Build/"
     Remove-Item "./BuildDeps" -R
 } else {
     Write-Error ".NET is NOT installed. Exiting..."
 }
+Set-Location ".."

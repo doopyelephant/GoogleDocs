@@ -1,0 +1,66 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="300"
+        x:Class="GoogleDocsInstaller.MainWindow"
+        Title="GoogleDocsInstaller" Width="500" Height="300" MaxHeight="300" MaxWidth="500" MinHeight="300" MinWidth="500">
+    <Window.Styles>
+        <Style Selector="Button.InstallerBtn">
+            <Setter Property="Background" Value="DodgerBlue" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button.InstallerBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#57a8f7" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+    </Window.Styles>
+    <Panel>
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="StartingWindow">
+        <TextBlock Text="Welcome to an unofficial" FontSize="14" HorizontalAlignment="Center"></TextBlock>
+        <TextBlock Text="Google Docs" FontSize="50" HorizontalAlignment="Center"></TextBlock>
+        <TextBlock Text="Client" FontSize="14" HorizontalAlignment="Center"></TextBlock>
+        <Button HorizontalAlignment="Center" Classes="InstallerBtn" Width="100" Height="50" CornerRadius="25" Margin="0,25,0,0" Click="StartSetup">
+            <TextBlock Text="Start" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+        </Button>
+    </StackPanel>
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="PathSelectWindow">
+        <TextBlock Text="Please Select a Drive" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top"></TextBlock>
+        <RadioButton GroupName="Drive" Content="C:\\" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True"></RadioButton>
+        <RadioButton GroupName="Drive" Content="D:\\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
+        <RadioButton GroupName="Drive" Content="E:\\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
+        <RadioButton GroupName="Drive" Content="F:\\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
+        <RadioButton GroupName="Drive" Content="G:\\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
+        <Button HorizontalAlignment="Center" Classes="InstallerBtn" Width="100" Height="30" CornerRadius="15" Margin="0,20,0,0" Click="NextPath">
+            <TextBlock Text="Next" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Bottom"></TextBlock>
+        </Button>
+    </StackPanel>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="ModeSelectWindow">
+            <TextBlock Text="Please Select a Mode" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top"></TextBlock>
+            <RadioButton GroupName="Mode" Content="Internal" HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="False"></RadioButton>
+            <RadioButton GroupName="Mode" Content="External" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True"></RadioButton>
+            <Button HorizontalAlignment="Center" Classes="InstallerBtn" Width="100" Height="30" CornerRadius="15" Margin="0,20,0,0" Click="NextMode">
+                <TextBlock Text="Next" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Bottom"></TextBlock>
+            </Button>
+        </StackPanel>
+
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="ConfirmWindow">
+            <TextBlock Text="Proceed to Install?" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top"></TextBlock>
+            <TextBlock Text="Drive: C:\\" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,15,0,5" Name="DriveConfirm"></TextBlock>
+            <TextBlock Text="Mode: Internal" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,5,0,15" Name="ModeConfirm"></TextBlock>
+            <Button HorizontalAlignment="Center" Classes="InstallerBtn" Width="150" Height="60" CornerRadius="30" Margin="0,30,0,0" Click="Confirm">
+                <TextBlock Text="Confirm" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+            </Button>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="ProgressWindow">
+           <ProgressBar HorizontalAlignment="Center" VerticalAlignment="Center" Width="350" Height="8" Name="ProgressBar" Minimum="0" Maximum="100" Value="1" Background="Gray" Foreground="DodgerBlue"></ProgressBar>
+        </StackPanel>
+
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="FinishWindow">
+            <TextBlock Text="Finished!" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top"></TextBlock>
+            <Button HorizontalAlignment="Center" Classes="InstallerBtn" Width="120" Height="60" CornerRadius="30" Margin="0,30,0,0" Click="Quit">
+                <TextBlock Text="Exit" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+            </Button>
+        </StackPanel>
+    </Panel>
+</Window>
