@@ -26,11 +26,11 @@
     </StackPanel>
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Name="PathSelectWindow">
         <TextBlock Text="Please Select a Drive" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top"></TextBlock>
-        <RadioButton GroupName="Drive" Content="C:\\" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True"></RadioButton>
-        <RadioButton GroupName="Drive" Content="D:\\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
-        <RadioButton GroupName="Drive" Content="E:\\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
-        <RadioButton GroupName="Drive" Content="F:\\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
-        <RadioButton GroupName="Drive" Content="G:\\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
+        <RadioButton GroupName="Drive" Content="C:\" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True"></RadioButton>
+        <RadioButton GroupName="Drive" Content="D:\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
+        <RadioButton GroupName="Drive" Content="E:\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
+        <RadioButton GroupName="Drive" Content="F:\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
+        <RadioButton GroupName="Drive" Content="G:\" HorizontalAlignment="Center" VerticalAlignment="Center"></RadioButton>
         <Button HorizontalAlignment="Center" Classes="InstallerBtn" Width="100" Height="30" CornerRadius="15" Margin="0,20,0,0" Click="NextPath">
             <TextBlock Text="Next" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Bottom"></TextBlock>
         </Button>

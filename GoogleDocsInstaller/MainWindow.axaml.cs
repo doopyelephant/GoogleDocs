@@ -19,6 +19,8 @@ namespace GoogleDocsInstaller;
 
 public partial class MainWindow : Window
 {
+    public string drive = "";
+    public string mode = "";
     public MainWindow()
     {
         InitializeComponent();
@@ -65,8 +67,8 @@ public partial class MainWindow : Window
     }
     private void NextMode(object? sender, RoutedEventArgs e)
     {
-        string drive = "";
-        string mode = "";
+         drive = "";
+         mode = "";
         foreach (var radio in PathSelectWindow.Children)
         {
             if (radio is RadioButton rb)
@@ -96,7 +98,7 @@ public partial class MainWindow : Window
 
     private void ProgressThread()
     {
-        var info = new ProcessStartInfo("pwsh.exe", "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ./Install.ps1");
+        var info = new ProcessStartInfo("pwsh.exe", $"-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ./Install.ps1 {drive} {mode}");
         info.RedirectStandardOutput = true;
         info.CreateNoWindow = true;
         var process = Process.Start(info);
