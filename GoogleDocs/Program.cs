@@ -192,7 +192,7 @@ CleanUp = new List<Thread>();
         WriteLine("Saved.");
         WriteLine("Comparing with generated cookie...");
         CookieManager.InitCookies(SaveKeys);
-        var generatedcookie = CookieManager.GetCookie(true);
+        var generatedcookie = await CookieManager.GetCookie(true);
         if (generatedcookie == cookie)
         {
             WriteLine("SUCCESS: Cookie is Identical.");

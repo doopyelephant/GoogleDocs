@@ -65,4 +65,5 @@ public struct SaveKeys
     public bool bind;
     public bool log;
     public bool usedynamicpaths;
+    public string staticpath;
 }

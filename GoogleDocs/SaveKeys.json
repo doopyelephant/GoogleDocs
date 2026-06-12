@@ -66,5 +66,6 @@
   ],
   "bind": false,
   "log": false,
-  "usedynamicpaths": false
+  "usedynamicpaths": false,
+  "staticpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release"
 }

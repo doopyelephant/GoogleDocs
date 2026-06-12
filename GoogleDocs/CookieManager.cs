@@ -149,11 +149,11 @@ public static class CookieManager
         {
          datadir = $"C:\\Users\\{GetSysUser()}\\AppData\\Local\\GoogleDocs";
        // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
-        profiledir = $"C:\\Users\\{GetSysUser()}\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release";
         }
         else{
             datadir = "~\\.cache\\GoogleDocs";
         }
+        profiledir = SaveKeys.staticpath.GetRealPath();
 
         if (SaveKeys.usedynamicpaths)
         {
@@ -257,19 +257,20 @@ public static class CookieManager
         return str;
     }
 
-    public static string GetCookie(bool forcestay = false)
+    public static async Task<string> GetCookie(bool forcestay = false)
     {
         if(forcestay)
         {
-            InitCookies();
+            await InitCookies();
         }
         else{
         if (!hasinit)
         {
             hasinit = true;
-            InitCookies();
+            await InitCookies();
         }
         }
+        Console.WriteLine("GET COOKIE: " + authcookie);
         if (alphabetical)
         return AlphabeticallySortCookies(authcookie);
         else
@@ -341,7 +342,7 @@ public static class CookieManager
         return await NetworkManager.TestEndpoint(url);
     }
 
-    public static async void InitCookies(SaveKeys? keys = null)
+    public static async Task InitCookies(SaveKeys? keys = null)
     {
         RealCacheRequests = new List<string>();
         RealCache = new List<string>();
@@ -515,6 +516,7 @@ public static class CookieManager
         string tmpauthcookie = "";
         List<string> added = new List<string>();
         List<string> compassvalues = new List<string>();
+
         foreach (var cookie in browserCookieJar.cookies)
         {
             if (cookie.host == ".google.com" || cookie.host == ".docs.google.com" || cookie.host == "accounts.google.com" || cookie.host == "docs.google.com")
@@ -607,6 +609,7 @@ else
         Console.WriteLine($"DEBUG {cookie.name} @ {cookie.host} = {cookie.value}");
     }
 }
+
         return tmpauthcookie;
         }
         private static string AlphabeticallySortCookies(string cookie)

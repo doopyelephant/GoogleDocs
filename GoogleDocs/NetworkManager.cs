@@ -52,7 +52,7 @@ public static class NetworkManager
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
 
         // Build cookies for this exact URL from WebView2 cookie jar
-        var rawCookie = CookieManager.GetCookie();
+        var rawCookie = await CookieManager.GetCookie();
         var sanitizedCookie = SanitizeCookieHeader(rawCookie);
         if (string.IsNullOrWhiteSpace(sanitizedCookie))
         {
@@ -178,7 +178,7 @@ if(headers.Contains("reporting-endpoints"))
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
 
         // Build cookies for this exact URL from WebView2 cookie jar
-        var rawCookie = CookieManager.GetCookie();
+        var rawCookie = await CookieManager.GetCookie();
         var sanitizedCookie = SanitizeCookieHeader(rawCookie);
         if (string.IsNullOrWhiteSpace(sanitizedCookie))
         {
