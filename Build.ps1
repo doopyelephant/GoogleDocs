@@ -98,7 +98,8 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     Set-Location ..
     $jsons = Get-ChildItem -Filter *.json
     $scripts = Get-ChildItem -Filter *.ps1
-    $files = $jsons + $scripts
+    $pys = Get-ChildItem -Filter *.py
+    $files = $jsons + $scripts + $pys
     foreach ($file in ($files -split '\s+'))
     {
     Copy-Item $file "./Build"

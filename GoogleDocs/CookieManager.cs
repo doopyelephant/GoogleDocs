@@ -16,7 +16,7 @@ public enum BrowserType
 public static class CookieManager
 {
     public static MainWindow mainWindow;
-    private static string cookiescript = "../../../browser_cookies.py";
+    private static string cookiescript = $"{AppDomain.CurrentDomain.BaseDirectory}/browser_cookies.py";
     private static string authcookie = "";
     private static bool hasinit = false;
     private static SaveKeys SaveKeys;
@@ -224,7 +224,7 @@ public static class CookieManager
 
         // json = json.SubstringBefore("]") + "]";
       //  ExecuteScript("del " + cookiepath + "");
-        Console.WriteLine("JSON: " + json.Substring(0, 500) + "...");
+//        Console.WriteLine("JSON: " + json.Substring(0, 500) + "...");
      // Console.WriteLine("JSON: " + json);
         var cookies = JsonConvert.DeserializeObject<List<BrowserCookie>>(json);
         var cookiejar = new BrowserCookieJar();
