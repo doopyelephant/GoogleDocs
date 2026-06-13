@@ -3,14 +3,33 @@
     [string]$Mode = "External"
 )
 $ProgressPreference = 'SilentlyContinue'
+if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
+    Start-Process powershell.exe -ArgumentList $arguments -Verb RunAs
+    Exit
+}
+$serverName = "GoogleDocsInstallerPipe"
+
+
+# Create client stream
+$client = New-Object System.IO.Pipes.NamedPipeClientStream(".", $serverName, [System.IO.Pipes.PipeDirection]::Out)
+
+Write-Host "Connecting to pipe '$serverName'..."
+
+# Connect with a 5-second timeout (in milliseconds)
+$client.Connect(5000)
+
+Write-Host "Connected!"
+$writer = New-Object System.IO.StreamWriter($client)
+mkdir "$env:USERPROFILE\AppData\Local\GoogleDocs"
 $AppData = "$env:USERPROFILE\AppData\Local\GoogleDocs"
 $Release = "$AppData\Release.zip"
 Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.1.0-alpha/GoogleDocs-windows-x64.zip" -OutFile "$Release"
-Write-Host "60"
+$writer.WriteLine("Progress: 60")
 Expand-Archive -Path $Release -DestinationPath "$AppData\Release"
-Write-Host "70"
+$writer.WriteLine("Progress: 70")
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/GoogleDocs/DocsLogo.ico" -OutFile "$AppData\Release\GoogleDocs\icon.ico"
-Write-Host "80"
+$writer.WriteLine("Progress: 80")
 Set-Location "$AppData\Release\GoogleDocs"
 $ExePath = "$AppData\Release\GoogleDocs\GoogleDocs.exe"
 $IcoPath = "$AppData\Release\GoogleDocs\icon.ico"
@@ -20,7 +39,7 @@ $Shortcut.TargetPath = $ExePath
 $Shortcut.WorkingDirectory = "$AppData\Release\GoogleDocs\"
 $Shortcut.IconLocation = "$IcoPath, 0"
 $Shortcut.Save()
-Write-Host "80"
+$writer.WriteLine("Progress: 90")
 # Define application details
 $AppName = "Google Docs"
 $RegistryKeyName = "GoogleDocs" # Unique key name for the registry
@@ -37,6 +56,6 @@ New-ItemProperty -Path $RegistryPath -Name "DisplayVersion" -Value $DisplayVersi
 New-ItemProperty -Path $RegistryPath -Name "Publisher" -Value $Publisher -PropertyType String -Force | Out-Null
 New-ItemProperty -Path $RegistryPath -Name "InstallLocation" -Value $InstallLocation -PropertyType String -Force | Out-Null
 New-ItemProperty -Path $RegistryPath -Name "UninstallString" -Value $UninstallCommand -PropertyType String -Force | Out-Null
-Write-Host "90"
+$writer.WriteLine("Progress: 95")
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/GoogleDocs/Uninstall.ps1" -OutFile "$AppData\Release\GoogleDocs\Uninstall.ps1"
-Write-Host "100"
+$writer.WriteLine("Progress: 100")

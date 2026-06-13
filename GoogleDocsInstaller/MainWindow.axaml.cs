@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -99,26 +100,30 @@ public partial class MainWindow : Window
     private void ProgressThread()
     {
         var info = new ProcessStartInfo("pwsh.exe", $"-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ./Install.ps1 {drive} {mode}");
-        info.RedirectStandardOutput = true;
+        info.UseShellExecute = true;
+        info.Verb = "runas";
         info.CreateNoWindow = true;
         var process = Process.Start(info);
         Dispatcher.UIThread.Post(() =>
         {
             ProgressBar.Value = 5;
         });
-        while (!process.HasExited)
+        var pipe = new NamedPipeServerStream("GoogleDocsInstallerPipe", PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+        Console.WriteLine("Waiting for connection");
+        pipe.WaitForConnection();
+        Console.WriteLine("Connected");
+        var stream = new StreamReader(pipe);
+        while (pipe.IsConnected)
         {
-            if (process.StandardOutput.Peek() != -1)
-            {
-                string s = process.StandardOutput.ReadLine();
+            string s = stream.ReadLine();
 
                 Console.WriteLine(s);
-                int progress = int.Parse(s);
-                Dispatcher.UIThread.Post(() =>
+                if (s.StartsWith("Progress: "))
                 {
-                    ProgressBar.Value = progress;
-                });
-            }
+                    int progress = int.Parse(s.Replace("Progress: ", ""));
+                    Dispatcher.UIThread.Post(() => { ProgressBar.Value = progress; });
+                }
+
 
             Thread.Sleep(50);
         }
