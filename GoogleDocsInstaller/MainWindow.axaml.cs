@@ -115,7 +115,12 @@ public partial class MainWindow : Window
         var stream = new StreamReader(pipe);
         while (pipe.IsConnected)
         {
-            string s = stream.ReadLine();
+                string s = stream.ReadLine();
+                if (s == null)
+                {
+                    Thread.Sleep(50);
+                    continue;
+                }
 
                 Console.WriteLine(s);
                 if (s.StartsWith("Progress: "))
