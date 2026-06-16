@@ -5,22 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
         x:Class="GoogleDocs.MainWindow"
-        Title="GoogleDocs">
+        Title="GoogleDocs" WindowState="Maximized">
     <!-- <Window.KeyBindings>
         <KeyBinding Gesture=""></KeyBinding>
     </Window.KeyBindings> -->
     <Grid>
     <StackPanel Orientation="Vertical">
-    <TextBox TextChanged="TextBox_OnTextChanged" Name="docidbox" Width="1000" Height="10"></TextBox>
-    <Button Click="OpenDocButtonCallback" Width="250" Height="50" Name="OpenDocButton" Content="Open Document"></Button>
-    <Button Click="OpenDebugMenu" Width="250" Height="50" Name="OpenDebugMenuButton" Content="Open Debug Menu"></Button>
-    <Button Click="FeelingLucky" Width="250" Height="50" Name="FeelingLuckyButton" Content="I'm Feeling Lucky"></Button>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+            <Button Click="OpenDocButtonCallback" Width="250" Height="50" Margin="15" Name="OpenDocButton" Content="Open Document"></Button>
+            <TextBox TextChanged="TextBox_OnTextChanged" Name="docidbox" Width="1000" Height="10"></TextBox>
+        </StackPanel>
+    <Button Click="OpenDebugMenu" Width="250" Height="50" Name="OpenDebugMenuButton" Content="Open Debug Menu" HorizontalAlignment="Left"></Button>
+    <Button Click="FeelingLucky" Width="250" Height="50" Name="FeelingLuckyButton" Content="Open Most Recent" HorizontalAlignment="Left" Margin="15"></Button>
 
         <Panel Width="800" Height="40" Name="Toolbar">
-            <Border Background="Gray" CornerRadius="20">
+            <Border Background="{DynamicResource SurfaceContainer}" CornerRadius="20">
                 <StackPanel Orientation="Horizontal">
                     <Panel Width="30" Height="30" Margin="20,5,5,5" HorizontalAlignment="Center">
-                        <Border Background="CornflowerBlue" CornerRadius="4">
+                        <Border Background="{DynamicResource Primary}" CornerRadius="4">
                             <TextBlock Text="B" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
                         </Border>
                     </Panel>
@@ -28,7 +30,7 @@
             </Border>
         </Panel>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="800"
-                      Width="1920">
+                      Width="1700">
             <Panel>
             <TextBlock Text="Loading..." Name="MainText"  TextWrapping="Wrap" ></TextBlock>
                 <Rectangle Name="Cursor" Fill="Red" Width="2" Height="20" HorizontalAlignment="Left" VerticalAlignment="Top" />

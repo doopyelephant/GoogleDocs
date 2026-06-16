@@ -43,7 +43,7 @@ public partial class MainWindow : Window
 
     // Keep this in memory only; it is refreshed from the embedded login WebView.
     private string cookie = "";
-    public GoogleDoc? doc;
+    public GoogleDoc? doc = null;
     private string debugmenulog = "";
 
     public MainWindow()
@@ -84,6 +84,7 @@ public partial class MainWindow : Window
         SetMainText("Ready to go!");
         InitCursorManager();
         ActivePanel(Toolbar,false);
+        OpenDebugMenuButton.IsVisible = SaveKeys.debugmenu;
       //  PrintLineDebugMenu("C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies".GetRealPath());
     //    ActiveElement(Toolbar, false);
        /* var items = NetworkManager.PostRequest("https://docs.google.com/v1/items:get").GetAwaiter().GetResult();
@@ -658,7 +659,7 @@ catch (HttpRequestException err)
                         break;
                 }
 
-                if (edit != null)
+                if (edit != null && doc != null)
                 {
                     doc.history.Edits.Add(edit);
                     SetMainText(doc.GetText());
