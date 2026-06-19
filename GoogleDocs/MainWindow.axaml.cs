@@ -550,8 +550,11 @@ try
   ActiveElement(OpenDebugMenuButton,false);
   ActiveElement(OpenDocButton,false);
   ActiveElement(docidbox,false);
-    ActivePanel(Toolbar,true);
- // MainText.Inlines.Add(new Run("Hello World"));
+  if (SaveKeys.toolbar)
+  {
+      ActivePanel(Toolbar, true);
+  }
+  // MainText.Inlines.Add(new Run("Hello World"));
 
 }
 catch (HttpRequestException err)
