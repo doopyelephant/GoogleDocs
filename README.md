@@ -4,6 +4,15 @@ An unofficial Google Doc's Client built using Avalonia in C# that can open Googl
 **Heavily Work In Progress, many things might break**
 
 [Technical Documentation here](GoogleDocsProtocol.md)
+
+## Install
+### Windows
+Paste this into the command prompt:
+```
+curl -sSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.ps1" | powershell -NoProfile -ExecutionPolicy Bypass -Command "-"
+```
+### Linux
+Build and install yourself, (installer coming soon :) )
 ## TODO
 🕛 Planned
 🚧 WIP
