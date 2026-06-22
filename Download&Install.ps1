@@ -5,4 +5,4 @@ Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/dow
 mkdir "$AppData\InstallerRelease"
 Expand-Archive -Path $Release -DestinationPath "$AppData\InstallerRelease"
 Remove-Item -Force $Release
-& "$AppData\InstallerRelease\GoogleDocsInstaller.exe"
+& "$AppData\InstallerRelease\Installer\GoogleDocsInstaller.exe"
