@@ -40,6 +40,7 @@ public partial class MainWindow : Window
     private string DebugReadText = "";
     private static SaveKeys SaveKeys;
     private readonly object debugLogLock = new();
+    private bool ctrl = false;
 
     // Keep this in memory only; it is refreshed from the embedded login WebView.
     private string cookie = "";
@@ -492,7 +493,7 @@ public partial class MainWindow : Window
     {
         OpenDoc();
     }
-    private async void OpenDoc(string docid = "")
+    public async void OpenDoc(string docid = "")
     {
 SetMainText("Loading...");
 Console.WriteLine("Loading...");
@@ -624,6 +625,9 @@ catch (HttpRequestException err)
     {
         switch (e.Key)
         {
+            case Key.LeftCtrl:
+                ctrl = true;
+                break;
             case Key.Left:
                 CursorManager.KeyDown(Move.Left);
                 break;
@@ -637,6 +641,15 @@ catch (HttpRequestException err)
                 CursorManager.KeyDown(Move.Down);
                 break;
             default:
+                if (ctrl)
+                {
+                    Console.WriteLine($"CTRL+{e.Key} pressed.");
+                    if (e.Key == Key.S)
+                    {
+                        doc.Save();
+                    }
+                    break;
+                }
                 bool isAlphabet = e.Key >= Key.A && e.Key <= Key.Z;
                 Edit? edit = null;
                 var pos = CursorManager.GetCursorPosition();
@@ -678,6 +691,9 @@ catch (HttpRequestException err)
     {
         switch (e.Key)
         {
+            case Key.LeftCtrl:
+                ctrl = false;
+                break;
             case Key.Left:
                 CursorManager.KeyUp(Move.Left);
                 break;

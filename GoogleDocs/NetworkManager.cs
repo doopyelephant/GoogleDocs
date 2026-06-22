@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -31,9 +32,9 @@ public static class NetworkManager
 
         return new string(filtered, 0, write);
     }
-    public static async Task<string> PostRequest(string url)
+    public static async Task<string> PostRequest(string url,string postdata = "")
     {
-        if(sid != "")
+        if(sid != "" && !url.Contains("sid="))
         {
             Console.WriteLine($"Appending sid to URL: {sid}");
             url += $"?sid={sid}";
@@ -41,7 +42,7 @@ public static class NetworkManager
         }
         using var handler = new HttpClientHandler
         {
-            AllowAutoRedirect = false
+            AllowAutoRedirect = true
         };
 
         using var localClient = new HttpClient(handler)
@@ -50,6 +51,11 @@ public static class NetworkManager
         };
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
+        if (postdata != "")
+        {
+            request.Content = new StringContent(postdata);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+        }
 
         // Build cookies for this exact URL from WebView2 cookie jar
         var rawCookie = await CookieManager.GetCookie();
@@ -100,7 +106,7 @@ public static class NetworkManager
         Console.WriteLine("Headers:");
         foreach (var header in headers)
         {
-            Console.WriteLine($"{header.Key}: {header.Value}");
+            Console.WriteLine($"{header.Key}: {header.Value.Aggregate((string a, string b) => { return a + ", " + b;})}");
         }
 if(headers.Contains("reporting-endpoints"))
         {
@@ -193,7 +199,7 @@ if(headers.Contains("reporting-endpoints"))
 
         request.Headers.TryAddWithoutValidation("Cookie", sanitizedCookie);
         Console.WriteLine("Attached auth cookies to request.");
-        request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0");
+        request.Headers.TryAddWithoutValidation("User-Agent", "UnofficialGoogleDocs/0.1.0");
         request.Headers.TryAddWithoutValidation("Accept", "*/*");
         request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
 

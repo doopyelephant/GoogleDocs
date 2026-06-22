@@ -55,4 +55,47 @@ public static class Utils
         }
         return str.Substring(0, index) + replace + str.Substring(index + search.Length);
     }
+    public static string UrlEncode(this string s)
+    {
+        string encoded = "";
+        foreach (char c in s)
+        {
+            if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90)|| (c >= 97 && c <= 122) || c == '~' || c == '.' || c == '-' || c == '_')
+            {
+            encoded += c;
+            }
+            else
+            {
+                string hex = Convert.ToString(c, 16);
+                string hexUpper = hex.ToUpper();
+                if (hexUpper.Length == 1)
+                {
+                    hexUpper = "0" + hexUpper;
+                }
+                else if (hexUpper.Length > 2)
+                {
+                    while (hexUpper.Length > 2)
+                    {
+                        encoded += "%" + hexUpper.Substring(0, 2);
+                        hexUpper = hexUpper.Substring(2);
+                    }
+
+                    if (hexUpper.Length == 1)
+                    {
+                        hexUpper = "0" + hexUpper;
+                        encoded += "%" + hexUpper;
+                    }
+                    else
+                    {
+                        encoded += "%" + hexUpper;
+                    }
+                }
+                else
+                {
+                    encoded += "%" + hexUpper;
+                }
+            }
+        }
+        return encoded;
+    }
 }

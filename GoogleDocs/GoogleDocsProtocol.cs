@@ -10,13 +10,16 @@ namespace GoogleDocs;
 public enum EditType { Insert, Alter, Multi,Noop,Unknown}
 public class Edit
 {
-    public Edit(EditType type, string[] Params)
+    public bool IsSaved = false;
+    public Edit(EditType type, string[] Params, bool isSaved = false)
     {
         Type = type;
         this.Params = Params;
+        IsSaved = isSaved;
     }
-    public Edit(JObject json)
+    public Edit(JObject json,bool isSaved = false)
     {
+        IsSaved = isSaved;
         string typestring = json["ty"].ToString();
         if (typestring == "is")
         {
@@ -59,23 +62,20 @@ public class Edit
     public EditType Type { get; set; }
     public string[] Params;
 
-    public void Save()
+    public string FetchSaveString()
     {
-
-    }
-    public string Serialize()
-    {
-        string json = $"[" +
+        string json = "{" +
                $"\"ty\":\"{GetEditTypeCode(Type)}\"," + // Edit type
-               $"{(Type == EditType.Alter ? $"\"st\" : {Params[0]}" : "")}," + //Alteration string type
-               $"{(Type == EditType.Alter ? $"\"si\" : {int.Parse(Params[1]) + 1}" : "")}," + // Alteration start index
-               $"{(Type == EditType.Alter ? $"\"ei\" : {int.Parse(Params[2]) + 1}" : "")}," + // Alteration end index
-               $"{(Type == EditType.Alter ? $"\"sm\" : {Params[3]}" : "")}," + // Alteration property json string
-               $"{(Type == EditType.Insert ? $"\"ibi\" : {int.Parse(Params[0]) + 1}" : "")}," + // Insertion index
-               $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1]}\"" : "")}," // Insertion string
+               $"{(Type == EditType.Alter ? $"\"st\" : {Params[0]}," : "")}" + //Alteration string type
+               $"{(Type == EditType.Alter ? $"\"si\" : {int.Parse(Params[1]) + 1}," : "")}" + // Alteration start index
+               $"{(Type == EditType.Alter ? $"\"ei\" : {int.Parse(Params[2]) + 1}," : "")}" + // Alteration end index
+               $"{(Type == EditType.Alter ? $"\"sm\" : {Params[3]}," : "")}" + // Alteration property json string
+               $"{(Type == EditType.Insert ? $"\"ibi\" : {int.Parse(Params[0]) + 1}," : "")}" + // Insertion index
+               $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1]}\"," : "")}" // Insertion string
                ;
         json = json.TrimEnd(',');
-        json += "]";
+        json += "}";
+        IsSaved = true;
         return json;
     }
 
@@ -118,7 +118,7 @@ public class DocHistory
         {
             if (token is JObject obj)
             {
-                Edits.Add(new Edit(obj));
+                Edits.Add(new Edit(obj,true));
             }
         }
     }
@@ -138,14 +138,60 @@ public class DocHistory
 public class GoogleDoc
 {
     JObject? json1;
+    JObject? json2;
     public DocHistory? history;
     public string id;
 
     public GoogleDoc(JObject json1, JObject json2)
     {
         this.json1 = json1;
+        this.json2 = json2;
         history = new DocHistory(json2);
     }
+
+    public async void Save()
+    {
+        var unsaved = new List<Edit>();
+        foreach (var edit in history.Edits)
+        {
+            if (!edit.IsSaved)
+            {
+                unsaved.Add(edit);
+            }
+        }
+
+        string savestring = "[";
+        foreach (var edit in unsaved)
+        {
+            savestring += edit.FetchSaveString() + ",";
+        }
+        savestring = savestring.TrimEnd(',');
+        savestring += "]";
+        Console.WriteLine("Saving changes...");
+        string rev = "rev=" + json1["r"].ToString();
+        string bundle = "bundle=" + $"[{{\"commands\": {savestring},\"sid\":\"{NetworkManager.sid}\",\"reqId\":\"0\"}}]";
+        rev = rev.UrlEncode();
+        bundle = bundle.UrlEncode();
+        string data = rev + "%0A" + bundle;
+        Console.WriteLine(bundle);
+        Console.WriteLine(rev);
+        string url = $"https://docs.google.com/d/{id}/save";
+        var net = "<!DOCTYPE html>";
+        while (net.Contains("<!DOCTYPE html>"))
+        {
+            if (net.Contains("url="))
+            {
+                url = net.SubstringAfter("url=").SubstringBefore("&");
+            }
+            if (net != "<!DOCTYPE html>")
+            {
+                Console.WriteLine("Got redirect to: " + url);
+            }
+             net = await NetworkManager.PostRequest(url,data);
+        }
+        Console.WriteLine("Saved changes: " + net);
+    }
+
 
     public void OffsetAltersAfter(int offset, int after)
     {
