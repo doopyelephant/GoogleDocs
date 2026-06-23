@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -91,6 +92,50 @@ public static class NetworkManager
             return body;
     }
 
+    public static async Task<Stream> GetStreamAsync(string url)
+    {
+        if(sid != "" && !url.Contains("sid="))
+        {
+            url += $"&sid={sid}";
+            Console.WriteLine($"Updated URL with sid: {url}");
+        }
+        using var handler = new HttpClientHandler
+        {
+            AllowAutoRedirect = true
+        };
+
+        using var localClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromSeconds(20)
+        };
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        var rawCookie = await CookieManager.GetCookie();
+        var sanitizedCookie = SanitizeCookieHeader(rawCookie);
+        if (string.IsNullOrWhiteSpace(sanitizedCookie))
+        {
+            throw new HttpRequestException("Cookie header is empty after sanitization.");
+        }
+
+        if (!string.Equals(rawCookie, sanitizedCookie, StringComparison.Ordinal))
+        {
+            Console.WriteLine("Cookie header contained non-ASCII or control characters; sanitized before request.");
+            PrintDifferences(rawCookie, sanitizedCookie);
+        }
+
+        request.Headers.TryAddWithoutValidation("Cookie", sanitizedCookie);
+        Console.WriteLine("Attached auth cookies to request.");
+        request.Headers.TryAddWithoutValidation("User-Agent", "UnofficialGoogleDocs/0.1.0");
+        request.Headers.TryAddWithoutValidation("Accept", "*/*");
+        request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
+        HttpResponseMessage response = await localClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            Console.WriteLine($"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}).");
+            Console.WriteLine($"Response headers: {string.Join(", ", response.Headers)}");
+            Console.WriteLine($"Body: {await response.Content.ReadAsStringAsync()}");
+        }
+        return await response.Content.ReadAsStreamAsync();
+    }
      public static async Task<string> GetRequest(string url)
     {
          if(sid != "")
@@ -162,6 +207,10 @@ if(headers.Contains("reporting-endpoints"))
     {
         var (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
         if(statusCode != HttpStatusCode.OK)
+        {
+            Console.WriteLine($"Test endpoint returned {(int)statusCode} {reasonPhrase}");
+        }
+        else
         {
             Console.WriteLine($"Test endpoint returned {(int)statusCode} {reasonPhrase}");
         }

@@ -46,6 +46,7 @@ public partial class MainWindow : Window
     private string cookie = "";
     public GoogleDoc? doc = null;
     private string debugmenulog = "";
+    private int rid = 0;
 
     public MainWindow()
     {
@@ -439,7 +440,7 @@ public partial class MainWindow : Window
         doc_id = docidbox.Text;
     }
 
-    private Stream BindRequest(String url)
+    private async Task<Stream> BindRequest(String url)
     {
         string sid = NetworkManager.GetSid();
         if (!string.IsNullOrEmpty(sid))
@@ -447,19 +448,20 @@ public partial class MainWindow : Window
             url += $"&sid={sid}";
             Console.WriteLine($"Updated bind URL with sid: {url}");
         }
-        return client.GetStreamAsync(url).Result;
+        return await NetworkManager.GetStreamAsync(url);
     }
 
     private async void BindToDoc()
     {
     String url = JsonParsing.GetBindReq(doc_id,UrlConfig);
     url += $"&zx={new Random().Next(100000,999999)}";
-    url += $"&RID={new Random().Next(100000,999999)}";
+    url += $"&RID={rid++}";
+
     Console.WriteLine(url);
     while (true)
     {
         Console.WriteLine("Binding...");
-        Stream jsonstream = BindRequest(url);
+        Stream jsonstream = await BindRequest(url);
         StreamReader jsonreader = new StreamReader(jsonstream);
         String blocksize = "";
         while (true)
@@ -539,12 +541,13 @@ try
 
   doc = new GoogleDoc(parsed!, parsed2!);
   doc.id = doc_id;
-  await doc.GetSessionId();
+  //await doc.GetSessionId();
   SetMainText(doc.GetText());
   Console.WriteLine("Document loaded successfully.");
   Console.WriteLine(doc.GetText());
   if(SaveKeys.bind)
   {
+      Console.WriteLine("Binding to document...");
       BindToDoc();
   }
   ActiveElement(FeelingLuckyButton,false);
