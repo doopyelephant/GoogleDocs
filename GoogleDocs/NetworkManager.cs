@@ -35,10 +35,11 @@ public static class NetworkManager
     }
     public static async Task<string> PostRequest(string url,string postdata = "")
     {
-        if(sid != "" && !url.Contains("sid="))
-        {
+      //  if(sid != "" && !url.Contains("sid="))
+      if(false)
+      {
             Console.WriteLine($"Appending sid to URL: {sid}");
-            url += $"?sid={sid}";
+            url += $"&sid={sid}";
             Console.WriteLine($"Updated URL: {url}");
         }
         using var handler = new HttpClientHandler
@@ -54,8 +55,8 @@ public static class NetworkManager
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
         if (postdata != "")
         {
-            request.Content = new StringContent(postdata);
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+           request.Content = new StringContent(postdata);
+           request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
         }
 
         // Build cookies for this exact URL from WebView2 cookie jar
@@ -77,7 +78,7 @@ public static class NetworkManager
         request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0");
         request.Headers.TryAddWithoutValidation("Accept", "*/*");
         request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
-
+        request.Headers.TryAddWithoutValidation("Origin", "https://docs.google.com");
         PrintHttpRequestData(request);
         using var response = await localClient.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();

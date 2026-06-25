@@ -50,7 +50,7 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     if($CC -eq "y")
     {
     $arch = Read-Host -Prompt "Arch? (win-x64, win-x86, win-arm64, linux-x64, linux-arm64, osx-x64, osx-arm64) (No OSX Support Yet(I don't have any hardware to test on) )"
-    $arch = "-r $arch "
+    $arch = "--property:RuntimeIdentifier=$arch"
     }
     elseif($CC -eq "n")
     {
@@ -104,7 +104,18 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     {
     Copy-Item $file "./Build"
     }
-    Copy-Item "./BuildDeps/$Project.exe" "./Build/"
+    $exe = "";
+    if($CC -eq "y" -and $arch -like "win" -or $CC -eq "n" -and $IsWindows)
+    {
+        Write-Host "Compiling for Windows"
+        $exe = "$Project.exe"
+    }
+    if($CC -eq "y" -and $arch -like "linux" -or $CC -eq "n" -and $IsLinux)
+    {
+        Write-Host "Compiling for Linux"
+        $exe = "$Project"
+    }
+    Copy-Item "./BuildDeps/$exe" "./Build/"
     Remove-Item "./BuildDeps" -R
 } else {
     Write-Error ".NET is NOT installed. Exiting..."

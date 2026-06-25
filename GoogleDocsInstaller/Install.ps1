@@ -24,7 +24,7 @@ $writer = New-Object System.IO.StreamWriter($client)
 mkdir "$env:USERPROFILE\AppData\Local\GoogleDocs"
 $AppData = "$env:USERPROFILE\AppData\Local\GoogleDocs"
 $Release = "$AppData\Release.zip"
-Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.1.0-alpha/GoogleDocs-windows-x64.zip" -OutFile "$Release"
+Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.2.0-alpha/GoogleDocs-windows-x64.zip" -OutFile "$Release"
 $writer.WriteLine("Progress: 60")
 Expand-Archive -Path $Release -DestinationPath "$AppData\Release"
 $writer.WriteLine("Progress: 70")

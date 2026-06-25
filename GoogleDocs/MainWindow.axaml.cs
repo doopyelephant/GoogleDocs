@@ -545,7 +545,8 @@ try
   SetMainText(doc.GetText());
   Console.WriteLine("Document loaded successfully.");
   Console.WriteLine(doc.GetText());
-  if(SaveKeys.bind)
+  await doc.GetSessionId();
+  if(/*SaveKeys.bind*/false)
   {
       Console.WriteLine("Binding to document...");
       BindToDoc();

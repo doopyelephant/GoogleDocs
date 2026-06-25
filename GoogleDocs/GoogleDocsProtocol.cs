@@ -236,7 +236,7 @@ public class GoogleDoc
             bindurl += $"&RID={new Random().Next(10000,99999)}";
         Console.WriteLine("BIND URL:");
         Console.WriteLine(bindurl);
-        var response = await NetworkManager.PostRequest(bindurl);
+        var response = await NetworkManager.PostRequest(bindurl,"count=0");
         Console.WriteLine("BIND POST RESPONSE:");
         Console.WriteLine(response);
         return "";
