@@ -90,7 +90,7 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
         }
     }
     Write-Host "Executing IlRepack /zeropekind /internalize out:../Build/$Project.dll ./$Project.dll $dotnetdlls"
-    ilrepack /zeropekind /internalize /out:../Build/$Project.dll ./$Project.dll $dotnetdlls
+    dotnet ilrepack /zeropekind /internalize /out:../Build/$Project.dll ./$Project.dll $dotnetdlls
     foreach($dll in $notdotnetdlls)
     {
         Copy-Item $dll "../Build/"
