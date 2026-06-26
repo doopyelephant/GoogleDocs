@@ -62,7 +62,7 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     Remove-Item -Path "./Build" -Recurse -Force
     mkdir ./Build
     mkdir ./BuildDeps
-    dotnet publish --self-contained -c Release -o "./BuildDeps" $arch
+    dotnet publish --self-contained true -c Release -o "./BuildDeps" $arch
     Set-Location BuildDeps
     $dlls = Get-ChildItem -Filter *.dll
     $dotnetdlls = @()
@@ -104,6 +104,14 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     {
     Copy-Item $file "./Build"
     }
+    Set-Location "./BuildDeps"
+    $runtime = @(Get-ChildItem -Filter *.runtimeconfig.json -File -ErrorAction SilentlyContinue)
+    $dep = @(Get-ChildItem -Filter *.deps.json -File -ErrorAction SilentlyContinue)
+    foreach ($file in $runtime + $dep)
+    {
+        Copy-Item $file "../Build"
+    }
+    Set-Location ..
     $exe = "";
     if($CC -eq "y" -and $arch -like "win" -or $CC -eq "n" -and $IsWindows)
     {
