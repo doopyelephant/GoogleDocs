@@ -35,6 +35,8 @@ Build and install yourself, (installer coming soon :) )
 - Zen "works" but sometimes decides it doesnt want to work(very unreliable)(I have 0 clue why this happens)
 ## AI Disclaimer
 I use Github Copilot to write the odd snippet or to bounce ideas off of (large % of commit messages are AI Generated), but 95% of code is human written
+## Stardance
+This is part of [The Stardance Project](https://stardance.hackclub.com)
 
 ## Credits
 - browser_cookies.py comes from [akkana/scripts](https://github.com/akkana/scripts)
