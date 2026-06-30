@@ -90,7 +90,7 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
         }
     }
     Write-Host "Executing IlRepack /zeropekind /internalize out:../Build/$Project.dll ./$Project.dll $dotnetdlls"
-    dotnet ilrepack /zeropekind /internalize /out:../Build/$Project.dll ./$Project.dll $dotnetdlls
+    ilrepack /zeropekind /internalize /out:../Build/$Project.dll ./$Project.dll $dotnetdlls
     foreach($dll in $notdotnetdlls)
     {
         Copy-Item $dll "../Build/"
@@ -113,18 +113,74 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     }
     Set-Location ..
     $exe = "";
-    if($CC -eq "y" -and $arch -like "win" -or $CC -eq "n" -and $IsWindows)
+    $Type = ""
+    if(($CC -eq "y" -and $arch -match "win") -or ($CC -eq "n" -and $IsWindows))
     {
         Write-Host "Compiling for Windows"
         $exe = "$Project.exe"
+        $Type = "windows"
     }
-    if($CC -eq "y" -and $arch -like "linux" -or $CC -eq "n" -and $IsLinux)
+    if(($CC -eq "y" -and $arch -match "linux") -or ($CC -eq "n" -and $IsLinux))
     {
         Write-Host "Compiling for Linux"
         $exe = "$Project"
+        $Type = "linux"
+    }
+    if(($CC -eq "y" -and $arch -match "osx") -or ($CC -eq "n" -and $IsMacOS))
+    {
+        Write-Host "Compiling for OSX"
+        $exe = "$Project"
+        $Type = "osx"
+    }
+    $OSarch = $env:PROCESSOR_ARCHITECTURE
+    $OSarch = $OSarch.ToLower()
+    switch($OSarch)
+    {
+        'amd64' { $OSarch = "x64" }
+        'arm64' { $OSarch = "arm64" }
+        'x86'   { Write-Host "x86" }
+    }
+    if($CC -eq "n")
+    {
+        $Type = "$Type-$OSarch"
+    }
+    if($CC -eq "y")
+    {
+        $CCArch = ""
+        if($arch -match "arm64")
+        {
+        $CCArch = "arm64"
+        }
+        elseif($arch -match "x64")
+        {
+            $CCArch = "x64"
+        }
+        elseif($arch -match "x86")
+        {
+            $CCArch = "x86"
+        }
+        else{
+            $CCArch = "UnknownArch"
+            Write-Host "Unknown Arch, Archive Filename will be inaccurate!"
+        }
+        $Type = "$Type-$CCArch"
     }
     Copy-Item "./BuildDeps/$exe" "./Build/"
     Remove-Item "./BuildDeps" -R
+    if($Project -eq "GoogleDocs")
+    {
+        mkdir "GoogleDocsBuilds"
+        Rename-Item "./Build" "./GoogleDocs"
+        Compress-Archive -Path "./GoogleDocs" -DestinationPath "./GoogleDocsBuilds/GoogleDocs-$Type.zip" -Force
+        Rename-Item "./GoogleDocs" "./Build"
+    }
+    if($Project -eq "GoogleDocsInstaller")
+    {
+        mkdir "GoogleDocsInstallerBuilds"
+        Rename-Item "./Build" "./Installer"
+        Compress-Archive -Path "./Installer" -DestinationPath "./GoogleDocsInstallerBuilds/GoogleDocsInstaller-$Type.zip" -Force
+        Rename-Item "./Installer" "./Build"
+    }
 } else {
     Write-Error ".NET is NOT installed. Exiting..."
 }

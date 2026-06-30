@@ -99,7 +99,7 @@ public partial class MainWindow : Window
 
     private void ProgressThread()
     {
-        var info = new ProcessStartInfo("pwsh.exe", $"-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ./Install.ps1 {drive} {mode}");
+        var info = new ProcessStartInfo("pwsh.exe", $"-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File { System.IO.Path.GetDirectoryName(System.Environment.ProcessPath)}/Install.ps1 {drive} {mode}");
         info.UseShellExecute = true;
         info.Verb = "runas";
         info.CreateNoWindow = true;
