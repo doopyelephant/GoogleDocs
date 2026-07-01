@@ -153,7 +153,7 @@ public static class CookieManager
         else{
             datadir = "~\\.cache\\GoogleDocs";
         }
-        profiledir = SaveKeys.staticpath.GetRealPath();
+        profiledir = await SaveKeys.staticpath.GetRealPath();
 
         if (SaveKeys.usedynamicpaths)
         {
@@ -388,7 +388,7 @@ public static class CookieManager
         {
             if(OperatingSystem.IsWindows())
             {
-                if(File.Exists(browser.winpath.GetRealPath()))
+                if(File.Exists(await browser.winpath.GetRealPath()))
                 {
                     ValidIndexes.Add(browsers.browsers.IndexOf(browser));
                     Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.winpath);
@@ -396,7 +396,7 @@ public static class CookieManager
             }
             else if(OperatingSystem.IsLinux())
             {
-                if(File.Exists(browser.linpath.GetRealPath()))
+                if(File.Exists(await browser.linpath.GetRealPath()))
                 {
                     ValidIndexes.Add(browsers.browsers.IndexOf(browser));
                     Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.linpath);
@@ -413,7 +413,7 @@ public static class CookieManager
             }
             CookieSelectorCallback = false;
             EvalHostBrowserType();
-            return browsercookiepath.GetRealPath();
+            return await browsercookiepath.GetRealPath();
         }
         else if(ValidIndexes.Count == 1)
         {
@@ -433,7 +433,7 @@ public static class CookieManager
 
 
             EvalHostBrowserType();
-            return browsercookiepath.GetRealPath();
+            return await browsercookiepath.GetRealPath();
         }
         else
         {
@@ -446,7 +446,7 @@ public static class CookieManager
             CookieSelectorCallback = false;
             EvalHostBrowserType();
 
-            return browsercookiepath.GetRealPath();
+            return await browsercookiepath.GetRealPath();
         }
     }
 
@@ -651,7 +651,7 @@ else
                 return string.Join("; ", cookies);
         }
 
-        public static string GetRealPath(this string path)
+        public async static Task<string> GetRealPath(this string path)
     {
         if (RealCacheRequests.Contains(path))
         {
@@ -678,9 +678,9 @@ else
                 case "FIREFOXPROFILE":
                         while (oldpath.Contains(substitute))
                         {
-                            //replace all of the substitutes in the path with the first child
-                            oldpath = oldpath.ReplaceFirst(substitute,
-                                Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
+                            var dirs = Directory.GetDirectories(oldpath.SubstringBefore(substitute)).Select((string s) => s.SubstringAfterLast("\\"));
+                            int selected = await Prompt(dirs.ToArray(), "Pick a profile:");
+                            oldpath = oldpath.ReplaceFirst(substitute,dirs.ToArray()[selected]);
                         }
                     break;
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -14,7 +15,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using DryIoc.ImTools;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -272,7 +273,9 @@ public partial class MainWindow : Window
                 grid.RowDefinitions = new RowDefinitions();
                 //TODO: make lines appear in between cells
                 int i = 0;
-                foreach(string cell in tbl.Split("\u001c").RemoveAt(0))
+                var column = tbl.Split("\u001c").ToList();
+                column.RemoveAt(0);
+                foreach(string cell in column)
                 {
                     int col = i % width;
                     int row = i / width;

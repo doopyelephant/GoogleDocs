@@ -31,10 +31,6 @@ public static class Program
 CleanUp = new List<Thread>();
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
-        foreach (var thread in CleanUp)
-        {
-            thread.Abort();
-        }
     }
 
     public async static void DebugMenu()
@@ -389,6 +385,5 @@ CleanUp = new List<Thread>();
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
-            .WithInterFont()
-            .LogToTrace();
+            .WithInterFont();
 }

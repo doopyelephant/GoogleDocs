@@ -40,25 +40,25 @@
         },
         {
             "name": "Firefox",
-            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\##PKFIRST##\\cookies.sqlite",
-            "linpath": "~/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\##FIREFOXPROFILE##\\cookies.sqlite",
+            "linpath": "~/.mozilla/firefox/##FIREFOXPROFILE##/cookies.sqlite",
             "type": "Firefox",
             "altpaths": [
                 {
                     "winpath": "",
-                    "linpath": "~/snap/firefox/common/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
+                    "linpath": "~/snap/firefox/common/.mozilla/firefox/##FIREFOXPROFILE##/cookies.sqlite",
                     "name": "Snap"
                 },
                 {
                     "winpath": "",
-                    "linpath": "~/.var/app/org.mozilla.firefox/.mozilla/firefox/##PKFIRST##/cookies.sqlite",
+                    "linpath": "~/.var/app/org.mozilla.firefox/.mozilla/firefox/##FIREFOXPROFILE##/cookies.sqlite",
                     "name": "Flatpak"
                 }
             ]
         },
         {
             "name": "Zen",
-            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\zen\\Profiles\\##PKFIRST##\\cookies.sqlite",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\zen\\Profiles\\##FIREFOXPROFILE##\\cookies.sqlite",
             "linpath": "",
             "type": "Firefox",
             "altpaths": []

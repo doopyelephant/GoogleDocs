@@ -41,7 +41,7 @@ function Test-IsDotNetDll {
         Write-Error "Could not analyze file: $_"
     }
 }
-
+$IsRunningWindows = $env:OS -match "Windows_NT"
 Set-Location $Project
 if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     Write-Host ".NET is installed."
@@ -78,6 +78,11 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     -and !($dll -match "^netstandard") `
     -and !($dll -match "^WindowsBase") `
     -and !($dll -match "^PresentationFramework") `
+    -and !($dll -match "^CCSWE") `
+    -and !($dll -match "^MicroCom") `
+    -and !($dll -match "^SkiaSharp") `
+    -and !($dll -match "^HarfBuzzSharp") `
+    -and !($dll -match "Avalonia") `
     -and !($dll -match "^clr"))
         {
 
@@ -114,7 +119,7 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     Set-Location ..
     $exe = "";
     $Type = ""
-    if(($CC -eq "y" -and $arch -match "win") -or ($CC -eq "n" -and $IsWindows))
+    if(($CC -eq "y" -and $arch -match "win") -or ($CC -eq "n" -and $IsRunningWindows))
     {
         Write-Host "Compiling for Windows"
         $exe = "$Project.exe"
