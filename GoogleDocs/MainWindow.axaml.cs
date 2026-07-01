@@ -49,6 +49,7 @@ public partial class MainWindow : Window
     private string debugmenulog = "";
     private int rid = 0;
 
+
     public MainWindow()
     {
         InitializeComponent();

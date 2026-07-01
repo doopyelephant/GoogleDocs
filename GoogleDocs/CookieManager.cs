@@ -30,6 +30,7 @@ public static class CookieManager
     private static List<string> RealCacheRequests;
     private static List<string> RealCache;
     private static bool PromptCallbackSephamore = false;
+    private static List<(List<string>, int)> FirefoxProfileCache;
 
 
     private static string GetSysUser()
@@ -344,6 +345,7 @@ public static class CookieManager
 
     public static async Task InitCookies(SaveKeys? keys = null)
     {
+        FirefoxProfileCache = new List<(List<string>, int)>();
         RealCacheRequests = new List<string>();
         RealCache = new List<string>();
         SaveKeys = JsonParsing.GetSaveKeys();
@@ -388,7 +390,7 @@ public static class CookieManager
         {
             if(OperatingSystem.IsWindows())
             {
-                if(File.Exists(await browser.winpath.GetRealPath()))
+                if(File.Exists(await browser.winpath.GetRealPath(true)))
                 {
                     ValidIndexes.Add(browsers.browsers.IndexOf(browser));
                     Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.winpath);
@@ -396,7 +398,7 @@ public static class CookieManager
             }
             else if(OperatingSystem.IsLinux())
             {
-                if(File.Exists(await browser.linpath.GetRealPath()))
+                if(File.Exists(await browser.linpath.GetRealPath(true)))
                 {
                     ValidIndexes.Add(browsers.browsers.IndexOf(browser));
                     Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.linpath);
@@ -651,9 +653,9 @@ else
                 return string.Join("; ", cookies);
         }
 
-        public async static Task<string> GetRealPath(this string path)
+        public async static Task<string> GetRealPath(this string path,bool lowpriority = false)
     {
-        if (RealCacheRequests.Contains(path))
+        if (RealCacheRequests.Contains(path) && !lowpriority)
         {
             return RealCache[RealCacheRequests.IndexOf(path)];
         }
@@ -676,17 +678,45 @@ else
                 oldpath = oldpath.Replace(substitute, Environment.UserName);
                 break;
                 case "FIREFOXPROFILE":
+                    if (lowpriority)
+                    {
+                        while (oldpath.Contains(substitute))
+                        {
+                            //replace all of the substitutes in the path with the first child
+                            oldpath = oldpath.ReplaceFirst(substitute,
+                                Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
+                        }
+                        break;
+                    }
                         while (oldpath.Contains(substitute))
                         {
                             var dirs = Directory.GetDirectories(oldpath.SubstringBefore(substitute)).Select((string s) => s.SubstringAfterLast("\\"));
-                            int selected = await Prompt(dirs.ToArray(), "Pick a profile:");
+                            int selected = 0;
+                            if (!FirefoxProfileCache.Select(((List<String>, int) tuple) => tuple.Item1).ToList().Contains(dirs.ToList()))
+                            {
+                                selected = await Prompt(dirs.ToArray(), "Pick a profile:");
+                                FirefoxProfileCache.Add((dirs.ToList(), selected));
+                            }
+                            else
+                            {
+
+                                var i = FirefoxProfileCache.ToList().Select(((List<String>, int) tuple) => tuple.Item1).ToList()
+                                    .FindIndex(profiles => profiles.SequenceEqual(dirs.ToList()));
+                                selected = FirefoxProfileCache[i].Item2;
+                            }
+
                             oldpath = oldpath.ReplaceFirst(substitute,dirs.ToArray()[selected]);
                         }
                     break;
             }
         }
-        RealCacheRequests.Add(path);
-        RealCache.Add(oldpath);
+
+        if (!lowpriority)
+        {
+            RealCacheRequests.Add(path);
+            RealCache.Add(oldpath);
+        }
+
         return oldpath;
     }
 
