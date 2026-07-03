@@ -16,11 +16,13 @@ Build and install yourself, (installer coming soon :) )
 ## TODO
 🕛 Planned
 🚧 WIP
+🟨 Works but experimental
+✅ Complete
 ### Already Reverse Engineered/Don't need RE but need implementation
 - Text Underline Support 🕛
 - Text Color Support 🕛
 - Text Highlight(with colors) Support 🕛
-- Dynamic browser paths(removing hardcoded browser cookie path) 🚧
+- Dynamic browser paths(removing hardcoded browser cookie path) 🟨
 ### Need reverse engineering & Implementation
 - Syncing with Google Docs backend (Saving & Realtime Collaboration)(Roadblock is on Google's cookie authentication) 🚧
 ## Features
