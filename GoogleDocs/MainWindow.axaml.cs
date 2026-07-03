@@ -372,7 +372,7 @@ public partial class MainWindow : Window
             {
                 Content = option,
                 Margin = new Thickness(5),
-                Width = 100,
+                Width = 300,
                 Height = 50
             };
             button.Click += (sender, e) =>

@@ -9,7 +9,7 @@
     <!-- <Window.KeyBindings>
         <KeyBinding Gesture=""></KeyBinding>
     </Window.KeyBindings> -->
-    <Grid>
+    <Grid Name="MainGrid">
     <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
             <Button Click="OpenDocButtonCallback" Width="250" Height="50" Margin="15" Name="OpenDocButton" Content="Open Document"></Button>
@@ -40,47 +40,39 @@
 
     </StackPanel>
      <Popup x:Name="ManualCookiePopup"
-           PlacementTarget="{Binding #OpenDocButton}"
-           Placement="Bottom"
+           PlacementTarget="{Binding #MainGrid}"
+           Placement="Center"
            IsLightDismissEnabled="True">
-        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                BorderThickness="1" CornerRadius="4" Padding="12">
+        <Border Background="{DynamicResource SurfaceContainer}" BorderThickness="1" CornerRadius="20" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="No valid browser cookie paths found, please input your browser cookie path manually." Margin="0,0,0,10" />
+                    <TextBlock Text="No valid browser cookie paths found, please input your browser cookie path manually." Margin="0,0,0,10" HorizontalAlignment="Center"/>
                     <TextBox Name="CookiePathInput" Width="400" Margin="0,0,0,10"/>
                     <Button Content="Submit" HorizontalAlignment="Right" Click="SubmitCookiePath"/>
                 </StackPanel>
         </Border>
     </Popup>
     <Popup x:Name="PickCookiePopup"
-           PlacementTarget="{Binding #OpenDocButton}"
-           Placement="Bottom"
-           IsLightDismissEnabled="True" Width="500" Height="800">
-        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                BorderThickness="1" CornerRadius="4" Padding="12">
-                <StackPanel Name="BrowserList" Orientation="Vertical">
-                    <TextBlock Text="Multiple browsers were found, please select one." Margin="0,0,0,10" />
+           PlacementTarget="{Binding #MainGrid}"
+           Placement="Center"
+            Width="500" Height="500">
+        <Border Background="{DynamicResource SurfaceContainer}" BorderThickness="1" CornerRadius="20" Padding="12" HorizontalAlignment="Center">
+                <StackPanel Name="BrowserList" Orientation="Vertical" HorizontalAlignment="Center">
+                    <TextBlock Text="Multiple browsers were found, please select one." Margin="0,0,0,10"  HorizontalAlignment="Center"/>
 
                 </StackPanel>
         </Border>
     </Popup>
         <Popup x:Name="PickPrompt"
-               PlacementTarget="{Binding #OpenDocButton}"
-               Placement="Bottom"
-               IsLightDismissEnabled="True" Width="500" Height="800">
-            <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                    BorderThickness="1" CornerRadius="4" Padding="12">
-                <StackPanel Name="PromptList" Orientation="Vertical">
+               PlacementTarget="{Binding #MainGrid}"
+               Placement="Center"
+               Width="500" Height="500">
+            <Border Background="{DynamicResource SurfaceContainer}" BorderThickness="1" CornerRadius="20" Padding="12" HorizontalAlignment="Center">
+                <StackPanel Name="PromptList" Orientation="Vertical" HorizontalAlignment="Center">
                 </StackPanel>
             </Border>
         </Popup>
     <Popup x:Name="DebugMenuPopup" Width="1000" Height="1000">
-        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                BorderThickness="1" CornerRadius="4" Padding="12">
+        <Border Background="{DynamicResource SurfaceContainer}" BorderThickness="1" CornerRadius="20" Padding="12">
             <StackPanel>
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="800">
                 <TextBlock Name="DebugMenuTextBlock">

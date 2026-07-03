@@ -72,49 +72,99 @@
         },
         {
             "name": "Brave",
-            "winpath": "",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Network\\Cookies",
             "linpath": "",
             "type": "Chromium",
-            "altpaths": []
+            "altpaths": [
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Profile 1\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 1"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Profile 2\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 2"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Profile 3\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 3"
+                }
+            ]
         },
         {
             "name": "Opera",
-            "winpath": "",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Opera Software\\Opera Stable\\Default\\Network\\Cookies",
             "linpath": "",
             "type": "Chromium",
-            "altpaths": []
+            "altpaths": [
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Opera Software\\Opera Stable\\Profile 1\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 1"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Opera Software\\Opera Stable\\Profile 2\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 2"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Opera Software\\Opera Stable\\Profile 3\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 3"
+                }
+            ]
         },
         {
             "name": "Arc",
-            "winpath": "",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Packages\\TheBrowserCompany.Arc_ttt1ap7aakyb4\\LocalCache\\Local\\Arc\\User Data\\Default\\Network\\Cookies",
             "linpath": "",
             "type": "Chromium",
-            "altpaths": []
+            "altpaths": [
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Packages\\TheBrowserCompany.Arc_ttt1ap7aakyb4\\LocalCache\\Local\\Arc\\User Data\\Profile 1\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 1"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Packages\\TheBrowserCompany.Arc_ttt1ap7aakyb4\\LocalCache\\Local\\Arc\\User Data\\Profile 2\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 2"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Packages\\TheBrowserCompany.Arc_ttt1ap7aakyb4\\LocalCache\\Local\\Arc\\User Data\\Profile 3\\Network\\Cookies",
+                    "linpath": "",
+                    "name": "Profile 3"
+                }
+            ]
         },
         {
             "name": "Chromium",
-            "winpath": "",
-            "linpath": "",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Chromium\\User Data\\Default\\Network\\Cookies",
+            "linpath": "~/.config/chromium/Default/Cookies",
             "type": "Chromium",
-            "altpaths": []
+            "altpaths": [
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Chromium\\User Data\\Profile 1\\Network\\Cookies",
+                    "linpath": "~/.config/chromium/Profile 1/Cookies",
+                    "name": "Profile 1"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Chromium\\User Data\\Profile 2\\Network\\Cookies",
+                    "linpath": "~/.config/chromium/Profile 2/Cookies",
+                    "name": "Profile 2"
+                },
+                {
+                    "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Chromium\\User Data\\Profile 3\\Network\\Cookies",
+                    "linpath": "~/.config/chromium/Profile 3/Cookies",
+                    "name": "Profile 3"
+                }
+            ]
         },
         {
             "name": "Opera GX",
-            "winpath": "",
-            "linpath": "",
-            "type": "Chromium",
-            "altpaths": []
-        },
-        {
-            "name": "Tor",
-            "winpath": "",
-            "linpath": "",
-            "type": "Firefox",
-            "altpaths": []
-        },
-        {
-            "name": "Chrome",
-            "winpath": "",
+            "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Opera Software\\Opera GX Stable\\Cookies",
             "linpath": "",
             "type": "Chromium",
             "altpaths": []

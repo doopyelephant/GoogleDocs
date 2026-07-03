@@ -421,6 +421,27 @@ public static class CookieManager
         {
             Console.WriteLine("One valid browser cookie path found, using " + browsers.browsers[ValidIndexes[0]].name);
             int alt = 0;
+            var validalts = new List<AltPath>();
+            foreach (var path in browsers.browsers[ValidIndexes[0]].altpaths)
+            {
+                var platformpath = "";
+                if (OperatingSystem.IsWindows())
+                {
+                    platformpath = path.winpath;
+                }
+                else if (OperatingSystem.IsLinux())
+                {
+                   platformpath = path.linpath;
+                }
+
+                if (File.Exists(await platformpath.GetRealPath(true)))
+                {
+                    validalts.Add(path);
+                }
+            }
+            var tmpbrowser = browsers.browsers[ValidIndexes[0]];
+            tmpbrowser.altpaths = validalts;
+            browsers.browsers[ValidIndexes[0]] = tmpbrowser;
             if (browsers.browsers[ValidIndexes[0]].altpaths.Count > 0)
             {
                 alt = await Prompt(new []{"Default"}.ToList().Concat(browsers.browsers[ValidIndexes[0]].altpaths.Select(path => path.name).ToArray()).ToArray(), "Pick a path:");
@@ -431,6 +452,10 @@ public static class CookieManager
                 browsercookiepath = OperatingSystem.IsWindows()
                     ? browsers.browsers[ValidIndexes[0]].winpath
                     : browsers.browsers[ValidIndexes[0]].linpath;
+            }
+            else
+            {
+                browsercookiepath = OperatingSystem.IsWindows() ? browsers.browsers[ValidIndexes[0]].altpaths[alt - 1].winpath : browsers.browsers[ValidIndexes[0]].altpaths[alt - 1].linpath;
             }
 
 
@@ -481,6 +506,27 @@ public static class CookieManager
         if(/*browser != null*/true)
         {
             int alt = 0;
+            var validalts = new List<AltPath>();
+            foreach (var path in browser.altpaths)
+            {
+                var platformpath = "";
+                if (OperatingSystem.IsWindows())
+                {
+                    platformpath = path.winpath;
+                }
+                else if (OperatingSystem.IsLinux())
+                {
+                    platformpath = path.linpath;
+                }
+
+                if (File.Exists(await platformpath.GetRealPath(true)))
+                {
+                    validalts.Add(path);
+                }
+            }
+            var tmpbrowser = browser;
+            tmpbrowser.altpaths = validalts;
+            browser = tmpbrowser;
             if (browser.altpaths.Count > 0)
             {
                 var options = new[] { "Default" }.ToList().Concat(browser.altpaths.Select(path => path.name).ToArray())
@@ -497,6 +543,10 @@ public static class CookieManager
                 browsercookiepath = OperatingSystem.IsWindows()
                     ? browser.winpath
                     : browser.linpath;
+            }
+            else
+            {
+                browsercookiepath = OperatingSystem.IsWindows() ? browser.altpaths[alt - 1].winpath : browser.altpaths[alt - 1].linpath;
             }
             Console.WriteLine("Browser " + browser.name + " selected, using cookie path: " + browsercookiepath);
             mainWindow.SetOpenPickBrowser(false);
@@ -691,10 +741,20 @@ else
                         while (oldpath.Contains(substitute))
                         {
                             var dirs = Directory.GetDirectories(oldpath.SubstringBefore(substitute)).Select((string s) => s.SubstringAfterLast("\\"));
+                            var validdirs = new List<string>();
+                            foreach (var dir in dirs)
+                            {
+                                if (File.Exists(oldpath.SubstringBefore(substitute) + dir + "\\cookies.sqlite"))
+                                {
+                                    validdirs.Add(dir);
+                                }
+                            }
+
+                            dirs = validdirs;
                             int selected = 0;
                             if (!FirefoxProfileCache.Select(((List<String>, int) tuple) => tuple.Item1).ToList().Contains(dirs.ToList()))
                             {
-                                selected = await Prompt(dirs.ToArray(), "Pick a profile:");
+                                selected = await Prompt(dirs.Select((string s) => s.SubstringAfter(".")).ToArray(), "Pick a profile:");
                                 FirefoxProfileCache.Add((dirs.ToList(), selected));
                             }
                             else
