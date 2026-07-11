@@ -12,7 +12,10 @@ Paste this into the command prompt:
 curl -sSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.ps1" | powershell -NoProfile -ExecutionPolicy Bypass -Command "-"
 ```
 ### Linux
-Build and install yourself, (installer coming soon :) )
+Paste this into your terminal [⚠️⚠️UNTESTED⚠️⚠️(should work though)]:
+```
+curl -sSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.sh" | bash
+```
 ## TODO
 🕛 Planned
 🚧 WIP
