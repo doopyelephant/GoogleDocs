@@ -5,11 +5,10 @@
 foreach($Project in $Projects)
 {
     $Platforms = @(
-        "windows-x64"
-        "windows-arm64"
-        "windows-x86"
+        "win-x64"
+        "win-arm64"
+        "win-x86"
         "linux-x64"
-        "linux-x86"
         "linux-arm64"
     )
     foreach ($Platform in $Platforms)

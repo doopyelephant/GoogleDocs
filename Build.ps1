@@ -49,7 +49,7 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     $arch = ""
     if($CC -eq "y")
     {
-    $arch = Read-Host -Prompt "Arch? (win-x64, win-x86, win-arm64, linux-x64, linux-arm64, osx-x64, osx-arm64) (No OSX Support Yet(I don't have any hardware to test on) )"
+    $arch = Read-Host -Prompt "Arch? (win-x64, win-x86, win-arm64, linux-x64, linux-arm64, linux-musl-x64, linux-musl-arm64, osx-x64, osx-arm64) (No OSX Support Yet(I don't have any hardware to test on) )"
     $arch = "--property:RuntimeIdentifier=$arch"
     }
     elseif($CC -eq "n")
