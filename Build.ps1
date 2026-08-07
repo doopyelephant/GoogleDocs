@@ -83,6 +83,7 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     -and !($dll -match "^SkiaSharp") `
     -and !($dll -match "^HarfBuzzSharp") `
     -and !($dll -match "Avalonia") `
+    -and !($dll -match "Tmds.DBus.Protocol") `
     -and !($dll -match "^clr"))
         {
 
@@ -112,7 +113,8 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     Set-Location "./BuildDeps"
     $runtime = @(Get-ChildItem -Filter *.runtimeconfig.json -File -ErrorAction SilentlyContinue)
     $dep = @(Get-ChildItem -Filter *.deps.json -File -ErrorAction SilentlyContinue)
-    foreach ($file in $runtime + $dep)
+    $sos = @(Get-ChildItem -Filter *.so -File -ErrorAction SilentlyContinue)
+    foreach ($file in $runtime + $dep + $sos)
     {
         Copy-Item $file "../Build"
     }
