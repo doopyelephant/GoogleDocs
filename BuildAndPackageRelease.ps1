@@ -10,6 +10,8 @@ foreach($Project in $Projects)
         "win-x86"
         "linux-x64"
         "linux-arm64"
+        "linux-musl-x64"
+        "linux-musl-arm64"
     )
     foreach ($Platform in $Platforms)
     {

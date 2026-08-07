@@ -55,6 +55,46 @@ public static class Utils
         }
         return str.Substring(0, index) + replace + str.Substring(index + search.Length);
     }
+
+    public static string Base64Encode(this string s)
+    {
+        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(s));
+    }
+
+    public static string UrlDecode(this string s)
+    {
+        int percentcoding = -1;
+        string percentcontent = "";
+        string decoded = "";
+        foreach (char c in s)
+        {
+            if (percentcoding > 1)
+            {
+                percentcoding = -1;
+                decoded += Convert.ToChar(int.Parse(percentcontent, System.Globalization.NumberStyles.HexNumber));
+                percentcontent = "";
+            }
+            if (percentcoding != -1)
+            {
+                    percentcontent += c;
+                    percentcoding++;
+            }
+            else
+            {
+                if (c == '%')
+                {
+                    percentcoding++;
+                }
+                else
+                {
+                    decoded += c;
+                }
+            }
+        }
+      //  Console.WriteLine("RAW: " + s.Substring(0,(int)(s.Length * 0.1f)));
+      //  Console.WriteLine("DECODE: " + decoded.Substring(0,(int)(decoded.Length * 0.1f)));
+        return decoded;
+    }
     public static string UrlEncode(this string s)
     {
         string encoded = "";

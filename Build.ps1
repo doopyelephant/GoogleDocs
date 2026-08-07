@@ -170,6 +170,10 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
         }
         $Type = "$Type-$CCArch"
     }
+    if($arch -match "musl")
+    {
+    $Type = "$Type-musl"
+    }
     Copy-Item "./BuildDeps/$exe" "./Build/"
     Remove-Item "./BuildDeps" -R
     if($Project -eq "GoogleDocs")

@@ -612,6 +612,7 @@ catch (HttpRequestException err)
     private void SendDebugMenuText(object? sender, RoutedEventArgs e)
     {
         DebugReadText = DebugMenuInput.Text;
+        DebugMenuInput.Text = "";
     DebugReadSephamore = true;
     }
 

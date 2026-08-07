@@ -166,6 +166,10 @@ public static class CookieManager
         {
         Console.WriteLine(Directory.CreateDirectory(datadir));
         }
+        if(!Directory.Exists(datadir + "/Profile/Network"))
+        {
+            Console.WriteLine(Directory.CreateDirectory(datadir + "/Profile/Network"));
+        }
         /*//string cookiepath =
          //   "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)\\cookies.sqlite";
          string cookiepath = GetBrowserCookiePath().Result;
@@ -203,23 +207,25 @@ public static class CookieManager
         Console.WriteLine("Deleting old cookie files.");
         if (HostBrowserType == BrowserType.Firefox)
         {
-            File.Copy(Path.Combine(profiledir, "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
-            File.Copy(Path.Combine(profiledir, "key4.db"), Path.Combine(datadir, "key4.db"), true);
-            File.Copy(Path.Combine(profiledir, "cookies.sqlite-wal"), Path.Combine(datadir, "cookies.sqlite-wal"),
+            File.Copy(Path.Combine(await profiledir.GetRealPath(), "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
+            File.Copy(Path.Combine(await profiledir.GetRealPath(), "key4.db"), Path.Combine(datadir, "key4.db"), true);
+            File.Copy(Path.Combine(await profiledir.GetRealPath(), "cookies.sqlite-wal"), Path.Combine(datadir, "cookies.sqlite-wal"),
                 true);
-            File.Copy(Path.Combine(profiledir, "cookies.sqlite-shm"), Path.Combine(datadir, "cookies.sqlite-shm"),
+            File.Copy(Path.Combine(await profiledir.GetRealPath(), "cookies.sqlite-shm"), Path.Combine(datadir, "cookies.sqlite-shm"),
                 true);
         }
         else
         {
-            File.Copy(Path.Combine(profiledir, "Cookies"), Path.Combine(datadir, "Cookies"), true);
+            File.Copy(Path.Combine(await profiledir.GetRealPath(), "Cookies"), Path.Combine(datadir, "Profile\\Network\\Cookies"), true);
+            File.Copy(Path.Combine(await profiledir.GetRealPath(), "../../Local State"), Path.Combine(datadir, "Profile\\Local State"), true);
         }
 
         Console.WriteLine("Browser cookie files copied to data directory.");
        
-        string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + (HostBrowserType == BrowserType.Firefox ? "\\cookies.sqlite" : "\\Cookies"))/*.AddQuotes()*/, hostfilter };
+        string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + (HostBrowserType == BrowserType.Firefox ? "\\cookies.sqlite" : "\\Profile\\Network\\Cookies"))/*.AddQuotes()*/, hostfilter };
         string json = await ExecuteScript("python",pyargs);
-                              //      Console.WriteLine("PY OUT: " + json);
+        //json = json.UrlDecode();
+                                    //Console.WriteLine("PY OUT: " + json);
         json = "[" + json.SubstringAfter("[");
         json = json.RemoveAfterBrackets();
 
@@ -230,6 +236,15 @@ public static class CookieManager
         var cookies = JsonConvert.DeserializeObject<List<BrowserCookie>>(json);
         var cookiejar = new BrowserCookieJar();
         cookiejar.cookies = cookies;
+        for (int i = 0; i < cookiejar.cookies.Count; i++)
+        {
+            var tmp = cookiejar.cookies[i];
+            Console.WriteLine("Cookie Name: " + tmp.name.UrlDecode());
+            tmp.host = tmp.host.UrlDecode();
+            tmp.name = tmp.name.UrlDecode();
+            tmp.value = tmp.value.UrlDecode()/*.Base64Encode()*/;
+            cookiejar.cookies[i] = tmp;
+        }
         return cookiejar;
     }
 
@@ -633,7 +648,15 @@ else
         added.Add("GFE_RTT");*/
 
         //Remove the last semicolon
-        tmpauthcookie = tmpauthcookie.Substring(0, tmpauthcookie.Length - 2);
+        if (tmpauthcookie.Length >= 2)
+        {
+            tmpauthcookie = tmpauthcookie.Substring(0, tmpauthcookie.Length - 2);
+        }
+        else
+        {
+            tmpauthcookie = "";
+        }
+
 
         if (added == SaveKeys.attachcookies)
         {
@@ -754,7 +777,20 @@ else
                             int selected = 0;
                             if (!FirefoxProfileCache.Select(((List<String>, int) tuple) => tuple.Item1).ToList().Contains(dirs.ToList()))
                             {
-                                selected = await Prompt(dirs.Select((string s) => s.SubstringAfter(".")).ToArray(), "Pick a profile:");
+                                selected = await Prompt(dirs.Select((string s) =>
+                                    {
+                                        switch (s.SubstringAfter("."))
+                                        {
+                                            case "default-release":
+                                                return "Default";
+                                            case "dev-edition-default":
+                                                return "Dev Edition Default";
+                                            default:
+                                                return s;
+                                        }
+                                    }).
+
+                                ToArray(), "Pick a profile:");
                                 FirefoxProfileCache.Add((dirs.ToList(), selected));
                             }
                             else

@@ -37,6 +37,11 @@ if($IsLinux)
 {
     $OS = "linux"
 }
+$libc = ldd /bin/ls
+if($libc -match "musl")
+{
+    $OS = "$OS-musl"
+}
 Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.4.0-alpha/GoogleDocsInstaller-${OS}-${OSarch}.zip" -OutFile "$Release"
 mkdir "$AppData\InstallerRelease"
 Expand-Archive -Path $Release -DestinationPath "$AppData\InstallerRelease"

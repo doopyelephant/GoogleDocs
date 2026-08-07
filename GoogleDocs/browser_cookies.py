@@ -316,18 +316,18 @@ def get_firefox_cookies(cookiesfile: str, url: str | None = None) -> list[dict]:
                     encrypted_value = encrypted_value.encode('latin-1')
                 decrypted = decrypt_firefox_cookie_value(encrypted_value, master_key)
                 if decrypted:
-                    cookies.append({'host': host, 'name': name, 'value': decrypted})
+                    cookies.append({'host': urlencode(host), 'name': urlencode(name), 'value': urlencode(decrypted)})
                     decrypted_count += 1
                 else:
                     eprint(f"  Failed to decrypt: {name} @ {host}")
-                    cookies.append({'host': host, 'name': name, 'value': ''})
+                    cookies.append({'host': urlencode(host), 'name': urlencode(name), 'value': ''})
                     failed_count += 1
             else:
                 eprint(f"  No master key, skipping encrypted cookie: {name} @ {host}")
-                cookies.append({'host': host, 'name': name, 'value': ''})
+                cookies.append({'host': urlencode(host), 'name': urlencode(name), 'value': ''})
                 failed_count += 1
         else:
-            cookies.append({'host': host, 'name': name, 'value': value or ''})
+            cookies.append({'host': urlencode(host), 'name': urlencode(name), 'value': urlencode(value) or ''})
             plaintext_count += 1
 
     eprint(f"Cookies: {plaintext_count} plaintext, {decrypted_count} decrypted, {failed_count} failed.")
@@ -337,6 +337,9 @@ def get_firefox_cookies(cookiesfile: str, url: str | None = None) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Chrome / Chromium  (Cookies  - SQLite with DPAPI/AES encryption)
 # ---------------------------------------------------------------------------
+def urlencode(s: str) -> str:
+    import urllib.parse
+    return urllib.parse.quote(s, safe='~()*!.\'')
 
 def get_chrome_local_state_key(cookies_path: str) -> bytes | None:
     """Extract the AES key from Chrome's Local State file (v10+ cookies on Windows)."""
@@ -350,6 +353,7 @@ def get_chrome_local_state_key(cookies_path: str) -> bytes | None:
         with open(local_state_path, 'r', encoding='utf-8') as f:
             local_state = json.load(f)
         encrypted_key = base64.b64decode(local_state['os_crypt']['encrypted_key'])
+        eprint(f"Chrome Local State AES key: {encrypted_key.hex()}")
         # Strip DPAPI prefix "DPAPI"
         encrypted_key = encrypted_key[5:]
         if sys.platform == 'win32':
@@ -382,7 +386,9 @@ def chrome_decrypt_v10(encrypted_value: bytes, aes_key: bytes) -> str:
     ciphertext = encrypted_value[15:-16]
     tag = encrypted_value[-16:]
     cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
-    return cipher.decrypt_and_verify(ciphertext, tag).decode('utf-8', errors='replace')
+    decrypted = cipher.decrypt_and_verify(ciphertext, tag)#.decode("latin-1")
+    eprint(f"Chrome v10 decrypted: {decrypted!r}")
+    return decrypted
 
 
 def chrome_decrypt_dpapi(encrypted_value: bytes) -> str:
@@ -401,7 +407,7 @@ def chrome_decrypt_dpapi(encrypted_value: bytes) -> str:
         ctypes.byref(blobin), None, None, None, None, 0, ctypes.byref(blobout))
     if not retval:
         return ''
-    result = ctypes.string_at(blobout.pbData, blobout.cbData).decode('utf-8', errors='replace')
+    result = ctypes.string_at(blobout.pbData, blobout.cbData).decode("latin-1")
     ctypes.windll.kernel32.LocalFree(blobout.pbData)
     return result
 
@@ -413,6 +419,7 @@ def get_chrome_cookies(cookiesfile: str, url: str | None = None) -> list[dict]:
     aes_key = get_chrome_local_state_key(cookiesfile)
     if aes_key:
         eprint(f"Chrome AES key extracted ({len(aes_key)} bytes).")
+        eprint(f"AES key: {aes_key.hex()}")
     else:
         eprint("No AES key — will attempt DPAPI decryption only.")
 
@@ -433,20 +440,28 @@ def get_chrome_cookies(cookiesfile: str, url: str | None = None) -> list[dict]:
     cookies = []
     for host_key, name, value, encrypted_value in rows:
         if value:
-            cookies.append({'host': host_key, 'name': name, 'value': value})
+            # eprint(f"IF VALUE: {encrypted_value!r}")
+            cookies.append({'host': urlencode(host_key), 'name': urlencode(name), 'value': urlencode(value)})
+            eprint("value: ", value)
+            eprint("encrypted value: ", encrypted_value)
             continue
         if not encrypted_value:
-            cookies.append({'host': host_key, 'name': name, 'value': ''})
+            # eprint(f"NOT ENCRYPTED VALUE: {encrypted_value!r}")
+            cookies.append({'host': urlencode(host_key), 'name': urlencode(name), 'value': ''})
             continue
         try:
             if encrypted_value[:3] == b'v10' and aes_key:
+                # eprint(f"V10: {encrypted_value!r}")
                 decrypted = chrome_decrypt_v10(encrypted_value, aes_key)
             else:
+                # eprint(f"DPAPI: {encrypted_value!r}")
                 decrypted = chrome_decrypt_dpapi(encrypted_value)
-            cookies.append({'host': host_key, 'name': name, 'value': decrypted})
+            cookies.append({'host': urlencode(host_key), 'name': urlencode(name), 'value': urlencode(decrypted)})
+            eprint("value: ", decrypted)
+            eprint("encrypted value: ", encrypted_value)
         except Exception as e:
-            eprint(f"  Chrome decrypt error for {name} @ {host_key}: {e}")
-            cookies.append({'host': host_key, 'name': name, 'value': ''})
+            # eprint(f"  Chrome decrypt error for {name} @ {host_key}: {e}")
+            cookies.append({'host': urlencode(host_key), 'name': urlencode(name), 'value': ''})
 
     return cookies
 
