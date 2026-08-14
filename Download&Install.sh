@@ -21,11 +21,11 @@ if [ -f /etc/os-release ]; then
       ubuntu|debian|raspbian)
         echo "Using APT"
         read -rp "This script will use APT to install $package, is this ok? [y/n]" accepted
-if [$accepted = "n"]; then
+if [ $accepted = "n" ]; then
           echo "This script cannot function without $package, exiting"
           exit
         fi
-        if [$accepted = "y"]; then
+        if [ $accepted = "y" ]; then
           if ["$(id -u)" -ne 0]; then
             echo "Need root to install package, please rerun with sudo"
             exit
@@ -47,11 +47,11 @@ if [$accepted = "n"]; then
       fedora|rhel|centos|rocky|almalinux)
         echo "Using DNF"
         read -rp "This script will use DNF to install $package, is this ok? [y/n]" accepted
-        if [$accepted = "n"]; then
+        if [ $accepted = "n" ]; then
                   echo "This script cannot function without $package, exiting"
                   exit
                 fi
-                if [$accepted = "y"]; then
+                if [ $accepted = "y" ]; then
                   if ["$(id -u)" -ne 0]; then
                     echo "Need root to install package, please rerun with sudo"
                     exit
@@ -69,11 +69,11 @@ if [$accepted = "n"]; then
       arch|manjaro)
         echo "Using Pacman"
         read -rp "This script will use Pacman to install $package, is this ok? [y/n]" accepted
-        if [$accepted = "n"]; then
+        if [ $accepted = "n" ]; then
                   echo "This script cannot function without $package, exiting"
                   exit
                 fi
-                if [$accepted = "y"]; then
+                if [ $accepted = "y" ]; then
                   if ["$(id -u)" -ne 0]; then
                     echo "Need root to install package, please rerun with sudo"
                     exit
@@ -90,11 +90,11 @@ if [$accepted = "n"]; then
       alpine|postmarketos)
         echo "Using APK"
         read -rp "This script will use APK to install $package, is this ok? [y/n]" accepted
-        if [$accepted = "n"]; then
+        if [ $accepted = "n" ]; then
           echo "This script cannot function without $package, exiting"
           exit
         fi
-        if [$accepted = "y"]; then
+        if [ $accepted = "y" ]; then
           if ["$(id -u)" -ne 0]; then
             echo "Need root to install package, please rerun with sudo"
             exit
