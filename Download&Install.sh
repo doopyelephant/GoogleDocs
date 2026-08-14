@@ -144,5 +144,9 @@ else
   fi
 echo "All Dependencies Satisfied"
 echo "Fetching&Executing powershell install script"
+ if [ "$(id -u)" -ne 0 ]; then
+            echo "Need root to create installation directory, please rerun with sudo"
+            exit
+            fi
 curl -sSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.ps1" | pwsh -NoProfile -Command "-"
 echo "Done!"
