@@ -43,7 +43,7 @@ public partial class MainWindow : Window
     private readonly object debugLogLock = new();
     private bool ctrl = false;
 
-    // Keep this in memory only; it is refreshed from the embedded login WebView.
+
     private string cookie = "";
     public GoogleDoc? doc = null;
     private string debugmenulog = "";
@@ -263,7 +263,7 @@ public partial class MainWindow : Window
                // Console.WriteLine("Adding table inline");
                 string tbl = remaining.Substring(5, remaining.IndexOf("</Tb>", StringComparison.Ordinal) - 5);
                 int height = Regex.Count(tbl,"\u0012");
-                int total = Regex.Count(tbl,"\u001c");
+                int total = Regex.Count(tbl,'\u001c'.ToString());
                 int width = total / height;
                 //Console.WriteLine("Adding table inline with width " + width + " and height " + height);
                 string[,] table = new string[width,height];

@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 get_arch(){
   local arch="$(uname -m)"
   case "$arch" in

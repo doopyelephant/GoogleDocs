@@ -41,17 +41,17 @@
         {
             "name": "Firefox",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\##FIREFOXPROFILE##\\cookies.sqlite",
-            "linpath": "/home/##SYSUSER##/.mozilla/firefox/##FIREFOXPROFILE##/cookies.sqlite",
+            "linpath": "\\home\\##SYSUSER##\\.mozilla\\firefox\\##FIREFOXPROFILE##\\cookies.sqlite",
             "type": "Firefox",
             "altpaths": [
                 {
                     "winpath": "",
-                    "linpath": "/home/##SYSUSER##/snap/firefox/common/.mozilla/firefox/##FIREFOXPROFILE##/cookies.sqlite",
+                    "linpath": "\\home\\##SYSUSER##\\snap\\firefox\\common\\.mozilla\\firefox\\##FIREFOXPROFILE##\\cookies.sqlite",
                     "name": "Snap"
                 },
                 {
                     "winpath": "",
-                    "linpath": "/home/##SYSUSER##/.var/app/org.mozilla.firefox/.mozilla/firefox/##FIREFOXPROFILE##/cookies.sqlite",
+                    "linpath": "\\home\\##SYSUSER##\\.var\\app\\org.mozilla.firefox\\.mozilla\\firefox\\##FIREFOXPROFILE##\\cookies.sqlite",
                     "name": "Flatpak"
                 }
             ]
@@ -142,22 +142,22 @@
         {
             "name": "Chromium",
             "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Chromium\\User Data\\Default\\Network\\Cookies",
-            "linpath": "/home/##SYSUSER##/.config/chromium/Default/Cookies",
+            "linpath": "\\home\\##SYSUSER##\\.config\\chromium\\Default\\Cookies",
             "type": "Chromium",
             "altpaths": [
                 {
                     "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Chromium\\User Data\\Profile 1\\Network\\Cookies",
-                    "linpath": "/home/##SYSUSER##/.config/chromium/Profile 1/Cookies",
+                    "linpath": "\\home\\##SYSUSER##\\.config\\chromium\\Profile 1\\Cookies",
                     "name": "Profile 1"
                 },
                 {
                     "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Chromium\\User Data\\Profile 2\\Network\\Cookies",
-                    "linpath": "/home/##SYSUSER##/.config/chromium/Profile 2/Cookies",
+                    "linpath": "\\home\\##SYSUSER##\\.config\\chromium\\Profile 2\\Cookies",
                     "name": "Profile 2"
                 },
                 {
                     "winpath": "C:\\Users\\##SYSUSER##\\AppData\\Local\\Chromium\\User Data\\Profile 3\\Network\\Cookies",
-                    "linpath": "/home/##SYSUSER##/.config/chromium/Profile 3/Cookies",
+                    "linpath": "\\home\\##SYSUSER##\\.config\\chromium\\Profile 3\\Cookies",
                     "name": "Profile 3"
                 }
             ]

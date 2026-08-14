@@ -205,19 +205,21 @@ public static class CookieManager
             File.Delete(file);
         }
         Console.WriteLine("Deleting old cookie files.");
+        string rpath = await profiledir.GetRealPath();
+        Console.WriteLine("Copying cookie files from " + rpath + " to " + datadir);
         if (HostBrowserType == BrowserType.Firefox)
         {
-            File.Copy(Path.Combine(await profiledir.GetRealPath(), "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
-            File.Copy(Path.Combine(await profiledir.GetRealPath(), "key4.db"), Path.Combine(datadir, "key4.db"), true);
-            File.Copy(Path.Combine(await profiledir.GetRealPath(), "cookies.sqlite-wal"), Path.Combine(datadir, "cookies.sqlite-wal"),
+            File.Copy(Path.Combine(rpath, "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
+            File.Copy(Path.Combine(rpath, "key4.db"), Path.Combine(datadir, "key4.db"), true);
+            File.Copy(Path.Combine(rpath, "cookies.sqlite-wal"), Path.Combine(datadir, "cookies.sqlite-wal"),
                 true);
-            File.Copy(Path.Combine(await profiledir.GetRealPath(), "cookies.sqlite-shm"), Path.Combine(datadir, "cookies.sqlite-shm"),
+            File.Copy(Path.Combine(rpath, "cookies.sqlite-shm"), Path.Combine(datadir, "cookies.sqlite-shm"),
                 true);
         }
         else
         {
-            File.Copy(Path.Combine(await profiledir.GetRealPath(), "Cookies"), Path.Combine(datadir, "Profile\\Network\\Cookies"), true);
-            File.Copy(Path.Combine(await profiledir.GetRealPath(), "../../Local State"), Path.Combine(datadir, "Profile\\Local State"), true);
+            File.Copy(Path.Combine(rpath, "Cookies"), Path.Combine(datadir, "Profile\\Network\\Cookies"), true);
+            File.Copy(Path.Combine(rpath, "../../Local State"), Path.Combine(datadir, "Profile\\Local State"), true);
         }
 
         Console.WriteLine("Browser cookie files copied to data directory.");
@@ -742,6 +744,10 @@ else
                 case "PKFIRST":
                     while (oldpath.Contains(substitute))
                     {
+                        if (!Directory.Exists(oldpath.SubstringBefore(substitute)))
+                        {
+                        return oldpath;
+                        }
                         //replace all of the substitutes in the path with the first child
                         oldpath = oldpath.ReplaceFirst(substitute,
                             Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
@@ -755,6 +761,10 @@ else
                     {
                         while (oldpath.Contains(substitute))
                         {
+                            if (!Directory.Exists(oldpath.SubstringBefore(substitute)))
+                            {
+                                return oldpath;
+                            }
                             //replace all of the substitutes in the path with the first child
                             oldpath = oldpath.ReplaceFirst(substitute,
                                 Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
@@ -763,6 +773,10 @@ else
                     }
                         while (oldpath.Contains(substitute))
                         {
+                            if (!Directory.Exists(oldpath.SubstringBefore(substitute)))
+                            {
+                                return oldpath;
+                            }
                             var dirs = Directory.GetDirectories(oldpath.SubstringBefore(substitute)).Select((string s) => s.SubstringAfterLast("\\"));
                             var validdirs = new List<string>();
                             foreach (var dir in dirs)
