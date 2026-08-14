@@ -57,7 +57,8 @@ if ["$accepted" = "n"]; then
                     exit
                     fi
                   echo "Installing using DNF"
-                  dnf install "https://github.com/PowerShell/PowerShell/releases/download/v7.6.3/powershell-7.6.3-1.cm.$(get_arch()).rpm"
+                  $dnf_arch = $(get_arch)
+                  dnf install "https://github.com/PowerShell/PowerShell/releases/download/v7.6.3/powershell-7.6.3-1.cm.$dnf_arch.rpm"
                   echo "$package installed"
                   fi
                 if ["$accepted" != "y"]; then
