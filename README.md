@@ -14,7 +14,7 @@ curl.exe -sSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/h
 ### Linux
 Paste this into your terminal [⚠️⚠️UNTESTED⚠️⚠️(should work though)]:
 ```
-bash <(curl -fsSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.sh")
+sudo -v && sudo bash -c "$(curl -fsSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.sh")"
 ```
 ## TODO
 🕛 Planned
