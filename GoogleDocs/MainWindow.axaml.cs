@@ -548,6 +548,8 @@ try
   //await doc.GetSessionId();
   SetMainText(doc.GetText());
   Console.WriteLine("Document loaded successfully.");
+  SaveKeys.lastopened = doc_id;
+  JsonParsing.SaveKeys(SaveKeys);
   Console.WriteLine(doc.GetText());
   await doc.GetSessionId();
   if(/*SaveKeys.bind*/false)
