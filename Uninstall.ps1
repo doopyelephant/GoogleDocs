@@ -7,10 +7,10 @@ if($IsWindows)
         Start-Process powershell.exe -ArgumentList $arguments -Verb RunAs
         Exit
     }
-    Remove-Item -Recurse -Force "$env:USERPROFILE\AppData\Local\GoogleDocs"
-    Remove-Item -Force "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\GoogleDocs.lnk"
+    Remove-Item -Recurse -Force "$env:USERPROFILE/AppData/Local/GoogleDocs"
+    Remove-Item -Force "$env:USERPROFILE/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/GoogleDocs.lnk"
     $RegistryKeyName = "GoogleDocs"
-    $RegistryPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$RegistryKeyName"
+    $RegistryPath = "HKLM:/Software/Microsoft/Windows/CurrentVersion/Uninstall/$RegistryKeyName"
     if (Test-Path $RegistryPath)
     {
         Remove-Item -Path $RegistryPath -Recurper -Force

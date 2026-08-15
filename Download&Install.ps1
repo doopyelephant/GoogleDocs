@@ -2,14 +2,14 @@ $ProgressPreference = 'SilentlyContinue'
 $AppData = ""
 if($IsWindows)
 {
-    $AppData = "$env:USERPROFILE\AppData\Local\GoogleDocs"
+    $AppData = "$env:USERPROFILE/AppData/Local/GoogleDocs"
 }
 if($IsLinux)
 {
     $AppData = "/opt/GoogleDocs"
 }
 mkdir $AppData
-$Release = "$AppData\InstallerRelease.zip"
+$Release = "$AppData/InstallerRelease.zip"
 $OSarch = ""
 if($IsWindows)
 {
@@ -57,16 +57,16 @@ else{
 $installzip = "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.5.0-alpha/GoogleDocsInstaller-${OS}-${OSarch}.zip"
 Write-Host "Downloading installer from ${installzip}"
 Invoke-WebRequest -Uri $installzip -OutFile "$Release"
-mkdir "$AppData\InstallerRelease"
-Expand-Archive -Path $Release -DestinationPath "$AppData\InstallerRelease"
+mkdir "$AppData/InstallerRelease"
+Expand-Archive -Path $Release -DestinationPath "$AppData/InstallerRelease"
 Remove-Item -Force $Release
 if($IsWindows)
 {
-    & "$AppData\InstallerRelease\Installer\GoogleDocsInstaller.exe"
+    & "$AppData/InstallerRelease/Installer/GoogleDocsInstaller.exe"
 }
 if($IsLinux)
 {
-    $installerpath = "$AppData\InstallerRelease\Installer\GoogleDocsInstaller"
+    $installerpath = "$AppData/InstallerRelease/Installer/GoogleDocsInstaller"
     chmod +x $installerpath
     & $installerpath
 }
