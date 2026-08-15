@@ -64,6 +64,11 @@ if($IsLinux)
 {
     $OS = "linux"
 }
+$libc = ldd /bin/ls
+if($libc -match "musl")
+{
+    $OSarch = "$OSarch-musl"
+}
 Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.5.0-alpha/GoogleDocs-${OS}-${OSarch}.zip" -OutFile "$Release"
 $writer.WriteLine("Progress: 60")
 Expand-Archive -Path $Release -DestinationPath "$AppData\Release"

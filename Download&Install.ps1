@@ -48,7 +48,7 @@ else{
 $libc = ldd /bin/ls
 if($libc -match "musl")
 {
-    $OS = "$OS-musl"
+    $OSarch = "$OSarch-musl"
     Write-Host "Using musl libc"
 }
 else{
