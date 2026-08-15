@@ -54,7 +54,7 @@ if($libc -match "musl")
 else{
     Write-Host "Skipping musl"
 }
-$installzip = "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.5.0-alpha/GoogleDocsInstaller-${OS}-${OSarch}.zip"
+$installzip = "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.6.0-alpha/GoogleDocsInstaller-${OS}-${OSarch}.zip"
 Write-Host "Downloading installer from ${installzip}"
 Invoke-WebRequest -Uri $installzip -OutFile "$Release"
 mkdir "$AppData/InstallerRelease"
