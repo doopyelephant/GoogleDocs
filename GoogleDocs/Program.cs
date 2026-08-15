@@ -29,8 +29,8 @@ public static class Program
     {
 //AttachConsole(ATTACH_PARENT_PROCESS);
 CleanUp = new List<Thread>();
-        BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+BuildAvaloniaApp()
+    .StartWithClassicDesktopLifetime(args);
     }
 
     public async static void DebugMenu()
@@ -385,5 +385,6 @@ CleanUp = new List<Thread>();
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
-            .WithInterFont();
+            .WithInterFont()
+            .UseWayland();
 }
