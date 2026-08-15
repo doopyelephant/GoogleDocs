@@ -66,5 +66,7 @@ if($IsWindows)
 }
 if($IsLinux)
 {
-    & "$AppData\InstallerRelease\Installer\GoogleDocsInstaller"
+    $installerpath = "$AppData\InstallerRelease\Installer\GoogleDocsInstaller"
+    chmod +x $installerpath
+    & $installerpath
 }
