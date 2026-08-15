@@ -32,17 +32,31 @@ $OS = ""
 if($IsWindows)
 {
     $OS = "windows"
+    Write-Host "Using Windows Version"
+}
+else{
+    Write-Host "Not using windows version"
 }
 if($IsLinux)
 {
     $OS = "linux"
+    Write-Host "Using linux version"
+}
+else{
+    Write-Host "Not using linux version"
 }
 $libc = ldd /bin/ls
 if($libc -match "musl")
 {
     $OS = "$OS-musl"
+    Write-Host "Using musl libc"
 }
-Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.5.0-alpha/GoogleDocsInstaller-${OS}-${OSarch}.zip" -OutFile "$Release"
+else{
+    Write-Host "Skipping musl"
+}
+$installzip = "https://github.com/doopyelephant/GoogleDocs/releases/download/v0.5.0-alpha/GoogleDocsInstaller-${OS}-${OSarch}.zip"
+Write-Host "Downloading installer from ${installzip}"
+Invoke-WebRequest -Uri $installzip -OutFile "$Release"
 mkdir "$AppData\InstallerRelease"
 Expand-Archive -Path $Release -DestinationPath "$AppData\InstallerRelease"
 Remove-Item -Force $Release
