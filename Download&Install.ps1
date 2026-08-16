@@ -68,5 +68,5 @@ if($IsLinux)
 {
     $installerpath = "$AppData/InstallerRelease/Installer/GoogleDocsInstaller"
     chmod +x $installerpath
-    & $installerpath
+    sudo -i -u "$SUDO_USER" & $installerpath
 }
