@@ -84,6 +84,7 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     -and !($dll -match "^HarfBuzzSharp") `
     -and !($dll -match "Avalonia") `
     -and !($dll -match "Tmds.DBus.Protocol") `
+    -and !($dll -match "NWayland") `
     -and !($dll -match "^clr"))
         {
 
