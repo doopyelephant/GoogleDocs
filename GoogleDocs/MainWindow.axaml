@@ -84,5 +84,29 @@
             </StackPanel>
         </Border>
     </Popup>
+        <Popup x:Name="PermissionPrompt" Width="500" Height="500" PlacementTarget="{Binding #MainGrid}"
+               Placement="Center">
+            <Border Background="{DynamicResource SurfaceContainer}" BorderThickness="1" CornerRadius="20" Padding="12">
+                <StackPanel>
+                        <TextBlock Text="
+This Application will open the cookie files from your installed browser,
+these files may contain personal information, authentication,
+or any information website have saved on your computer.
+This application will copy these files to its own directory and use the ONLY for authenticating
+with Google's servers. This is required to authenticate with Google.
+This Application will authenticate as if it is you using your browser files.
+ONLY Google Cookies will be sent anywhere, and ONLY directly to Google.
+This is required for this application to function, if rejected, the application will close.
+&#x0a;&#x0a;Do you wish to proceed?&#x0a;
+                          "
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   Name="PermBox">
+                        </TextBlock>
+                    <Button Content="Yes" Click="AcceptPerm" Margin="15"></Button>
+                    <Button Content="Close" Click="Exit"></Button>
+                </StackPanel>
+            </Border>
+        </Popup>
     </Grid>
 </Window>

@@ -67,4 +67,5 @@ public struct SaveKeys
     public bool usedynamicpaths;
     public string staticpath;
     public bool toolbar;
+    public bool hassetup;
 }

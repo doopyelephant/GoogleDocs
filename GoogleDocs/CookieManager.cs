@@ -366,6 +366,11 @@ public static class CookieManager
         RealCacheRequests = new List<string>();
         RealCache = new List<string>();
         SaveKeys = JsonParsing.GetSaveKeys();
+        if (SaveKeys.acceptedbrowserscraping == false)
+        {
+            Console.WriteLine("User has not accepted browser scraping, cannot fetch cookies. Hard Exiting.");
+            Environment.Exit(0);
+        }
         if (keys != null)
         {
             SaveKeys = keys.Value;

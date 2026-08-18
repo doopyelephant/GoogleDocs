@@ -1,6 +1,6 @@
 {
-  "hasopened": true,
-  "lastopened": "1c9raUuFX7oqvaErcnVh0Nkz8WqLIcnfG5L81Oxn_VIo",
+  "hasopened": false,
+  "lastopened": "",
   "acceptedbrowserscraping": true,
   "ovveridecookie": false,
   "cookie": "COMPASS=documents=CmIACWuJV_kiSL6qcKSCerWtxSGoRqle6PRF3yZt3fmxSb1KSjO_v7BrbBM_M1aWO97ATwGCZVnhkC8zJwXoxlULNz-EKjHUdQs4ZEW8nyuo_3N3pv_l9-A1_lGMbPUAxU3zZhCbnb_OBhpzAAlriVcfe8SEfEEqyvna_mhrYvzMft5c-wgN9S92MmxFnJhntKGCmJJeLVbOs6upZ0cd-kce4WUCHP3TEY7JKBRtO2AGVFyEt7UMDCjIHsT4x76BAteN8JB4I-xBQCYszLRX8MwK8UaiEeCclJnj6tcKsg==; NID=530=LllHHD2YjbZtnXJpsR-JmwogWyzuaKPcmVVTe9B9OxlnNcMbhtl8lOlsoa_FWXXUuzf6C2E61z83zC2nReIgxfSkuBVoxhLEudsgXz33rdHxt7GgPwS8qW2Ily4sl0uq5FokUS2hozfxkEVc9AtgjeEsK6Wy3mVC0o8nvCtkMp9ySTINuARc_NX5AoTAqXgg4FKiRkvpjmWfH7dpR-stcw;",
@@ -67,6 +67,7 @@
   "bind": false,
   "log": false,
   "usedynamicpaths": true,
-  "staticpath": "C:\\Users\\##SYSUSER##\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\emrp3qaz.default-release",
-  "toolbar": false
+  "staticpath": "[PUT PATH TO FIREFOX PROFILE DIR HERE]",
+  "toolbar": false,
+  "hassetup": false
 }

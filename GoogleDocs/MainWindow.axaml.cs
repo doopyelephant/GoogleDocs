@@ -63,6 +63,21 @@ public partial class MainWindow : Window
         {
             InitLogThread();
         }
+
+        if (!SaveKeys.hassetup)
+        {
+            SaveKeys.acceptedbrowserscraping = false;
+            JsonParsing.SaveKeys(SaveKeys);
+            PermissionPrompt.Open();
+        }
+        else
+        {
+            if (!SaveKeys.acceptedbrowserscraping)
+            {
+                PermBox.Text = "You have not accepted browser scraping, this is required for this application to function. \n\n" + PermBox.Text;
+                PermissionPrompt.Open();
+            }
+        }
         UrlConfig = JsonParsing.GetUrlConfig();
         if (UrlConfig.version != urlconfig_version)
         {
@@ -720,5 +735,21 @@ catch (HttpRequestException err)
             default:
                 break;
         }
+    }
+
+    private void AcceptPerm(object? sender, RoutedEventArgs e)
+    {
+        SaveKeys.acceptedbrowserscraping = true;
+        SaveKeys.hassetup = true;
+        JsonParsing.SaveKeys(SaveKeys);
+        PermissionPrompt.Close();
+    }
+
+    private void Exit(object? sender, RoutedEventArgs e)
+    {
+        SaveKeys.acceptedbrowserscraping = false;
+        SaveKeys.hassetup = true;
+        JsonParsing.SaveKeys(SaveKeys);
+        this.Close();
     }
 }
