@@ -17,6 +17,7 @@ class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .UseWayland();
+            .UsePlatformDetect()
+            .UseWaylandWithFallback();
 
 }

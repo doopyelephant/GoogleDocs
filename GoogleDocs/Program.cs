@@ -386,5 +386,6 @@ BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .UseWayland();
+            .UsePlatformDetect()
+            .UseWaylandWithFallback();
 }
