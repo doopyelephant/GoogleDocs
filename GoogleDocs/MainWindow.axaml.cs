@@ -470,11 +470,12 @@ public partial class MainWindow : Window
         return await NetworkManager.GetStreamAsync(url);
     }
 
-    private async void BindToDoc()
+    private async void BindToDoc(string extra = "")
     {
     String url = JsonParsing.GetBindReq(doc_id,UrlConfig);
     url += $"&zx={new Random().Next(100000,999999)}";
     url += $"&RID={rid++}";
+    url += extra;
 
     Console.WriteLine(url);
     while (true)
@@ -516,6 +517,8 @@ public partial class MainWindow : Window
     }
     public async void OpenDoc(string docid = "")
     {
+        var watch = new Stopwatch();
+        watch.Start();
 SetMainText("Loading...");
 Console.WriteLine("Loading...");
 string url = "";
@@ -562,15 +565,20 @@ try
   doc.id = doc_id;
   //await doc.GetSessionId();
   SetMainText(doc.GetText());
-  Console.WriteLine("Document loaded successfully.");
+  watch.Stop();
+  Console.WriteLine($"Document loaded successfully in {watch.ElapsedMilliseconds} ms.");
   SaveKeys.lastopened = doc_id;
   JsonParsing.SaveKeys(SaveKeys);
   Console.WriteLine(doc.GetText());
-  await doc.GetSessionId();
-  if(/*SaveKeys.bind*/false)
+  var token = await doc.GetToken(docid);
+  var BINDPOST = await NetworkManager.PostRequest(JsonParsing.GetBindPostReq(doc_id,UrlConfig) + $"&token={token}", "count=0");
+  File.WriteAllText("bindpost.html", BINDPOST);
+  var SID = BINDPOST.SubstringAfter("\"c\",\"").SubstringBefore("\"");
+  var lsq = BINDPOST.SubstringAfter("1788").SubstringAfter("1788").SubstringBefore(",");
+  if(SaveKeys.bind)
   {
       Console.WriteLine("Binding to document...");
-      BindToDoc();
+      BindToDoc($"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}");
   }
   ActiveElement(FeelingLuckyButton,false);
   ActiveElement(OpenDebugMenuButton,false);
@@ -580,6 +588,7 @@ try
   {
       ActivePanel(Toolbar, true);
   }
+
   // MainText.Inlines.Add(new Run("Hello World"));
 
 }

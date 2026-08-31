@@ -11,6 +11,7 @@ namespace GoogleDocs;
 public static class NetworkManager
 {
     public static string sid = "";
+    public static string ouid = "";
     public static SaveKeys SaveKeys { get; set; } = new();
 
     private static string SanitizeCookieHeader(string cookie)
@@ -35,11 +36,16 @@ public static class NetworkManager
     }
     public static async Task<string> PostRequest(string url,string postdata = "")
     {
-      //  if(sid != "" && !url.Contains("sid="))
-      if(false)
+        if(sid != "" && !url.Contains("sid="))
       {
             Console.WriteLine($"Appending sid to URL: {sid}");
             url += $"&sid={sid}";
+            Console.WriteLine($"Updated URL: {url}");
+        }
+        if(ouid != "" && !url.Contains("ouid="))
+        {
+            Console.WriteLine($"Appending ouid to URL: {ouid}");
+            url += $"&ouid={ouid}";
             Console.WriteLine($"Updated URL: {url}");
         }
         using var handler = new HttpClientHandler
@@ -99,6 +105,11 @@ public static class NetworkManager
         {
             url += $"&sid={sid}";
             Console.WriteLine($"Updated URL with sid: {url}");
+        }
+        if(ouid != "" && !url.Contains("ouid="))
+        {
+            url += $"&ouid={ouid}";
+            Console.WriteLine($"Updated URL with ouid: {url}");
         }
         using var handler = new HttpClientHandler
         {
@@ -166,6 +177,12 @@ if(headers.Contains("reporting-endpoints"))
                         Console.WriteLine("Found sid in reporting-endpoints header.");
                         sid = part.SubstringAfter("sid=");
                         Console.WriteLine($"Extracted sid: {sid}");
+                    }
+                    if(part.StartsWith("ouid="))
+                    {
+                        Console.WriteLine("Found ouid in reporting-endpoints header.");
+                        ouid = part.SubstringAfter("ouid=");
+                        Console.WriteLine($"Extracted ouid: {ouid}");
                     }
                 }
                 Console.WriteLine(val);

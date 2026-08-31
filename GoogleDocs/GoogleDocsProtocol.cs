@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -225,9 +227,9 @@ public class GoogleDoc
             }
         }
     }
-    public async Task<string> GetSessionId()
+    public async Task<string> GetToken(string doc_id)
     {
-        Console.WriteLine("Getting session ID...");
+       /* Console.WriteLine("Getting session ID...");
         var config = JsonParsing.GetUrlConfig();
         string bindurl = JsonParsing.GetBindPostReq(id,config);
 
@@ -238,7 +240,21 @@ public class GoogleDoc
         var response = await NetworkManager.PostRequest(bindurl,"count=0");
         Console.WriteLine("BIND POST RESPONSE:");
         Console.WriteLine(response);
-        return "";
+        return "";*/
+       var watch2 = new Stopwatch();
+       watch2.Start();
+       string mainhtml =
+           await NetworkManager.GetRequest(
+               $"https://docs.google.com/document/d/{doc_id}/edit?tab=t.0");
+       watch2.Stop();
+       Console.WriteLine($"Main HTML request took {watch2.ElapsedMilliseconds} ms");
+       //File.WriteAllText("main.html", mainhtml);
+       Console.WriteLine("Parsing main HTML...");
+       string token = mainhtml.SubstringAfter("\"token\":\"").SubstringBefore("\"");
+       //string smv = mainhtml.SubstringAfter("\"docs-smv\":").SubstringBefore(",");
+       Console.WriteLine("MAIN HTML TOKEN: " + token);
+     //  Console.WriteLine("MAIN HTML SMV: " + smv);
+       return token;
     }
 
     public string GetText()

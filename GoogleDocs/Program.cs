@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Net;
 using System.Threading;
+using Avalonia.Logging;
 
 namespace GoogleDocs;
 
@@ -383,9 +384,19 @@ BuildAvaloniaApp()
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
+    {
+        if (JsonParsing.GetSaveKeys().log)
+        {
+            return AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .UsePlatformDetect()
+                .UseWaylandWithFallback().LogToTextWriter(File.CreateText("avalonialog.txt"),LogEventLevel.Verbose);
+        }
+        return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .UsePlatformDetect()
             .UseWaylandWithFallback();
+    }
 }
