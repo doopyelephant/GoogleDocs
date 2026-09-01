@@ -573,11 +573,14 @@ try
   ActiveElement(OpenDebugMenuButton,false);
   ActiveElement(OpenDocButton,false);
   ActiveElement(docidbox,false);
-  watch.Stop();
+    watch.Stop();
   Console.WriteLine($"Document loaded successfully in {watch.ElapsedMilliseconds} ms.");
   SaveKeys.lastopened = doc_id;
   JsonParsing.SaveKeys(SaveKeys);
   Console.WriteLine(doc.GetText());
+ // File.WriteAllText("BindTest.txt",await NetworkManager.GetRequest(
+     // "https://docs.google.com/document/d/1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI/bind?id=1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI&sid=5e31d1095e7c74c5&token=AJagN6Q3L3VTlm0lH1eRvrcxnAZY:1788285353340&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&lsq=1788285346255&vc=1&c=1&w=1&flr=0&gsi=0&smv=2147483647&smb=[2147483647, oAMQAg==]&cimpl=1&RID=rpc&SID=8EC8391587DD515B&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1"));
+
   var token = await doc.GetToken(docid);
   var BINDPOST = await NetworkManager.PostRequest(JsonParsing.GetBindPostReq(doc_id,UrlConfig) + $"&token={token}", "count=0");
   File.WriteAllText("bindpost.html", BINDPOST);
@@ -586,7 +589,16 @@ try
   if(SaveKeys.bind)
   {
       Console.WriteLine("Binding to document...");
-      BindToDoc($"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}");
+      Console.WriteLine("BIND TEST");
+      var stream = await NetworkManager
+          .GetStreamAsync(
+              $"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1" + /*&SID={SID}*/
+              $"&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]");
+       await using var output = File.OpenWrite("BindStream.txt");
+          await stream.CopyToAsync(output);
+      //File.WriteAllText("BindGetRequestTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&zx=lwq349tga0r7&t=1" + $"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]"));
+      Console.WriteLine("BIND TEST END");
+    //  BindToDoc($"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}");
   }
   if (SaveKeys.toolbar)
   {

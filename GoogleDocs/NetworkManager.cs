@@ -140,13 +140,16 @@ public static class NetworkManager
         request.Headers.TryAddWithoutValidation("Accept", "*/*");
         request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
         HttpResponseMessage response = await localClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        Console.WriteLine($"Response status code: {(int)response.StatusCode} ({response.ReasonPhrase})");
+        Console.WriteLine("GET STREAM RETURNED");
         if (response.StatusCode != HttpStatusCode.OK)
         {
             Console.WriteLine($"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}).");
             Console.WriteLine($"Response headers: {string.Join(", ", response.Headers)}");
             Console.WriteLine($"Body: {await response.Content.ReadAsStringAsync()}");
         }
-        return await response.Content.ReadAsStreamAsync();
+        //return await response.Content.ReadAsStreamAsync();
+        return response.Content.ReadAsStreamAsync().Result;
     }
      public static async Task<string> GetRequest(string url)
     {
@@ -236,7 +239,7 @@ if(headers.Contains("reporting-endpoints"))
     }
 
 
-    private static async Task<(HttpStatusCode StatusCode, string? ReasonPhrase, Uri? RedirectLocation, string Body, HttpResponseHeaders headers)> SendRequestOnceAsync(string url)
+    private static async Task<(HttpStatusCode StatusCode, string? ReasonPhrase, Uri? RedirectLocation, string Body, HttpResponseHeaders headers)> SendRequestOnceAsync(string url, bool completeEarly = false)
     {
         using var handler = new HttpClientHandler
         {
@@ -271,7 +274,7 @@ if(headers.Contains("reporting-endpoints"))
         request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
 
         PrintHttpRequestData(request);
-        using var response = await localClient.SendAsync(request);
+        using var response = completeEarly ? await localClient.SendAsync(request,HttpCompletionOption.ResponseHeadersRead) : await localClient.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
 
         if (response.StatusCode == HttpStatusCode.Found)
