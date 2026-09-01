@@ -110,6 +110,7 @@ public partial class MainWindow : Window
         Console.WriteLine("ITEMS: " + items);*/
         //SetCursorOffsets(50, 0);
         //Console.WriteLine(GetCookies().ToString());
+        CookieManager.InitCookies(JsonParsing.GetSaveKeys());
 
     }
 
@@ -223,7 +224,8 @@ public partial class MainWindow : Window
     }
     private void SetMainText(string text,bool recurs = false)
     {
-       
+       var watch = new Stopwatch();
+       watch.Start();
        // Console.WriteLine("Setting main text: " + text + " " + recurs);
         if(!recurs)
         {
@@ -339,7 +341,8 @@ public partial class MainWindow : Window
                 Console.WriteLine("Not run");
             }
         }*/
-        
+        watch.Stop();
+        Console.WriteLine($"Set main text in {watch.ElapsedMilliseconds} ms");
     }
 
 
@@ -565,6 +568,11 @@ try
   doc.id = doc_id;
   //await doc.GetSessionId();
   SetMainText(doc.GetText());
+
+  ActiveElement(FeelingLuckyButton,false);
+  ActiveElement(OpenDebugMenuButton,false);
+  ActiveElement(OpenDocButton,false);
+  ActiveElement(docidbox,false);
   watch.Stop();
   Console.WriteLine($"Document loaded successfully in {watch.ElapsedMilliseconds} ms.");
   SaveKeys.lastopened = doc_id;
@@ -580,10 +588,6 @@ try
       Console.WriteLine("Binding to document...");
       BindToDoc($"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}");
   }
-  ActiveElement(FeelingLuckyButton,false);
-  ActiveElement(OpenDebugMenuButton,false);
-  ActiveElement(OpenDocButton,false);
-  ActiveElement(docidbox,false);
   if (SaveKeys.toolbar)
   {
       ActivePanel(Toolbar, true);

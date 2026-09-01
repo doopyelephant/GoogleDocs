@@ -362,6 +362,9 @@ public static class CookieManager
 
     public static async Task InitCookies(SaveKeys? keys = null)
     {
+        hasinit = true;
+        var watch = new Stopwatch();
+        watch.Start();
         FirefoxProfileCache = new List<(List<string>, int)>();
         RealCacheRequests = new List<string>();
         RealCache = new List<string>();
@@ -392,6 +395,8 @@ public static class CookieManager
             var cookiejar = await GetCookies();
             authcookie = FilterForGoogleDocsCookies(cookiejar);
         }
+        watch.Stop();
+        Console.WriteLine("Cookie initialization took " + watch.ElapsedMilliseconds + "ms.");
     }
     private static async Task<string> GetBrowserCookiePath()
     {
