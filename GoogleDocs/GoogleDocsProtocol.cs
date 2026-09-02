@@ -177,18 +177,41 @@ public class GoogleDoc
         Console.WriteLine(bundle);
         Console.WriteLine(rev);
         string url = $"https://docs.google.com/d/{id}/save";
-        var net = "<!DOCTYPE html>";
+      // string url = $"https://drive.google.com/d/{id}/save";
+       var net = "<!DOCTYPE html>";
+       int count = 0;
         while (net.Contains("<!DOCTYPE html>"))
         {
             if (net.Contains("url="))
             {
-                url = net.SubstringAfter("url=").SubstringBefore("&");
+                url = net.SubstringAfter("url=").SubstringBefore("\">");
+                string decoded = System.Net.WebUtility.HtmlDecode(url);
+                var uri = new Uri(decoded);
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                url = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
             }
             if (net != "<!DOCTYPE html>")
             {
                 Console.WriteLine("Got redirect to: " + url);
+                Console.WriteLine("Contents: " + net);
             }
-             net = await NetworkManager.PostRequest(url,data);
+
+            if (url == "")
+            {
+                Console.WriteLine("Reached end of redirect chain, end contents: " + net);
+                break;
+            }
+
+           /* if (count > 0)
+            {
+                net = await NetworkManager.GetRequest(url,true);
+            }
+            else
+            {*/
+                net = await NetworkManager.PostRequest(url, data, count > 0);
+           // }
+
+            count++;
         }
         Console.WriteLine("Saved changes: " + net);
     }

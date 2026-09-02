@@ -110,8 +110,10 @@ public partial class MainWindow : Window
         Console.WriteLine("ITEMS: " + items);*/
         //SetCursorOffsets(50, 0);
         //Console.WriteLine(GetCookies().ToString());
-        CookieManager.InitCookies(JsonParsing.GetSaveKeys());
-
+        if (SaveKeys.acceptedbrowserscraping)
+        {
+            CookieManager.InitCookies(SaveKeys);
+        }
     }
 
     public void InitLogThread()
@@ -581,18 +583,19 @@ try
  // File.WriteAllText("BindTest.txt",await NetworkManager.GetRequest(
      // "https://docs.google.com/document/d/1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI/bind?id=1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI&sid=5e31d1095e7c74c5&token=AJagN6Q3L3VTlm0lH1eRvrcxnAZY:1788285353340&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&lsq=1788285346255&vc=1&c=1&w=1&flr=0&gsi=0&smv=2147483647&smb=[2147483647, oAMQAg==]&cimpl=1&RID=rpc&SID=8EC8391587DD515B&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1"));
 
-  var token = await doc.GetToken(docid);
-  var BINDPOST = await NetworkManager.PostRequest(JsonParsing.GetBindPostReq(doc_id,UrlConfig) + $"&token={token}", "count=0");
-  File.WriteAllText("bindpost.html", BINDPOST);
-  var SID = BINDPOST.SubstringAfter("\"c\",\"").SubstringBefore("\"");
-  var lsq = BINDPOST.SubstringAfter("1788").SubstringAfter("1788").SubstringBefore(",");
+//File.WriteAllText("MobileBindTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/mobile/bind?id={docid}"));
   if(SaveKeys.bind)
   {
+      var token = await doc.GetToken(docid);
+      var BINDPOST = await NetworkManager.PostRequest(JsonParsing.GetBindPostReq(doc_id,UrlConfig) + $"&token={token}", "count=0");
+      File.WriteAllText("bindpost.html", BINDPOST);
+      var SID = BINDPOST.SubstringAfter("\"c\",\"").SubstringBefore("\"");
+      var lsq = BINDPOST.SubstringAfter("1788").SubstringAfter("1788").SubstringBefore(",");
       Console.WriteLine("Binding to document...");
       Console.WriteLine("BIND TEST");
       var stream = await NetworkManager
           .GetStreamAsync(
-              $"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1" + /*&SID={SID}*/
+              $"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&t=1" + /*&SID={SID}*/
               $"&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]");
        await using var output = File.OpenWrite("BindStream.txt");
           await stream.CopyToAsync(output);

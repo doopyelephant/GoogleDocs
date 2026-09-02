@@ -34,20 +34,41 @@ public static class NetworkManager
 
         return new string(filtered, 0, write);
     }
-    public static async Task<string> PostRequest(string url,string postdata = "")
+    public static async Task<string> PostRequest(string url,string postdata = "",bool bypassattachments = false)
     {
-        if(sid != "" && !url.Contains("sid="))
-      {
-            Console.WriteLine($"Appending sid to URL: {sid}");
-            url += $"&sid={sid}";
-            Console.WriteLine($"Updated URL: {url}");
-        }
-        if(ouid != "" && !url.Contains("ouid="))
+        if (!bypassattachments)
         {
-            Console.WriteLine($"Appending ouid to URL: {ouid}");
-            url += $"&ouid={ouid}";
-            Console.WriteLine($"Updated URL: {url}");
+            if (sid != "" && !url.Contains("sid="))
+            {
+                Console.WriteLine($"Appending sid to URL: {sid}");
+                if (url.Contains("?") == false)
+                {
+                    url += $"?sid={sid}";
+                }
+                else
+                {
+                    url += $"&sid={sid}";
+                }
+
+                Console.WriteLine($"Updated URL: {url}");
+            }
+
+            if (ouid != "" && !url.Contains("ouid="))
+            {
+                Console.WriteLine($"Appending ouid to URL: {ouid}");
+                if (url.Contains("?") == false)
+                {
+                    url += $"?ouid={ouid}";
+                }
+                else
+                {
+                    url += $"&ouid={ouid}";
+                }
+
+                Console.WriteLine($"Updated URL: {url}");
+            }
         }
+
         using var handler = new HttpClientHandler
         {
             AllowAutoRedirect = true
@@ -103,12 +124,26 @@ public static class NetworkManager
     {
         if(sid != "" && !url.Contains("sid="))
         {
-            url += $"&sid={sid}";
+            if (url.Contains("?") == false)
+            {
+                url += $"?sid={sid}";
+            }
+            else
+            {
+                url += $"&sid={sid}";
+            }
             Console.WriteLine($"Updated URL with sid: {url}");
         }
         if(ouid != "" && !url.Contains("ouid="))
         {
-            url += $"&ouid={ouid}";
+            if (url.Contains("?") == false)
+            {
+                url += $"?ouid={ouid}";
+            }
+            else
+            {
+                url += $"&ouid={ouid}";
+            }
             Console.WriteLine($"Updated URL with ouid: {url}");
         }
         using var handler = new HttpClientHandler
@@ -151,11 +186,19 @@ public static class NetworkManager
         //return await response.Content.ReadAsStreamAsync();
         return response.Content.ReadAsStreamAsync().Result;
     }
-     public static async Task<string> GetRequest(string url)
+     public static async Task<string> GetRequest(string url,bool bypassattachments = false)
     {
-         if(sid != "")
+         if(sid != "" && !bypassattachments)
         {
-            url += $"&sid={sid}";
+            if (url.Contains("?") == false)
+            {
+                url += $"?sid={sid}";
+            }
+            else
+            {
+                url += $"&sid={sid}";
+            }
+
             Console.WriteLine($"Updated URL with sid: {url}");
         }     
         
