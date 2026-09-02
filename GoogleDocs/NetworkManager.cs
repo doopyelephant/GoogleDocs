@@ -84,6 +84,7 @@ public static class NetworkManager
         {
            request.Content = new StringContent(postdata);
            request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+           request.Headers.TryAddWithoutValidation("Content-Type", "application/x-www-form-urlencoded");
         }
 
         // Build cookies for this exact URL from WebView2 cookie jar

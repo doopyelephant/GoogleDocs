@@ -15,7 +15,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-
+using Avalonia.Media.Imaging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -575,6 +575,15 @@ try
   ActiveElement(OpenDebugMenuButton,false);
   ActiveElement(OpenDocButton,false);
   ActiveElement(docidbox,false);
+  Title.Text = doc.title;
+  ActiveElement(Title,true);
+  Name.Text = doc.name;
+  ActiveElement(Name,true);
+  var httpclient = new HttpClient();
+  var profilepic = await httpclient.GetByteArrayAsync(new Uri(doc.profpicurl));
+  var bitstream = new MemoryStream(profilepic);
+  ProfilePicture.Source = new Bitmap(bitstream);
+  ActiveElement(ProfilePicture,true);
     watch.Stop();
   Console.WriteLine($"Document loaded successfully in {watch.ElapsedMilliseconds} ms.");
   SaveKeys.lastopened = doc_id;
@@ -632,8 +641,8 @@ catch (HttpRequestException err)
 
     public void ActiveElement(InputElement element, bool active)
     {
-        element.IsEnabled = false;
-        element.IsVisible = false;
+        element.IsEnabled = active;
+        element.IsVisible = active;
     }
 
     public void ActivePanel(Panel panel, bool active)

@@ -29,10 +29,19 @@
                 </StackPanel>
             </Border>
         </Panel>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="800"
-                      Width="1700">
+        <StackPanel Orientation="Horizontal">
+        <TextBlock Text="Error" Name="Title" TextWrapping="NoWrap" IsVisible="False" IsEnabled="False" FontSize="50" FontWeight="ExtraBold" Padding="100,50"></TextBlock>
+            <TextBlock Text="Error" Name="Name" TextWrapping="NoWrap" IsVisible="False" IsEnabled="False" FontSize="20" FontWeight="Bold" Padding="100,0,30,0" VerticalAlignment="Center"></TextBlock>
+
+            <Image  IsVisible="False" IsEnabled="False"  Name="ProfilePicture" Width="50" Height="50" VerticalAlignment="Center"> <Image.Clip>
+                <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25"/>
+            </Image.Clip></Image>
+
+        </StackPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="800"
+                          Width="1700">
             <Panel>
-            <TextBlock Text="Loading..." Name="MainText"  TextWrapping="Wrap" ></TextBlock>
+                <TextBlock Text="Loading..." Name="MainText"  TextWrapping="Wrap" ></TextBlock>
                 <Rectangle Name="Cursor" Fill="Red" Width="2" Height="20" HorizontalAlignment="Left" VerticalAlignment="Top" />
             </Panel>
         </ScrollViewer>

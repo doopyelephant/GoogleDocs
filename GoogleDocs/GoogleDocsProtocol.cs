@@ -142,12 +142,24 @@ public class GoogleDoc
     JObject? json2;
     public DocHistory? history;
     public string id;
+    public string token;
+    public string title;
+    public string name;
+    public string profpicurl;
 
     public GoogleDoc(JObject json1, JObject json2)
     {
         this.json1 = json1;
         this.json2 = json2;
         history = new DocHistory(json2);
+        title = json1["me"]["t"].ToString();
+        token = json1["me"]["dkd"][10].ToString();
+        name = json1["me"]["dkd"][8][0].ToString();
+        profpicurl = "https:" + json1["me"]["dkd"][8][2].ToString().SubstringBefore("=");
+        Console.WriteLine("Title: " + title);
+        Console.WriteLine("Token: " + token);
+        Console.WriteLine("Name: " + name);
+        Console.WriteLine("Profile Pic URL: " + profpicurl);
     }
 
     public async void Save()
@@ -173,16 +185,17 @@ public class GoogleDoc
         string bundle = "bundle=" + $"[{{\"commands\": {savestring},\"sid\":\"{NetworkManager.sid}\",\"reqId\":\"0\"}}]";
         rev = rev.UrlEncode();
         bundle = bundle.UrlEncode();
-        string data = rev + "%0A" + bundle;
+        string data = rev + "&".UrlEncode() + bundle;
         Console.WriteLine(bundle);
         Console.WriteLine(rev);
-        string url = $"https://docs.google.com/d/{id}/save";
+        string url = $"https://docs.google.com/document/d/{id}/save?token={token}";
       // string url = $"https://drive.google.com/d/{id}/save";
        var net = "<!DOCTYPE html>";
        int count = 0;
-        while (net.Contains("<!DOCTYPE html>"))
+        while (net.Contains("html"))
         {
-            if (net.Contains("url="))
+            net = await NetworkManager.PostRequest(url, data, count > 0);
+            if (net.Contains("Redirect") && net.Contains("url="))
             {
                 url = net.SubstringAfter("url=").SubstringBefore("\">");
                 string decoded = System.Net.WebUtility.HtmlDecode(url);
@@ -190,7 +203,11 @@ public class GoogleDoc
                 var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
                 url = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
             }
-            if (net != "<!DOCTYPE html>")
+            else
+            {
+                url = "";
+            }
+            if (url != "")
             {
                 Console.WriteLine("Got redirect to: " + url);
                 Console.WriteLine("Contents: " + net);
@@ -203,13 +220,13 @@ public class GoogleDoc
             }
 
            /* if (count > 0)
-            {
-                net = await NetworkManager.GetRequest(url,true);
-            }
-            else
             {*/
-                net = await NetworkManager.PostRequest(url, data, count > 0);
+               // net = await NetworkManager.GetRequest(url,true);
            // }
+         /*   else
+            {*/
+
+//}
 
             count++;
         }
