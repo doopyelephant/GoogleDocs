@@ -146,7 +146,7 @@ public class GoogleDoc
     public string title;
     public string name;
     public string profpicurl;
-
+    public int revision;
     public GoogleDoc(JObject json1, JObject json2)
     {
         this.json1 = json1;
@@ -156,6 +156,8 @@ public class GoogleDoc
         token = json1["me"]["dkd"][10].ToString();
         name = json1["me"]["dkd"][8][0].ToString();
         profpicurl = "https:" + json1["me"]["dkd"][8][2].ToString().SubstringBefore("=");
+        revision = int.Parse(json1["r"].ToString());
+        Console.WriteLine("Revision: " + revision);
         Console.WriteLine("Title: " + title);
         Console.WriteLine("Token: " + token);
         Console.WriteLine("Name: " + name);
@@ -170,6 +172,8 @@ public class GoogleDoc
             if (!edit.IsSaved)
             {
                 unsaved.Add(edit);
+                /* remove paceholder*/
+               // break;
             }
         }
 
@@ -181,16 +185,21 @@ public class GoogleDoc
         savestring = savestring.TrimEnd(',');
         savestring += "]";
         Console.WriteLine("Saving changes...");
-        string rev = "rev=" + json1["r"].ToString();
-        string bundle = "bundle=" + $"[{{\"commands\": {savestring},\"sid\":\"{NetworkManager.sid}\",\"reqId\":\"0\"}}]";
+        string rev = "rev=" + revision.ToString();
+        string bundle = "bundles=" + $"[{{\"commands\": {savestring},\"sid\":\"{NetworkManager.sid}\",\"reqId\":0}}]";
         rev = rev.UrlEncode();
         bundle = bundle.UrlEncode();
         string data = rev + "&".UrlEncode() + bundle;
         Console.WriteLine(bundle);
         Console.WriteLine(rev);
-        string url = $"https://docs.google.com/document/d/{id}/save?token={token}";
-      // string url = $"https://drive.google.com/d/{id}/save";
-       var net = "<!DOCTYPE html>";
+        Console.WriteLine(data);
+        var _token = await GetToken(id);
+       // string url = $"https://docs.google.com/document/d/{id}/save?id={id}&token={_token}&smv={int.MaxValue}&smb=[{int.MaxValue.ToString()},oAMQAg==]&vc=1&c=1&w=1&flr=0&includes_info_params=true&cros_files=false&nded=false&tab=t.0";
+       string url = $"https://docs.google.com/document/d/{id}/save?id={id}";
+       // string url = $"https://drive.google.com/d/{id}/save";
+     /* string url =
+          "https://docs.google.com/document/d/1-i86NaKKaRuEqCiybyJ0hgLBaKHfUwAbS9WI5uiY2iA/save?id=1-i86NaKKaRuEqCiybyJ0hgLBaKHfUwAbS9WI5uiY2iA&sid=103a78443531e74&vc=1&c=1&w=1&flr=0&smv=2147483647&smb=[2147483647, oAMQAg==]&token=AJagN6RRlhhP_4ODuK0y_9sz8gUJ:1788373213572&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&tab=t.0";
+    */   var net = "<!DOCTYPE html>";
        int count = 0;
         while (net.Contains("html"))
         {
@@ -231,6 +240,7 @@ public class GoogleDoc
             count++;
         }
         Console.WriteLine("Saved changes: " + net);
+        revision++;
     }
 
 

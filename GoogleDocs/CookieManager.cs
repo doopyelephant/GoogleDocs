@@ -31,6 +31,7 @@ public static class CookieManager
     private static List<string> RealCache;
     private static bool PromptCallbackSephamore = false;
     private static List<(List<string>, int)> FirefoxProfileCache;
+    private static bool Hasloadedcache = false;
 
 
     private static string GetSysUser()
@@ -492,6 +493,10 @@ public static class CookieManager
         else
         {
             Console.WriteLine("Multiple valid browser cookie paths found, please select one:");
+            if (File.Exists(await SaveKeys.defaultbrowser.GetRealPath()))
+            {
+                return await SaveKeys.defaultbrowser.GetRealPath();
+            }
             ShowBrowserSelector(ValidIndexes.ConvertAll(i => browsers.browsers[i].name));
             while(!CookieSelectorCallback)
             {
@@ -499,7 +504,8 @@ public static class CookieManager
             }
             CookieSelectorCallback = false;
             EvalHostBrowserType();
-
+            SaveKeys.defaultbrowser = browsercookiepath;
+            JsonParsing.SaveKeys(SaveKeys);
             return await browsercookiepath.GetRealPath();
         }
     }
@@ -740,6 +746,12 @@ else
 
         public async static Task<string> GetRealPath(this string path,bool lowpriority = false)
     {
+        if (!Hasloadedcache)
+        {
+            Hasloadedcache = true;
+            RealCache = SaveKeys.cache;
+            RealCacheRequests = SaveKeys.cacherequests;
+        }
         if (RealCacheRequests.Contains(path) && !lowpriority)
         {
             return RealCache[RealCacheRequests.IndexOf(path)];
@@ -835,6 +847,7 @@ else
         {
             RealCacheRequests.Add(path);
             RealCache.Add(oldpath);
+            JsonParsing.SaveKeys(JsonParsing.GetSaveKeys() with {cache = RealCache,cacherequests = RealCacheRequests});
         }
 
         return oldpath;
@@ -842,6 +855,10 @@ else
 
     public static async Task<int> Prompt(string[] options, string q)
     {
+        if (SaveKeys.promptcacherequests.Contains(q))
+        {
+        return SaveKeys.promptcache[SaveKeys.promptcacherequests.IndexOf(q)];
+        }
         while (CanStartPrompt == false)
         {
             await Task.Delay(100);
@@ -858,6 +875,10 @@ else
         int idx  = options.ToList().IndexOf(value);
         mainWindow.PickPrompt.IsOpen = false;
         CanStartPrompt = true;
+        SaveKeys.promptcacherequests.Add(q);
+        SaveKeys.promptcache.Add(idx);
+        Console.WriteLine("Prompt " + q + " selected: " + idx);
+        JsonParsing.SaveKeys(SaveKeys);
         return idx;
     }
 

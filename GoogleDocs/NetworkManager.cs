@@ -53,7 +53,7 @@ public static class NetworkManager
                 Console.WriteLine($"Updated URL: {url}");
             }
 
-            if (ouid != "" && !url.Contains("ouid="))
+           /* if (ouid != "" && !url.Contains("ouid="))
             {
                 Console.WriteLine($"Appending ouid to URL: {ouid}");
                 if (url.Contains("?") == false)
@@ -66,7 +66,8 @@ public static class NetworkManager
                 }
 
                 Console.WriteLine($"Updated URL: {url}");
-            }
+            }*/
+
         }
 
         using var handler = new HttpClientHandler
@@ -83,8 +84,9 @@ public static class NetworkManager
         if (postdata != "")
         {
            request.Content = new StringContent(postdata);
-           request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
-           request.Headers.TryAddWithoutValidation("Content-Type", "application/x-www-form-urlencoded");
+           request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded;charset=utf-8");
+        //   request.Headers.Add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+           request.Content.Headers.Add("Content-Length", postdata.Length.ToString());
         }
 
         // Build cookies for this exact URL from WebView2 cookie jar
@@ -101,12 +103,13 @@ public static class NetworkManager
             PrintDifferences(rawCookie, sanitizedCookie);
         }
 
-        request.Headers.TryAddWithoutValidation("Cookie", sanitizedCookie);
+        request.Headers.Add("Cookie", sanitizedCookie);
         Console.WriteLine("Attached auth cookies to request.");
-        request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0");
-        request.Headers.TryAddWithoutValidation("Accept", "*/*");
-        request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
-        request.Headers.TryAddWithoutValidation("Origin", "https://docs.google.com");
+        request.Headers.Add("User-Agent", "UnofficialGoogleDocs/1.0");
+        request.Headers.Add("Accept", "*/*");
+        request.Headers.Add("Referer", "https://docs.google.com/");
+        request.Headers.Add("Origin", "https://docs.google.com");
+        request.Headers.Add("X-Same-Domain", "1");
         PrintHttpRequestData(request);
         using var response = await localClient.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
@@ -170,11 +173,11 @@ public static class NetworkManager
             PrintDifferences(rawCookie, sanitizedCookie);
         }
 
-        request.Headers.TryAddWithoutValidation("Cookie", sanitizedCookie);
+        request.Headers.Add("Cookie", sanitizedCookie);
         Console.WriteLine("Attached auth cookies to request.");
-        request.Headers.TryAddWithoutValidation("User-Agent", "UnofficialGoogleDocs/0.1.0");
-        request.Headers.TryAddWithoutValidation("Accept", "*/*");
-        request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
+        request.Headers.Add("User-Agent", "UnofficialGoogleDocs/1.0");
+        request.Headers.Add("Accept", "*/*");
+        request.Headers.Add("Referer", "https://docs.google.com/");
         HttpResponseMessage response = await localClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         Console.WriteLine($"Response status code: {(int)response.StatusCode} ({response.ReasonPhrase})");
         Console.WriteLine("GET STREAM RETURNED");
@@ -311,11 +314,11 @@ if(headers.Contains("reporting-endpoints"))
             PrintDifferences(rawCookie, sanitizedCookie);
         }
 
-        request.Headers.TryAddWithoutValidation("Cookie", sanitizedCookie);
+        request.Headers.Add("Cookie", sanitizedCookie);
         Console.WriteLine("Attached auth cookies to request.");
-        request.Headers.TryAddWithoutValidation("User-Agent", "UnofficialGoogleDocs/0.1.0");
-        request.Headers.TryAddWithoutValidation("Accept", "*/*");
-        request.Headers.TryAddWithoutValidation("Referer", "https://docs.google.com/");
+        request.Headers.Add("User-Agent", "UnofficialGoogleDocs/1.0");
+        request.Headers.Add("Accept", "*/*");
+        request.Headers.Add("Referer", "https://docs.google.com/");
 
         PrintHttpRequestData(request);
         using var response = completeEarly ? await localClient.SendAsync(request,HttpCompletionOption.ResponseHeadersRead) : await localClient.SendAsync(request);
@@ -344,7 +347,7 @@ if(headers.Contains("reporting-endpoints"))
             if (msg.Content != null)
             {
                 var body = msg.Content.ReadAsStringAsync().Result;
-                Console.WriteLine(body.Length > 500 ? body[..500] : body);
+                Console.WriteLine(body);
             }
             else
             {

@@ -207,6 +207,17 @@ public static bool TryReadLengthPrefixedSegment(
     {
         string json = File.ReadAllText("SaveKeys.json");
         var SaveKeys = JsonConvert.DeserializeObject<SaveKeys>(json);
+        if (SaveKeys.promptcacherequests == null)
+        {
+            SaveKeys.promptcacherequests = new List<string>();
+            SaveKeys.promptcache = new List<int>();
+        }
+
+        if (SaveKeys.cacherequests == null)
+        {
+            SaveKeys.cacherequests = new List<string>();
+            SaveKeys.cache = new List<string>();
+        }
         return SaveKeys;
     }
 

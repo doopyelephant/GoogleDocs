@@ -53,67 +53,74 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        this.AddHandler(InputElement.KeyDownEvent, MainTextKeyDown, RoutingStrategies.Tunnel);
-        this.AddHandler(InputElement.KeyUpEvent, MainTextKeyUp, RoutingStrategies.Tunnel);
+            this.AddHandler(InputElement.KeyDownEvent, MainTextKeyDown, RoutingStrategies.Tunnel);
+            this.AddHandler(InputElement.KeyUpEvent, MainTextKeyUp, RoutingStrategies.Tunnel);
 
-        Program.mainWindow = this;
-        CookieManager.mainWindow = this;
-        SaveKeys = JsonParsing.GetSaveKeys();
-        if (SaveKeys.log)
-        {
-            InitLogThread();
-        }
-
-        if (!SaveKeys.hassetup)
-        {
-            SaveKeys.acceptedbrowserscraping = false;
-            JsonParsing.SaveKeys(SaveKeys);
-            PermissionPrompt.Open();
-        }
-        else
-        {
-            if (!SaveKeys.acceptedbrowserscraping)
+            Program.mainWindow = this;
+            CookieManager.mainWindow = this;
+            SaveKeys = JsonParsing.GetSaveKeys();
+            if (SaveKeys.log)
             {
-                PermBox.Text = "You have not accepted browser scraping, this is required for this application to function. \n\n" + PermBox.Text;
+                InitLogThread();
+            }
+
+            if (!SaveKeys.hassetup)
+            {
+                SaveKeys.acceptedbrowserscraping = false;
+                JsonParsing.SaveKeys(SaveKeys);
                 PermissionPrompt.Open();
             }
-        }
-        UrlConfig = JsonParsing.GetUrlConfig();
-        if (UrlConfig.version != urlconfig_version)
-        {
-            Console.WriteLine("WARNING, URL config version mismatch.");
-        }
-        browsercookiepaths = JsonParsing.GetBrowserCookiePaths();
-        if (browsercookiepaths.version != browsercookiepath_version)
-        {
-            Console.WriteLine("WARNING, browser cookie paths version mismatch.");
-        }
+            else
+            {
+                if (!SaveKeys.acceptedbrowserscraping)
+                {
+                    PermBox.Text =
+                        "You have not accepted browser scraping, this is required for this application to function. \n\n" +
+                        PermBox.Text;
+                    PermissionPrompt.Open();
+                }
+            }
 
-        if (SaveKeys.debugmenu)
-        {
-            Console.WriteLine("Debug menu enabled.");
-            DebugMenuPopup.IsOpen = true;
-            Program.DebugMenu();
-        }
-        else
-        {
-            DebugMenuPopup.IsOpen = false;
-        }
-        CookieManager.OvverideAlphabetical(false);
-        SetMainText("Ready to go!");
-        InitCursorManager();
-        ActivePanel(Toolbar,false);
-        OpenDebugMenuButton.IsVisible = SaveKeys.debugmenu;
-      //  PrintLineDebugMenu("C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies".GetRealPath());
-    //    ActiveElement(Toolbar, false);
-       /* var items = NetworkManager.PostRequest("https://docs.google.com/v1/items:get").GetAwaiter().GetResult();
-        Console.WriteLine("ITEMS: " + items);*/
-        //SetCursorOffsets(50, 0);
-        //Console.WriteLine(GetCookies().ToString());
-        if (SaveKeys.acceptedbrowserscraping)
-        {
-            CookieManager.InitCookies(SaveKeys);
-        }
+            UrlConfig = JsonParsing.GetUrlConfig();
+            if (UrlConfig.version != urlconfig_version)
+            {
+                Console.WriteLine("WARNING, URL config version mismatch.");
+            }
+
+            browsercookiepaths = JsonParsing.GetBrowserCookiePaths();
+            if (browsercookiepaths.version != browsercookiepath_version)
+            {
+                Console.WriteLine("WARNING, browser cookie paths version mismatch.");
+            }
+
+            if (SaveKeys.debugmenu)
+            {
+                Console.WriteLine("Debug menu enabled.");
+                DebugMenuPopup.IsOpen = true;
+                Program.DebugMenu();
+            }
+            else
+            {
+                DebugMenuPopup.IsOpen = false;
+            }
+
+            CookieManager.OvverideAlphabetical(false);
+            SetMainText("Ready to go!");
+            InitCursorManager();
+            ActivePanel(Toolbar, false);
+            ActiveElement(FeelingLuckyButton, SaveKeys.lastopened != "");
+            OpenDebugMenuButton.IsVisible = SaveKeys.debugmenu;
+            //  PrintLineDebugMenu("C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies".GetRealPath());
+            //    ActiveElement(Toolbar, false);
+            /* var items = NetworkManager.PostRequest("https://docs.google.com/v1/items:get").GetAwaiter().GetResult();
+             Console.WriteLine("ITEMS: " + items);*/
+            //SetCursorOffsets(50, 0);
+            //Console.WriteLine(GetCookies().ToString());
+            if (SaveKeys.acceptedbrowserscraping)
+            {
+                Task.Run(async () => { await CookieManager.InitCookies(SaveKeys); });
+            }
+
     }
 
     public void InitLogThread()
@@ -571,19 +578,19 @@ try
   //await doc.GetSessionId();
   SetMainText(doc.GetText());
 
-  ActiveElement(FeelingLuckyButton,false);
-  ActiveElement(OpenDebugMenuButton,false);
-  ActiveElement(OpenDocButton,false);
-  ActiveElement(docidbox,false);
+  ActiveElement(FeelingLuckyButton,false,true);
+  ActiveElement(OpenDebugMenuButton,false,true);
+  ActiveElement(OpenDocButton,false,true);
+  ActiveElement(docidbox,false,true);
   Title.Text = doc.title;
-  ActiveElement(Title,true);
+  ActiveElement(Title,true,true);
   Name.Text = doc.name;
-  ActiveElement(Name,true);
+  ActiveElement(Name,true,true);
   var httpclient = new HttpClient();
   var profilepic = await httpclient.GetByteArrayAsync(new Uri(doc.profpicurl));
   var bitstream = new MemoryStream(profilepic);
   ProfilePicture.Source = new Bitmap(bitstream);
-  ActiveElement(ProfilePicture,true);
+  ActiveElement(ProfilePicture,true,true);
     watch.Stop();
   Console.WriteLine($"Document loaded successfully in {watch.ElapsedMilliseconds} ms.");
   SaveKeys.lastopened = doc_id;
@@ -639,10 +646,50 @@ catch (HttpRequestException err)
         }
     }
 
-    public void ActiveElement(InputElement element, bool active)
+    public async Task AnimateHeight(InputElement element, double fullheight, double duration = 0.2, double targetheight = 0, double resolution = 30)
     {
-        element.IsEnabled = active;
-        element.IsVisible = active;
+    var delay = duration / resolution;
+    var dis = fullheight - targetheight;
+    for (int i = 0; i < resolution; i++)
+    {
+        element.Height = fullheight - (dis/resolution) * i;
+        await Task.Delay(TimeSpan.FromSeconds(delay));
+    }
+    }
+
+    public async Task ActiveElement(InputElement element, bool active,bool animate = false)
+    {
+        var fullsize = element.Height;
+        //Active & Animating
+        if (active && animate)
+        {
+            element.Height = 0;
+            element.IsEnabled = true;
+            element.IsVisible = true;
+            await AnimateHeight(element,fullsize,0.2f,fullsize);
+            return;
+        }
+        //Active & Not Animating
+        if (active)
+        {
+            element.IsEnabled = true;
+            element.IsVisible = true;
+            return;
+        }
+        //Not Active & Animating
+        if (animate)
+        {
+            element.Height = fullsize;
+            await AnimateHeight(element, fullsize);
+            element.IsEnabled = false;
+            element.IsVisible = false;
+            return;
+        }
+        //Not Active & Not Animating
+        element.IsEnabled = false;
+        element.IsVisible = false;
+        return;
+
     }
 
     public void ActivePanel(Panel panel, bool active)

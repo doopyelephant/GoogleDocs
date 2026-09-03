@@ -69,5 +69,10 @@
   "usedynamicpaths": true,
   "staticpath": "[PUT PATH TO FIREFOX PROFILE DIR HERE]",
   "toolbar": false,
-  "hassetup": false
+  "hassetup": false,
+  "cacherequests": [],
+  "cache": [],
+  "promptcacherequests": [],
+  "promptcache": [],
+  "defaultbrowser": ""
 }

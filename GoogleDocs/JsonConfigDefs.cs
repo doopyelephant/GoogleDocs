@@ -68,4 +68,9 @@ public struct SaveKeys
     public string staticpath;
     public bool toolbar;
     public bool hassetup;
+    public List<string> cacherequests;
+    public List<string> cache;
+    public List<string> promptcacherequests;
+    public List<int> promptcache;
+    public string defaultbrowser;
 }
