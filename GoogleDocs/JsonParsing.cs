@@ -144,12 +144,21 @@ public static bool TryReadLengthPrefixedSegment(
 
 
 
-    public static bool TryParseFirstJsonObject(string input, out JObject? obj)
+    public static bool TryParseFirstJsonObject(string input, out JContainer? obj)
     {
      obj = null;
      if (string.IsNullOrWhiteSpace(input)) return false;
 
-     var start = input.IndexOf('{');
+     var start = 0;
+     if (input.Contains('{') && input.Contains('['))
+     {
+         start = Math.Min(input.IndexOf('{'), input.IndexOf('['));
+     }
+     else if (input.Contains('{'))
+         start = input.IndexOf('{');
+     else if (input.Contains('['))
+         start = input.IndexOf('[');
+
      if (start <0) return false;
 
      var jsonPart = input[start..];
@@ -163,6 +172,11 @@ public static bool TryReadLengthPrefixedSegment(
 
      while (reader.Read())
      {
+         if (reader.TokenType == JsonToken.StartArray)
+         {
+             obj = serializer.Deserialize<JArray>(reader);
+             return obj is not null;
+         }
      if (reader.TokenType == JsonToken.StartObject)
      {
      obj = serializer.Deserialize<JObject>(reader);

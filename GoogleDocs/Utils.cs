@@ -100,7 +100,7 @@ public static class Utils
         string encoded = "";
         foreach (char c in s)
         {
-            if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90)|| (c >= 97 && c <= 122) || c == '~' || c == '.' || c == '-' || c == '_')
+            if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90)|| (c >= 97 && c <= 122) || c == '~' || c == '.' || c == '-' || c == '_' || c == '=' || c == '&')
             {
             encoded += c;
             }

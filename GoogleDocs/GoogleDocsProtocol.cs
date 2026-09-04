@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace GoogleDocs;
@@ -147,6 +150,8 @@ public class GoogleDoc
     public string name;
     public string profpicurl;
     public int revision;
+    public string xsrftoken = "";
+    public int reqId = 0;
     public GoogleDoc(JObject json1, JObject json2)
     {
         this.json1 = json1;
@@ -171,11 +176,13 @@ public class GoogleDoc
         {
             if (!edit.IsSaved)
             {
+                edit.IsSaved = true;
                 unsaved.Add(edit);
                 /* remove paceholder*/
                // break;
             }
         }
+        unsaved = MergeChanges(unsaved);
 
         string savestring = "[";
         foreach (var edit in unsaved)
@@ -186,22 +193,28 @@ public class GoogleDoc
         savestring += "]";
         Console.WriteLine("Saving changes...");
         string rev = "rev=" + revision.ToString();
-        string bundle = "bundles=" + $"[{{\"commands\": {savestring},\"sid\":\"{NetworkManager.sid}\",\"reqId\":0}}]";
+        string bundle = "bundles=" + $"[{{\"commands\": {savestring},\"sid\":\"{NetworkManager.sid}\",\"reqId\":{reqId}}}]";
+        reqId++;
         rev = rev.UrlEncode();
         bundle = bundle.UrlEncode();
         string data = rev + "&".UrlEncode() + bundle;
         Console.WriteLine(bundle);
         Console.WriteLine(rev);
         Console.WriteLine(data);
-        var _token = await GetToken(id);
+       // var _token = await GetToken(id);
        // string url = $"https://docs.google.com/document/d/{id}/save?id={id}&token={_token}&smv={int.MaxValue}&smb=[{int.MaxValue.ToString()},oAMQAg==]&vc=1&c=1&w=1&flr=0&includes_info_params=true&cros_files=false&nded=false&tab=t.0";
        string url = $"https://docs.google.com/document/d/{id}/save?id={id}";
+       if (xsrftoken != "")
+       {
+           url += $"&token={xsrftoken}";
+       }
        // string url = $"https://drive.google.com/d/{id}/save";
      /* string url =
           "https://docs.google.com/document/d/1-i86NaKKaRuEqCiybyJ0hgLBaKHfUwAbS9WI5uiY2iA/save?id=1-i86NaKKaRuEqCiybyJ0hgLBaKHfUwAbS9WI5uiY2iA&sid=103a78443531e74&vc=1&c=1&w=1&flr=0&smv=2147483647&smb=[2147483647, oAMQAg==]&token=AJagN6RRlhhP_4ODuK0y_9sz8gUJ:1788373213572&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&tab=t.0";
     */   var net = "<!DOCTYPE html>";
        int count = 0;
-        while (net.Contains("html"))
+       var iserr = false;
+        while ((net.Contains("html") || iserr) && url != "")
         {
             net = await NetworkManager.PostRequest(url, data, count > 0);
             if (net.Contains("Redirect") && net.Contains("url="))
@@ -225,7 +238,32 @@ public class GoogleDoc
             if (url == "")
             {
                 Console.WriteLine("Reached end of redirect chain, end contents: " + net);
-                break;
+                JsonParsing.TryParseFirstJsonObject(net, out var savejson);
+                Console.WriteLine("Save JSON: " + savejson.ToString(Formatting.Indented));
+                if(savejson is JArray && savejson[0] is JArray && savejson[0][0].ToString() == "er")
+                {
+                    iserr = true;
+                    var err = savejson[0][1].ToString();
+                    Console.WriteLine("Error: " + err);
+                    if (err == "XSRF")
+                    {
+                        Console.WriteLine("XSRF detected, retrying...");
+                        xsrftoken = savejson[0][4].ToString();
+                        url = $"https://docs.google.com/document/d/{id}/save?id={id}&token={xsrftoken}";
+                    }
+                }
+                else
+                {
+                    if (savejson is JObject && savejson["revisionRanges"] is JArray && savejson["revisionRanges"][0] is JArray)
+                    {
+                        Console.WriteLine("Revision ranges: " + savejson["revisionRanges"][0].ToString());
+                        Console.WriteLine("Revision: " + savejson["revisionRanges"][0][0].ToString());
+                        revision = int.Parse(savejson["revisionRanges"][0][0].ToString());
+                    }
+                    break;
+                }
+
+
             }
 
            /* if (count > 0)
@@ -240,7 +278,98 @@ public class GoogleDoc
             count++;
         }
         Console.WriteLine("Saved changes: " + net);
-        revision++;
+    }
+
+    private List<Edit> MergeChanges(List<Edit> unsaved)
+    {
+        bool[,] haschecked = new bool[unsaved.Count,unsaved.Count];
+        Edit[] mergeda = new Edit[unsaved.Count];
+        unsaved.CopyTo(mergeda);
+        List<Edit> merged = mergeda.ToList();
+        bool changed = true;
+        while (changed)
+        {
+            changed = false;
+            unsaved = merged.ToArray().ToList();
+            haschecked = new bool[unsaved.Count,unsaved.Count];
+            for (int ai = 0; ai < unsaved.Count; ai++)
+            {
+                var a = unsaved[ai];
+                for (int bi = 0; bi < unsaved.Count; bi++)
+                {
+                    if (changed)
+                    {
+                        break;
+                    }
+                    var b = unsaved[bi];
+                    if (haschecked[bi, ai])
+                    {
+                        continue;
+                    }
+
+                    if (ai == bi)
+                    {
+                        continue;
+                    }
+
+                    haschecked[ai, bi] = true;
+                    if (a.Type != b.Type)
+                    {
+                        continue;
+                    }
+
+                    if (a.Type == EditType.Insert)
+                    {
+                        if (int.Parse(a.Params[0]) + a.Params[1].Length == int.Parse(b.Params[0]))
+                        {
+                            var p = a.Params;
+                            p[1] = a.Params[1] + b.Params[1];
+                            var replace = new Edit(a.Type, p, true);
+                            var ad = merged.Remove(a);
+                            var bd = merged.Remove(b);
+                            if (!ad || !bd)
+                            {
+                               /* foreach (var x in haschecked)
+                                {
+                                    Console.WriteLine(x);
+                                }*/
+
+                                Console.WriteLine(ai + " " + bi);
+                                Console.WriteLine("Error removing edit: " + ad + " " + bd);
+                            }
+
+                            merged.Insert(ai, replace);
+                            Console.WriteLine($"Merged: {a.FetchSaveString()} + {b.FetchSaveString()} = {replace.FetchSaveString()}");
+                            changed = true;
+                            continue;
+                        }
+
+                        if (int.Parse(b.Params[0]) + b.Params[1].Length == int.Parse(a.Params[0]))
+                        {
+                            var p = b.Params;
+                            p[1] = b.Params[1] + a.Params[1];
+                            var replace = new Edit(b.Type, p, true);
+                            var ad = merged.Remove(a);
+                            var bd = merged.Remove(b);
+                            if (!ad || !bd)
+                            {
+                                Console.WriteLine("Error removing edit: " + ad + " " + bd);
+                            }
+
+                            merged.Insert(bi, replace);
+                            changed = true;
+                            continue;
+                        }
+                    }
+                }
+
+                if (changed)
+                {
+                    break;
+                }
+            }
+        }
+        return merged;
     }
 
 

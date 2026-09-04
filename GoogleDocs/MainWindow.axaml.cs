@@ -118,7 +118,7 @@ public partial class MainWindow : Window
             //Console.WriteLine(GetCookies().ToString());
             if (SaveKeys.acceptedbrowserscraping)
             {
-                Task.Run(async () => { await CookieManager.InitCookies(SaveKeys); });
+                CookieManager.InitCookies(SaveKeys);
             }
 
     }
@@ -515,9 +515,9 @@ public partial class MainWindow : Window
                     doc.history.Edits.Add(new Edit(EditType.Noop,new string[0]));
                     continue;
                 }
-                if (JsonParsing.TryParseFirstJsonObject(json, out JObject? obj) && obj is not null)
+                if (JsonParsing.TryParseFirstJsonObject(json, out JContainer? obj) && obj is not null && obj is JObject)
                 {
-                    doc.history.Edits.Add(new Edit(obj));
+                    doc.history.Edits.Add(new Edit(obj as JObject));
                 }
         SetMainText(doc.GetText());
         Console.WriteLine(json);
@@ -602,7 +602,7 @@ try
 //File.WriteAllText("MobileBindTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/mobile/bind?id={docid}"));
   if(SaveKeys.bind)
   {
-      var token = await doc.GetToken(docid);
+    /*  var token = await doc.GetToken(docid);
       var BINDPOST = await NetworkManager.PostRequest(JsonParsing.GetBindPostReq(doc_id,UrlConfig) + $"&token={token}", "count=0");
       File.WriteAllText("bindpost.html", BINDPOST);
       var SID = BINDPOST.SubstringAfter("\"c\",\"").SubstringBefore("\"");
@@ -612,12 +612,12 @@ try
       var stream = await NetworkManager
           .GetStreamAsync(
               $"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&t=1" + /*&SID={SID}*/
-              $"&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]");
+           /*   $"&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]");
        await using var output = File.OpenWrite("BindStream.txt");
-          await stream.CopyToAsync(output);
+          await stream.CopyToAsync(output);*/
       //File.WriteAllText("BindGetRequestTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&zx=lwq349tga0r7&t=1" + $"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]"));
-      Console.WriteLine("BIND TEST END");
-    //  BindToDoc($"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}");
+      //Console.WriteLine("BIND TEST END");
+      BindToDoc(/*$"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}"*/);
   }
   if (SaveKeys.toolbar)
   {

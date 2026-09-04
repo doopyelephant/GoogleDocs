@@ -113,7 +113,40 @@ public static class NetworkManager
         PrintHttpRequestData(request);
         using var response = await localClient.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
+        var headers = response.Headers;
+        if(headers.Contains("reporting-endpoints"))
+        {
+            Console.WriteLine("Found reporting-endpoints header:");
+            foreach(var val in headers.GetValues("reporting-endpoints"))
+            {
+                foreach(var part in val.Split('&'))
+                {
+                    if(part.StartsWith("sid="))
+                    {
+                        Console.WriteLine("Found sid in reporting-endpoints header.");
+                        sid = part.SubstringAfter("sid=");
+                        Console.WriteLine($"Extracted sid: {sid}");
+                    }
+                    if(part.StartsWith("ouid="))
+                    {
+                        Console.WriteLine("Found ouid in reporting-endpoints header.");
+                        ouid = part.SubstringAfter("ouid=");
+                        Console.WriteLine($"Extracted ouid: {ouid}");
+                    }
+                }
+                Console.WriteLine(val);
+            }
 
+        }
+        else
+        {
+            Console.WriteLine("No reporting-endpoints header found.");
+        }
+        if (headers.Contains("Set-Cookie"))
+        {
+            Console.WriteLine("Found Set-Cookie header.");
+            CookieManager.IncomingCookies(headers.GetValues("Set-Cookie"));
+        }
         if (response.StatusCode == HttpStatusCode.Found)
         {
             Console.WriteLine("Found Found Page");
@@ -178,6 +211,7 @@ public static class NetworkManager
         request.Headers.Add("User-Agent", "UnofficialGoogleDocs/1.0");
         request.Headers.Add("Accept", "*/*");
         request.Headers.Add("Referer", "https://docs.google.com/");
+        request.Headers.Add("X-Same-Domain", "1");
         HttpResponseMessage response = await localClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         Console.WriteLine($"Response status code: {(int)response.StatusCode} ({response.ReasonPhrase})");
         Console.WriteLine("GET STREAM RETURNED");
