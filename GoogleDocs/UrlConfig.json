@@ -1,7 +1,7 @@
 ﻿{
   "version": 1,
   "docidkey": "##DOCID##",
-  "bindurl": "https://docs.google.com/document/d/##DOCID##/bind?id=##DOCID##",
+  "bindurl": "https://docs.google.com/document/d/##DOCID##/bind?id=##DOCID##&includes_info_params=true&VER=8&c=1&w=1&RID=rpc&CI=0&TYPE=xmlhttp",
   "bindposturl": "https://docs.google.com/document/d/##DOCID##/bind?id=##DOCID##&includes_info_params=true&nded=false&VER=8&lsq=-1&vc=1&c=1&w=1&flr=0&gsi&cimpl=0&CVER=1&t=1",
   "initurl": "https://docs.google.com/document/d/##DOCID##/mobile/edit"
 }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -471,7 +472,7 @@ public partial class MainWindow : Window
         doc_id = docidbox.Text;
     }
 
-    private async Task<Stream> BindRequest(String url)
+    private async IAsyncEnumerable<string> BindRequest(String url, [EnumeratorCancellation] CancellationToken cancel)
     {
         string sid = NetworkManager.GetSid();
         if (!string.IsNullOrEmpty(sid))
@@ -479,7 +480,11 @@ public partial class MainWindow : Window
             url += $"&sid={sid}";
             Console.WriteLine($"Updated bind URL with sid: {url}");
         }
-        return await NetworkManager.GetStreamAsync(url,true);
+
+        await foreach (var block in NetworkManager.GetStreamAsync(url, cancel, true))
+        {
+            yield return block;
+        };
     }
 
     private async void BindToDoc(string extra = "")
@@ -490,7 +495,7 @@ public partial class MainWindow : Window
     url += extra;
 
     Console.WriteLine(url);
-    while (true)
+  /*  while (true)
     {
         Console.WriteLine("Binding...");
         Stream jsonstream = await BindRequest(url);
@@ -508,20 +513,25 @@ public partial class MainWindow : Window
         int blocksizeint = Convert.ToInt32(blocksize);
         char[] buffer = new char[blocksizeint];
         jsonreader.Read(buffer, 0, blocksizeint);
-        string json = new string(buffer);
-        Console.WriteLine("JSON: " + json);
-                if (json.Contains("noop"))
-                {
-                    doc.history.Edits.Add(new Edit(EditType.Noop,new string[0]));
-                    continue;
-                }
-                if (JsonParsing.TryParseFirstJsonObject(json, out JContainer? obj) && obj is not null && obj is JObject)
-                {
-                    doc.history.Edits.Add(new Edit(obj as JObject));
-                }
-        SetMainText(doc.GetText());
-        Console.WriteLine(json);
-    }
+        string json = new string(buffer);*/
+  await foreach (var json in BindRequest(url, CancellationToken.None))
+  {
+      Console.WriteLine("JSON: " + json);
+      if (json.Contains("noop"))
+      {
+          doc.history.Edits.Add(new Edit(EditType.Noop, new string[0]));
+          continue;
+      }
+
+      if (JsonParsing.TryParseFirstJsonObject(json, out JContainer? obj) && obj is not null && obj is JObject)
+      {
+          doc.history.Edits.Add(new Edit(obj as JObject));
+      }
+
+      SetMainText(doc.GetText());
+      Console.WriteLine(json);
+  }
+  // }
     }
     private void OpenDocButtonCallback(object? sender, RoutedEventArgs e)
     {
@@ -602,9 +612,19 @@ try
 //File.WriteAllText("MobileBindTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/mobile/bind?id={docid}"));
   if(SaveKeys.bind)
   {
-    /*  var token = await doc.GetToken(docid);
-      var BINDPOST = await NetworkManager.PostRequest(JsonParsing.GetBindPostReq(doc_id,UrlConfig) + $"&token={token}", "count=0");
-      File.WriteAllText("bindpost.html", BINDPOST);
+    //  var token = await doc.GetToken(docid);
+    var token = await doc.GetXsrfToken();
+    var bindpost = await NetworkManager.PostRequest(JsonParsing.GetBindPostReq(doc_id,UrlConfig) + $"&token={token}", "count=0");
+    var jsonobj = JsonParsing.TryParseFirstJsonObject(bindpost, out JContainer? obj) ? obj : new JObject();
+    Console.WriteLine(jsonobj.ToString(Formatting.Indented));
+    var postsid = jsonobj[0][1][1];
+    Console.WriteLine("Post Sid: " + postsid);
+   /* Console.WriteLine("ITEMS LIST:");
+    var list = await NetworkManager.PostRequest(
+        $"https://drivefrontend-pa.clients6.google.com/v1/items:list?key=AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0&SID={postsid}","[[null,null,null,null,0,null,null,null,[[\"application/vnd.google-apps.document\"],[\"application/vnd.msword\"],[\"application/vnd.ms-word\"],[\"application/vnd.ms-word.document.macroenabled.12\"],[\"application/msword\"],[\"application/vnd.ms-word.document.12\"],[\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"],[\"application/vnd.google-gsuite.encrypted; content=\\\"application/vnd.google-gsuite.document-blob\\\"\"],[\"application/vnd.google-gsuite.encrypted; content=\\\"application/vnd.google-apps.document\\\"\"]],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[1,2]],[50,\"\"]]");
+    Console.WriteLine(list);*/
+    //Console.WriteLine(BINDPOST);
+    /*  File.WriteAllText("bindpost.html", BINDPOST);
       var SID = BINDPOST.SubstringAfter("\"c\",\"").SubstringBefore("\"");
       var lsq = BINDPOST.SubstringAfter("1788").SubstringAfter("1788").SubstringBefore(",");
       Console.WriteLine("Binding to document...");
@@ -617,7 +637,8 @@ try
           await stream.CopyToAsync(output);*/
       //File.WriteAllText("BindGetRequestTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&zx=lwq349tga0r7&t=1" + $"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]"));
       //Console.WriteLine("BIND TEST END");
-      BindToDoc(/*$"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}"*/);
+      var aid = jsonobj[jsonobj.Count - 1][0];
+      BindToDoc($"&SID={postsid}&AID={aid}"/*$"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}"*/);
   }
   if (SaveKeys.toolbar)
   {

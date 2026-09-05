@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GoogleDocs;
@@ -157,7 +160,7 @@ public static class NetworkManager
             return body;
     }
 
-    public static async Task<Stream> GetStreamAsync(string url,bool bypassattachments = false)
+    public static async IAsyncEnumerable<String> GetStreamAsync(string url,[EnumeratorCancellation] CancellationToken cancel,bool bypassattachments = false)
     {
         if (!bypassattachments)
         {
@@ -228,8 +231,47 @@ public static class NetworkManager
             Console.WriteLine($"Response headers: {string.Join(", ", response.Headers)}");
             Console.WriteLine($"Body: {await response.Content.ReadAsStringAsync()}");
         }
+
         //return await response.Content.ReadAsStreamAsync();
-        return response.Content.ReadAsStreamAsync().Result;
+       // return response.Content.ReadAsStream();
+       var stream = await response.Content.ReadAsStreamAsync();
+       var reader = new StreamReader(stream);
+       while (cancel.IsCancellationRequested == false)
+       {
+           int opens = 0;
+           int closes = 0;
+           string x = "";
+           while (reader.Peek() != -1)
+           {
+               char c = (char)reader.Read();
+Console.Write(c);
+               if (opens > closes)
+               {
+                   x += c;
+               }
+               if (IsOpen(c))
+               {
+                   opens++;
+                   x += c;
+               }
+
+               if (IsClose(c))
+               {
+                   closes++;
+               }
+
+           }
+           yield return x;
+       }
+    }
+
+    private static bool IsOpen(char c)
+    {
+        return c == '[' || c == '{';
+    }
+    private static bool IsClose(char c)
+    {
+        return c == ']' || c == '}';
     }
      public static async Task<string> GetRequest(string url,bool bypassattachments = false)
     {

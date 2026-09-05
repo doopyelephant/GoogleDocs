@@ -169,7 +169,24 @@ public class GoogleDoc
         Console.WriteLine("Profile Pic URL: " + profpicurl);
     }
 
-    public async void Save()
+    public async Task<string> GetXsrfToken()
+    {
+        if (xsrftoken != "")
+        {
+            return xsrftoken;
+        }
+        else
+        {
+            Save(false);
+            while (xsrftoken == "")
+            {
+                await Task.Delay(100);
+            }
+            return xsrftoken;
+        }
+    }
+
+    public async void Save(bool retry = true)
     {
         var unsaved = new List<Edit>();
         foreach (var edit in history.Edits)
@@ -214,7 +231,7 @@ public class GoogleDoc
     */   var net = "<!DOCTYPE html>";
        int count = 0;
        var iserr = false;
-        while ((net.Contains("html") || iserr) && url != "")
+        while (((net.Contains("html") || iserr) && url != "") && (retry || count == 0))
         {
             net = await NetworkManager.PostRequest(url, data, /*count > 0*/true);
             if (net.Contains("Redirect") && net.Contains("url="))
