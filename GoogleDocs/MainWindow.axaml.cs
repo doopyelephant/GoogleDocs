@@ -479,14 +479,14 @@ public partial class MainWindow : Window
             url += $"&sid={sid}";
             Console.WriteLine($"Updated bind URL with sid: {url}");
         }
-        return await NetworkManager.GetStreamAsync(url);
+        return await NetworkManager.GetStreamAsync(url,true);
     }
 
     private async void BindToDoc(string extra = "")
     {
     String url = JsonParsing.GetBindReq(doc_id,UrlConfig);
-    url += $"&zx={new Random().Next(100000,999999)}";
-    url += $"&RID={rid++}";
+  /*  url += $"&zx={new Random().Next(100000,999999)}";
+    url += $"&RID={rid++}";*/
     url += extra;
 
     Console.WriteLine(url);

@@ -157,32 +157,39 @@ public static class NetworkManager
             return body;
     }
 
-    public static async Task<Stream> GetStreamAsync(string url)
+    public static async Task<Stream> GetStreamAsync(string url,bool bypassattachments = false)
     {
-        if(sid != "" && !url.Contains("sid="))
+        if (!bypassattachments)
         {
-            if (url.Contains("?") == false)
+            if (sid != "" && !url.Contains("sid="))
             {
-                url += $"?sid={sid}";
+                if (url.Contains("?") == false)
+                {
+                    url += $"?sid={sid}";
+                }
+                else
+                {
+                    url += $"&sid={sid}";
+                }
+
+                Console.WriteLine($"Updated URL with sid: {url}");
             }
-            else
+
+            if (ouid != "" && !url.Contains("ouid="))
             {
-                url += $"&sid={sid}";
+                if (url.Contains("?") == false)
+                {
+                    url += $"?ouid={ouid}";
+                }
+                else
+                {
+                    url += $"&ouid={ouid}";
+                }
+
+                Console.WriteLine($"Updated URL with ouid: {url}");
             }
-            Console.WriteLine($"Updated URL with sid: {url}");
         }
-        if(ouid != "" && !url.Contains("ouid="))
-        {
-            if (url.Contains("?") == false)
-            {
-                url += $"?ouid={ouid}";
-            }
-            else
-            {
-                url += $"&ouid={ouid}";
-            }
-            Console.WriteLine($"Updated URL with ouid: {url}");
-        }
+
         using var handler = new HttpClientHandler
         {
             AllowAutoRedirect = true

@@ -216,7 +216,7 @@ public class GoogleDoc
        var iserr = false;
         while ((net.Contains("html") || iserr) && url != "")
         {
-            net = await NetworkManager.PostRequest(url, data, count > 0);
+            net = await NetworkManager.PostRequest(url, data, /*count > 0*/true);
             if (net.Contains("Redirect") && net.Contains("url="))
             {
                 url = net.SubstringAfter("url=").SubstringBefore("\">");

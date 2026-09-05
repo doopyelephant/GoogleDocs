@@ -64,7 +64,7 @@
     false,
     true
   ],
-  "bind": false,
+  "bind": true,
   "log": false,
   "usedynamicpaths": true,
   "staticpath": "[PUT PATH TO FIREFOX PROFILE DIR HERE]",
