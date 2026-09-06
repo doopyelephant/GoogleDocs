@@ -238,9 +238,10 @@ public static class NetworkManager
        var reader = new StreamReader(stream);
        while (cancel.IsCancellationRequested == false)
        {
-           int opens = 0;
+
+        /*   int opens = 0;
            int closes = 0;
-           string x = "";
+
            while (reader.Peek() != -1)
            {
                char c = (char)reader.Read();
@@ -260,9 +261,51 @@ Console.Write(c);
                    closes++;
                }
 
-           }
-           yield return x;
+           }*/
+        string x = "";
+        string countstr = "";
+        while (true)
+        {
+            if (reader.Peek() != -1)
+            {
+                char c = ' ';
+                while (true)
+                {
+                    c = (char)reader.Read();
+                    if (IsNumber(c))
+                    {
+                        break;
+                    }
+                }
+
+                while (IsNumber(c))
+                {
+                    countstr += c;
+                    c = (char)reader.Read();
+                }
+
+                int count = int.Parse(countstr);
+                for (int i = 0; i < count; i++)
+                {
+                    x += c;
+                    c = (char)reader.Read();
+                }
+
+                break;
+            }
+            else
+            {
+                await Task.Delay(50);
+            }
+        }
+
+        yield return x;
        }
+    }
+
+    private static bool IsNumber(char c)
+    {
+        return c >= '0' && c <= '9';
     }
 
     private static bool IsOpen(char c)
