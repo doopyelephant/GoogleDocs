@@ -152,6 +152,7 @@ public class GoogleDoc
     public int revision;
     public string xsrftoken = "";
     public int reqId = 0;
+
     public GoogleDoc(JObject json1, JObject json2)
     {
         this.json1 = json1;
@@ -177,7 +178,7 @@ public class GoogleDoc
         }
         else
         {
-            Save(false);
+            Save();
             while (xsrftoken == "")
             {
                 await Task.Delay(100);
@@ -194,10 +195,19 @@ public class GoogleDoc
             if (!edit.IsSaved)
             {
                 edit.IsSaved = true;
+                if (edit.Type == EditType.Unknown)
+                {
+                    continue;
+                }
                 unsaved.Add(edit);
                 /* remove paceholder*/
                // break;
             }
+        }
+
+        if (unsaved.Count == 0 && xsrftoken != "")
+        {
+            return;
         }
         unsaved = MergeChanges(unsaved);
 
@@ -373,7 +383,7 @@ public class GoogleDoc
                                 Console.WriteLine("Error removing edit: " + ad + " " + bd);
                             }
 
-                            merged.Insert(bi, replace);
+                            merged.Insert(Math.Clamp(bi,0,merged.Count), replace);
                             changed = true;
                             continue;
                         }
@@ -511,14 +521,28 @@ public class GoogleDoc
                             }
                         }
                     }
+
+                    if (alteration.ContainsKey("cv"))
+                    {
+                        var cv = alteration["cv"];
+                        if (cv["op"] != null)
+                        {
+                            var op = cv["op"].GetValue<string>();
+                            if (op == "set")
+                            {
+                            Console.WriteLine("OP-SET: " + cv["opValue"].ToString());
+                            }
+                        }
+                    }
+
                     if(wrapstart == "" && wrapend == "")
                     {
                         continue;
                     }
                    
-                    content = content.Substring(0, start + offset) + wrapstart + content.Substring(start + offset);
+                    content = content.Substring(0, Math.Clamp(start + offset,0,content.Length)) + wrapstart + content.Substring(Math.Clamp(start + offset,0,content.Length));
                     offset += wrapstart.Length;
-                    content = content.Substring(0, end + offset) + wrapend + content.Substring(end + offset);
+                    content = content.Substring(0, Math.Clamp(end + offset,0,content.Length)) + wrapend + content.Substring(Math.Clamp(end + offset,0,content.Length));
                     offset += wrapend.Length;
                 }
             }

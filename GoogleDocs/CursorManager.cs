@@ -115,9 +115,13 @@ public static class CursorManager
         }
         return charcnt;
     }
-    public static Vector2 GetOffsetFromCharacter()
+    public static Vector2 GetOffsetFromCharacter(Vector2? position = null)
     {
         var tmp = Position;
+        if (position != null)
+        {
+            tmp = position.Value;
+        }
         if (mainText == null)
         {
             mainText = window.GetMainText();

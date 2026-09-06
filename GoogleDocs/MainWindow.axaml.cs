@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -14,8 +15,11 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -43,6 +47,9 @@ public partial class MainWindow : Window
     private static SaveKeys SaveKeys;
     private readonly object debugLogLock = new();
     private bool ctrl = false;
+    public List<(int, int)> Selections;
+    private List<(int, int)> PrevSelections;
+    private List<Rectangle> SelectionRects;
 
 
     private string cookie = "";
@@ -81,6 +88,7 @@ public partial class MainWindow : Window
                     PermissionPrompt.Open();
                 }
             }
+
 
             UrlConfig = JsonParsing.GetUrlConfig();
             if (UrlConfig.version != urlconfig_version)
@@ -121,6 +129,8 @@ public partial class MainWindow : Window
             {
                 CookieManager.InitCookies(SaveKeys);
             }
+
+            StartSaveThread();
 
     }
 
@@ -453,7 +463,24 @@ public partial class MainWindow : Window
 
 
 
+    public void SaveThread()
+    {
+        while (true)
+        {
+            if (doc != null)
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Invoke(() => { doc.Save(); });
+            }
 
+            Thread.Sleep(1000);
+        }
+    }
+
+    public void StartSaveThread()
+    {
+        var thread = new Thread(SaveThread);
+        thread.Start();
+    }
 
 
 
@@ -522,12 +549,22 @@ public partial class MainWindow : Window
           Console.WriteLine("JSON: " + fjson.ToString(Formatting.Indented));
           foreach (var innerjson in fjson.Select(x =>
                    {
+                       if (x.Count() < 1)
+                       {
+                           Console.WriteLine("noop");
+                           return new JArray();
+                       }
                        var p = x[1];
+                       if (p.Count() < 2)
+                       {
+                           Console.WriteLine("noop");
+                           return new JArray();
+                       }
                        if (p[2] is JObject && p[2]["c"] is JArray)
                        {
                            return p[2]["c"];
                        }
-
+                       Console.WriteLine("noop");
                        return new JArray();
                    }).ToList())
           {
@@ -535,12 +572,25 @@ public partial class MainWindow : Window
               {
                   if (json["ty"].ToString() == "noop")
                   {
-                      doc.history.Edits.Add(new Edit(EditType.Noop, new string[0]));
+                      doc.history.Edits.Add(new Edit(EditType.Noop, new string[0],true));
                       continue;
                   }
-
-
-                      doc.history.Edits.Add(new Edit(json as JObject));
+                    Console.WriteLine("TYPE : " + json["ty"].ToString());
+                  if (json["ty"].ToString() == "as" && json["st"].ToString() == "spellcheck")
+                  {
+                      continue;
+                  }
+                  var edit = new Edit(json as JObject,true);
+                  doc.history.Edits.Add(edit);
+                  if (edit.Type == EditType.Insert)
+                  {
+                      Console.WriteLine("Offseting..");
+                      for(int i = 0; i < edit.Params[1].Length; i++)
+                      {
+                          Console.WriteLine("Offseting "  +int.Parse(edit.Params[0]) + i);
+                          doc.OffsetAltersAfter(1,int.Parse(edit.Params[0]) + i);
+                      }
+                  }
 
 
                   if (isexternalthread)
@@ -645,7 +695,11 @@ try
   {
       ActivePanel(Toolbar, true);
   }
-
+  SelectionRects = new List<Rectangle>();
+  PrevSelections = new List<(int, int)>();
+  Selections = new List<(int, int)>();
+  Selections.Add((5, 100));
+  UpdateSelections();
   // MainText.Inlines.Add(new Run("Hello World"));
 
 }
@@ -885,6 +939,70 @@ catch (HttpRequestException err)
         SaveKeys.hassetup = true;
         JsonParsing.SaveKeys(SaveKeys);
         PermissionPrompt.Close();
+    }
+
+    public void UpdateSelections()
+    {
+        if (Selections.Count != SelectionRects.Count)
+        {
+            while (Selections.Count > SelectionRects.Count)
+            {
+                var r = new Rectangle();
+                r.Height = 20;
+                r.VerticalAlignment = VerticalAlignment.Top;
+                r.HorizontalAlignment = HorizontalAlignment.Left;
+                r.Fill = new SolidColorBrush(Color.FromRgb(20,100,200),.2);
+                SelectionParent.Children.Add(r);
+                SelectionRects.Add(r);
+
+            }
+            while (Selections.Count < SelectionRects.Count)
+            {
+                var r = SelectionRects[SelectionRects.Count - 1];
+                SelectionParent.Children.Remove(r);
+                SelectionRects.Remove(r);
+            }
+        }
+
+        List<int> Changed = new List<int>();
+            for (int i = 0; i < Selections.Count; i++)
+            {
+                if (PrevSelections.Count <= i)
+                {
+                    Changed.Add(i);
+                    continue;
+                }
+                if (Selections[i] != PrevSelections[i])
+                {
+                    Changed.Add(i);
+                }
+            }
+
+            foreach (var i in Changed)
+            {
+                Vector2 start = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item1));
+                if (Selections[i].Item1 == Selections[i].Item2)
+                {
+                    var r = SelectionRects[i];
+                    r.Width = 2;
+                    r.Height = 20;
+                    var margin = new Thickness(start.X, start.Y, 0, 0);
+                    r.Margin = margin;
+                    SelectionRects[i] = r;
+                }
+                else
+                {
+                    Vector2 end = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item2));
+                    var r = SelectionRects[i];
+                    r.Width = Math.Abs(start.X - end.X) + 2;
+                    r.Height = 20;
+                    var margin = new Thickness(start.X + (end.X - start.X), start.Y, 0, 0);
+                    r.Margin = margin;
+                    SelectionRects[i] = r;
+                }
+
+            }
+
     }
 
     private void Exit(object? sender, RoutedEventArgs e)
