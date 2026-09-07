@@ -443,7 +443,7 @@ public class GoogleDoc
             }
         }
 
-        if (CursorManager.GetCursorPosition() > after)
+        if (CursorManager.GetCursorPosition() >= after)
         {
             CursorManager.Position = CursorManager.Position with { X = CursorManager.Position.X + offset };
         }
