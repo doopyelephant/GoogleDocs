@@ -60,6 +60,19 @@ public static class CookieManager
         }
         return sysuser;
     }
+
+    private static void PrintDebugMenu(string s)
+    {
+        if (mainWindow != null)
+        {
+            mainWindow.PrintDebugMenu(s);
+        }
+    }
+
+    private static void PrintLineDebugMenu(string s)
+    {
+        PrintDebugMenu(s + "\n");
+    }
     private static string ResolveExecutable(string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))
@@ -121,7 +134,7 @@ public static class CookieManager
     foreach (var argument in arguments)
         process.StartInfo.ArgumentList.Add(argument);
 
-    Console.WriteLine("Executing: " + process.StartInfo.FileName + " " + string.Join(" ", arguments));
+    PrintLineDebugMenu("Executing: " + process.StartInfo.FileName + " " + string.Join(" ", arguments));
 
     process.Start();
 
@@ -165,11 +178,11 @@ public static class CookieManager
 
         if(!Directory.Exists(datadir))
         {
-        Console.WriteLine(Directory.CreateDirectory(datadir));
+        PrintLineDebugMenu(Directory.CreateDirectory(datadir).ToString());
         }
         if(!Directory.Exists(datadir + "/Profile/Network"))
         {
-            Console.WriteLine(Directory.CreateDirectory(datadir + "/Profile/Network"));
+            PrintLineDebugMenu(Directory.CreateDirectory(datadir + "/Profile/Network").ToString());
         }
         /*//string cookiepath =
          //   "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)\\cookies.sqlite";
@@ -189,13 +202,13 @@ public static class CookieManager
         {
 
         }
-        Console.WriteLine(cpcmd);
-        Console.WriteLine(ExecuteScript(cpcmd));
+        PrintLineDebugMenu(cpcmd);
+        PrintLineDebugMenu(ExecuteScript(cpcmd));
         cpcmd = "copy " + cookiepath.AddQuotes() + " " + (datadir + "\\key4.db").AddQuotes();
         cookiepath =
             "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)\\key4.db";
- Console.WriteLine(cpcmd);
-        Console.WriteLine(ExecuteScript(cpcmd));*/
+ PrintLineDebugMenu(cpcmd);
+        PrintLineDebugMenu(ExecuteScript(cpcmd));*/
 // Copy all three WAL files
 //ExecuteScript("copy",Path.Combine(profiledir, "cookies.sqlite").AddQuotes() + " " + Path.Combine(datadir, "cookies.sqlite").AddQuotes());
 //ExecuteScript("copy",Path.Combine(profiledir, "key4.db").AddQuotes() + " " + Path.Combine(datadir, "key4.db").AddQuotes());
@@ -205,9 +218,9 @@ public static class CookieManager
         {
             File.Delete(file);
         }
-        Console.WriteLine("Deleting old cookie files.");
+        PrintLineDebugMenu("Deleting old cookie files.");
         string rpath = await profiledir.GetRealPath();
-        Console.WriteLine("Copying cookie files from " + rpath + " to " + datadir);
+        PrintLineDebugMenu("Copying cookie files from " + rpath + " to " + datadir);
         if (HostBrowserType == BrowserType.Firefox)
         {
             File.Copy(Path.Combine(rpath, "cookies.sqlite"), Path.Combine(datadir, "cookies.sqlite"), true);
@@ -223,26 +236,26 @@ public static class CookieManager
             File.Copy(Path.Combine(rpath, "../../Local State"), Path.Combine(datadir, "Profile\\Local State"), true);
         }
 
-        Console.WriteLine("Browser cookie files copied to data directory.");
+        PrintLineDebugMenu("Browser cookie files copied to data directory.");
        
         string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + (HostBrowserType == BrowserType.Firefox ? "\\cookies.sqlite" : "\\Profile\\Network\\Cookies"))/*.AddQuotes()*/, hostfilter };
         string json = await ExecuteScript("python",pyargs);
         //json = json.UrlDecode();
-                                    //Console.WriteLine("PY OUT: " + json);
+                                    //PrintLineDebugMenu("PY OUT: " + json);
         json = "[" + json.SubstringAfter("[");
         json = json.RemoveAfterBrackets();
 
         // json = json.SubstringBefore("]") + "]";
       //  ExecuteScript("del " + cookiepath + "");
-//        Console.WriteLine("JSON: " + json.Substring(0, 500) + "...");
-     // Console.WriteLine("JSON: " + json);
+//        PrintLineDebugMenu("JSON: " + json.Substring(0, 500) + "...");
+     // PrintLineDebugMenu("JSON: " + json);
         var cookies = JsonConvert.DeserializeObject<List<BrowserCookie>>(json);
         var cookiejar = new BrowserCookieJar();
         cookiejar.cookies = cookies;
         for (int i = 0; i < cookiejar.cookies.Count; i++)
         {
             var tmp = cookiejar.cookies[i];
-            Console.WriteLine("Cookie Name: " + tmp.name.UrlDecode());
+            PrintLineDebugMenu("Cookie Name: " + tmp.name.UrlDecode());
             tmp.host = tmp.host.UrlDecode();
             tmp.name = tmp.name.UrlDecode();
             tmp.value = tmp.value.UrlDecode()/*.Base64Encode()*/;
@@ -289,7 +302,7 @@ public static class CookieManager
             await InitCookies();
         }
         }
-        Console.WriteLine("GET COOKIE: " + authcookie);
+        PrintLineDebugMenu("GET COOKIE: " + authcookie);
         if (alphabetical)
         return AlphabeticallySortCookies(authcookie);
         else
@@ -298,7 +311,7 @@ public static class CookieManager
 
     public static void IncomingCookies(IEnumerable<String> headers)
     {
-        Console.WriteLine("Incoming cookies.");
+        PrintLineDebugMenu("Incoming cookies.");
         var currentcookies = authcookie.Split("; ").Select(s => s.Split('=')[0].Trim()).ToList();
         var currentcookievalues = authcookie.Split("; ").Select(s => s.SubstringAfter("=").Trim()).ToList();
         headers = headers.Select(s => s.SubstringBefore(";").Trim()).ToList();
@@ -324,7 +337,7 @@ public static class CookieManager
                     currentcookievalues.RemoveAt(index);
                 }
             }
-            Console.WriteLine(header);
+            PrintLineDebugMenu(header);
         }
         var newcookie = "";
         for(int i = 0; i < currentcookies.Count; i++)
@@ -335,8 +348,8 @@ public static class CookieManager
         //Remove the last semicolon
         authcookie = authcookie.Substring(0, authcookie.Length - 2);
 
-        Console.WriteLine("Cookie: " + authcookie);
-        Console.WriteLine("End of Set-Cookie headers.");
+        PrintLineDebugMenu("Cookie: " + authcookie);
+        PrintLineDebugMenu("End of Set-Cookie headers.");
         CookieValidate();
     }
     public static void CookieOvveride(string cookie)
@@ -352,11 +365,11 @@ public static class CookieManager
     {
         if (SaveKeys.hasopened == false)
         {
-            Console.WriteLine("This application has not been opened, cannot validate cookies, assuming valid.");
+            PrintLineDebugMenu("This application has not been opened, cannot validate cookies, assuming valid.");
             return true;
         }
 
-        Console.WriteLine("Cookie validation...");
+        PrintLineDebugMenu("Cookie validation...");
         string url = JsonParsing.InitialReq(SaveKeys.lastopened, UrlConfig);
         return await NetworkManager.TestEndpoint(url);
     }
@@ -372,7 +385,7 @@ public static class CookieManager
         SaveKeys = JsonParsing.GetSaveKeys();
         if (SaveKeys.acceptedbrowserscraping == false)
         {
-            Console.WriteLine("User has not accepted browser scraping, cannot fetch cookies. Hard Exiting.");
+            PrintLineDebugMenu("User has not accepted browser scraping, cannot fetch cookies. Hard Exiting.");
             Environment.Exit(0);
         }
         if (keys != null)
@@ -388,7 +401,7 @@ public static class CookieManager
         }
         if (SaveKeys.acceptedbrowserscraping == false)
         {
-            Console.WriteLine("The user has not accepted browser scraping, cannot fetch cookies.");
+            PrintLineDebugMenu("The user has not accepted browser scraping, cannot fetch cookies.");
             return;
         }
         else
@@ -397,7 +410,7 @@ public static class CookieManager
             authcookie = FilterForGoogleDocsCookies(cookiejar);
         }
         watch.Stop();
-        Console.WriteLine("Cookie initialization took " + watch.ElapsedMilliseconds + "ms.");
+        PrintLineDebugMenu("Cookie initialization took " + watch.ElapsedMilliseconds + "ms.");
     }
     private static async Task<string> GetBrowserCookiePath()
     {
@@ -408,12 +421,12 @@ public static class CookieManager
 
         List<int> ValidIndexes = new List<int>();
         var browsers = JsonParsing.GetBrowserCookiePaths();
-        Console.WriteLine("Browser cookie paths: ");
+        PrintLineDebugMenu("Browser cookie paths: ");
         foreach (var browser in browsers.browsers)
         {
-            Console.WriteLine("- " + browser.name + ": " + browser.winpath + " (Windows), " + browser.linpath + " (Linux)");
+            PrintLineDebugMenu("- " + browser.name + ": " + browser.winpath + " (Windows), " + browser.linpath + " (Linux)");
         }
-        Console.WriteLine("Validating browser cookie paths...");
+        PrintLineDebugMenu("Validating browser cookie paths...");
         foreach (var browser in browsers.browsers)
         {
             if(OperatingSystem.IsWindows())
@@ -421,7 +434,7 @@ public static class CookieManager
                 if(File.Exists(await browser.winpath.GetRealPath(true)))
                 {
                     ValidIndexes.Add(browsers.browsers.IndexOf(browser));
-                    Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.winpath);
+                    PrintLineDebugMenu("Browser " + browser.name + " cookie path found: " + browser.winpath);
                 }
             }
             else if(OperatingSystem.IsLinux())
@@ -429,13 +442,13 @@ public static class CookieManager
                 if(File.Exists(await browser.linpath.GetRealPath(true)))
                 {
                     ValidIndexes.Add(browsers.browsers.IndexOf(browser));
-                    Console.WriteLine("Browser " + browser.name + " cookie path found: " + browser.linpath);
+                    PrintLineDebugMenu("Browser " + browser.name + " cookie path found: " + browser.linpath);
                 }
             }
         }
         if(ValidIndexes.Count == 0)
         {
-            Console.WriteLine("No valid browser cookie paths found, requesting manual input.");
+            PrintLineDebugMenu("No valid browser cookie paths found, requesting manual input.");
             ManualBrowserCookieInput();
             while(!CookieSelectorCallback)
             {
@@ -447,7 +460,7 @@ public static class CookieManager
         }
         else if(ValidIndexes.Count == 1)
         {
-            Console.WriteLine("One valid browser cookie path found, using " + browsers.browsers[ValidIndexes[0]].name);
+            PrintLineDebugMenu("One valid browser cookie path found, using " + browsers.browsers[ValidIndexes[0]].name);
             int alt = 0;
             var validalts = new List<AltPath>();
             foreach (var path in browsers.browsers[ValidIndexes[0]].altpaths)
@@ -492,7 +505,7 @@ public static class CookieManager
         }
         else
         {
-            Console.WriteLine("Multiple valid browser cookie paths found, please select one:");
+            PrintLineDebugMenu("Multiple valid browser cookie paths found, please select one:");
             if (File.Exists(await SaveKeys.defaultbrowser.GetRealPath()))
             {
                 return await SaveKeys.defaultbrowser.GetRealPath();
@@ -529,8 +542,8 @@ public static class CookieManager
     private static void ManualBrowserCookieInput()
     {
      mainWindow.SetOpenManualInput(true);
-     Console.WriteLine("Manual browser cookie path input requested.");
-     Console.WriteLine("Waiting for user input...");
+     PrintLineDebugMenu("Manual browser cookie path input requested.");
+     PrintLineDebugMenu("Waiting for user input...");
     }
     public static async void PickBrowserCallback(string option)
     {
@@ -566,7 +579,7 @@ public static class CookieManager
                     .ToArray();
                 foreach (var op in options)
                 {
-                    Console.WriteLine("- " + op);
+                    PrintLineDebugMenu("- " + op);
                 }
                 alt = await Prompt(options, "Pick a path:");
             }
@@ -581,7 +594,7 @@ public static class CookieManager
             {
                 browsercookiepath = OperatingSystem.IsWindows() ? browser.altpaths[alt - 1].winpath : browser.altpaths[alt - 1].linpath;
             }
-            Console.WriteLine("Browser " + browser.name + " selected, using cookie path: " + browsercookiepath);
+            PrintLineDebugMenu("Browser " + browser.name + " selected, using cookie path: " + browsercookiepath);
             mainWindow.SetOpenPickBrowser(false);
             CookieSelectorCallback = true;
         }
@@ -597,7 +610,7 @@ public static class CookieManager
 
     private static string FilterForGoogleDocsCookies(BrowserCookieJar browserCookieJar)
     {
-        Console.WriteLine("Google Cookies: ");
+        PrintLineDebugMenu("Google Cookies: ");
         string tmpauthcookie = "";
         List<string> added = new List<string>();
         List<string> compassvalues = new List<string>();
@@ -606,14 +619,14 @@ public static class CookieManager
         {
             if (cookie.host == ".google.com" || cookie.host == ".docs.google.com" || cookie.host == "accounts.google.com" || cookie.host == "docs.google.com")
             {
-                Console.WriteLine(cookie.name);
+                PrintLineDebugMenu(cookie.name);
                 if (cookie.value.Length > 50)
                 {
-                    Console.WriteLine("=" + cookie.value.Substring(0, 50) + "...");
+                    PrintLineDebugMenu("=" + cookie.value.Substring(0, 50) + "...");
                 }
                 else
                 {
-                    Console.WriteLine("=" + cookie.value);
+                    PrintLineDebugMenu("=" + cookie.value);
                 }
 
                 if (SaveKeys.attachcookies.Contains(cookie.name))
@@ -627,17 +640,17 @@ public static class CookieManager
                     }
                     if (cookie.name == "COMPASS")
                     {
-                            Console.WriteLine("COMPASS cookie found. " + cookie.value);
+                            PrintLineDebugMenu("COMPASS cookie found. " + cookie.value);
                             if (!SaveKeys.compass.Contains(cookie.value.Split('=')[0]))
                             {
-                                Console.WriteLine("COMPASS cookie not in config, skipping.");
+                                PrintLineDebugMenu("COMPASS cookie not in config, skipping.");
                                 continue;
                             }
                         else
                         {
                             if(compassvalues.Contains(cookie.value.Split('=')[0]))
                             {
-                               Console.WriteLine("COMPASS cookie value " + cookie.value.Split('=')[0] + " already added, skipping.");
+                               PrintLineDebugMenu("COMPASS cookie value " + cookie.value.Split('=')[0] + " already added, skipping.");
                                  continue; 
                             }
                             tmpauthcookie += cookie.name + "=" + cookie.value + "; ";
@@ -678,7 +691,7 @@ else
 
         if (added == SaveKeys.attachcookies)
         {
-            Console.WriteLine("All cookies found.");
+            PrintLineDebugMenu("All cookies found.");
         }
         else
         {
@@ -686,20 +699,20 @@ else
             {
                 if (added.Contains(cookie) == false)
                 {
-                    Console.WriteLine("Cookie " + cookie + " not found, skipping.");
+                    PrintLineDebugMenu("Cookie " + cookie + " not found, skipping.");
                 }
                 else
                 {
-                    Console.WriteLine("Cookie " + cookie + " found.");
+                    PrintLineDebugMenu("Cookie " + cookie + " found.");
                 }
             }
         }
-        Console.WriteLine(tmpauthcookie);
+        PrintLineDebugMenu(tmpauthcookie);
         foreach (var cookie in browserCookieJar.cookies)
 {
     if (cookie.name == "HSID" || cookie.name == "SSID" || cookie.name == "SIDCC")
     {
-        Console.WriteLine($"DEBUG {cookie.name} @ {cookie.host} = {cookie.value}");
+        PrintLineDebugMenu($"DEBUG {cookie.name} @ {cookie.host} = {cookie.value}");
     }
 }
 
@@ -877,7 +890,7 @@ else
         CanStartPrompt = true;
         SaveKeys.promptcacherequests.Add(q);
         SaveKeys.promptcache.Add(idx);
-        Console.WriteLine("Prompt " + q + " selected: " + idx);
+        PrintLineDebugMenu("Prompt " + q + " selected: " + idx);
         JsonParsing.SaveKeys(SaveKeys);
         return idx;
     }

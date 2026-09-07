@@ -16,7 +16,19 @@ public static class NetworkManager
     public static string sid = "";
     public static string ouid = "";
     public static SaveKeys SaveKeys { get; set; } = new();
+    public static MainWindow loggingdest;
+    private static void PrintDebugMenu(string s)
+    {
+        if (loggingdest != null)
+        {
+            loggingdest.PrintDebugMenu(s);
+        }
+    }
 
+    private static void PrintLineDebugMenu(string s)
+    {
+        PrintDebugMenu(s + "\n");
+    }
     private static string SanitizeCookieHeader(string cookie)
     {
         if (string.IsNullOrEmpty(cookie))
@@ -43,7 +55,7 @@ public static class NetworkManager
         {
             if (sid != "" && !url.Contains("sid="))
             {
-                Console.WriteLine($"Appending sid to URL: {sid}");
+                PrintLineDebugMenu($"Appending sid to URL: {sid}");
                 if (url.Contains("?") == false)
                 {
                     url += $"?sid={sid}";
@@ -53,12 +65,12 @@ public static class NetworkManager
                     url += $"&sid={sid}";
                 }
 
-                Console.WriteLine($"Updated URL: {url}");
+                PrintLineDebugMenu($"Updated URL: {url}");
             }
 
            /* if (ouid != "" && !url.Contains("ouid="))
             {
-                Console.WriteLine($"Appending ouid to URL: {ouid}");
+                PrintLineDebugMenu($"Appending ouid to URL: {ouid}");
                 if (url.Contains("?") == false)
                 {
                     url += $"?ouid={ouid}";
@@ -68,7 +80,7 @@ public static class NetworkManager
                     url += $"&ouid={ouid}";
                 }
 
-                Console.WriteLine($"Updated URL: {url}");
+                PrintLineDebugMenu($"Updated URL: {url}");
             }*/
 
         }
@@ -102,12 +114,12 @@ public static class NetworkManager
 
         if (!string.Equals(rawCookie, sanitizedCookie, StringComparison.Ordinal))
         {
-            Console.WriteLine("Cookie header contained non-ASCII or control characters; sanitized before request.");
+            PrintLineDebugMenu("Cookie header contained non-ASCII or control characters; sanitized before request.");
             PrintDifferences(rawCookie, sanitizedCookie);
         }
 
         request.Headers.Add("Cookie", sanitizedCookie);
-        Console.WriteLine("Attached auth cookies to request.");
+        PrintLineDebugMenu("Attached auth cookies to request.");
         request.Headers.Add("User-Agent", "UnofficialGoogleDocs/1.0");
         request.Headers.Add("Accept", "*/*");
         request.Headers.Add("Referer", "https://docs.google.com/");
@@ -119,44 +131,44 @@ public static class NetworkManager
         var headers = response.Headers;
         if(headers.Contains("reporting-endpoints"))
         {
-            Console.WriteLine("Found reporting-endpoints header:");
+            PrintLineDebugMenu("Found reporting-endpoints header:");
             foreach(var val in headers.GetValues("reporting-endpoints"))
             {
                 foreach(var part in val.Split('&'))
                 {
                     if(part.StartsWith("sid="))
                     {
-                        Console.WriteLine("Found sid in reporting-endpoints header.");
+                        PrintLineDebugMenu("Found sid in reporting-endpoints header.");
                         sid = part.SubstringAfter("sid=");
-                        Console.WriteLine($"Extracted sid: {sid}");
+                        PrintLineDebugMenu($"Extracted sid: {sid}");
                     }
                     if(part.StartsWith("ouid="))
                     {
-                        Console.WriteLine("Found ouid in reporting-endpoints header.");
+                        PrintLineDebugMenu("Found ouid in reporting-endpoints header.");
                         ouid = part.SubstringAfter("ouid=");
-                        Console.WriteLine($"Extracted ouid: {ouid}");
+                        PrintLineDebugMenu($"Extracted ouid: {ouid}");
                     }
                 }
-                Console.WriteLine(val);
+                PrintLineDebugMenu(val);
             }
 
         }
         else
         {
-            Console.WriteLine("No reporting-endpoints header found.");
+            PrintLineDebugMenu("No reporting-endpoints header found.");
         }
         if (headers.Contains("Set-Cookie"))
         {
-            Console.WriteLine("Found Set-Cookie header.");
+            PrintLineDebugMenu("Found Set-Cookie header.");
             CookieManager.IncomingCookies(headers.GetValues("Set-Cookie"));
         }
         if (response.StatusCode == HttpStatusCode.Found)
         {
-            Console.WriteLine("Found Found Page");
-            Console.WriteLine($"Redirecting to {response.Headers.Location.AbsoluteUri}...");
+            PrintLineDebugMenu("Found Found Page");
+            PrintLineDebugMenu($"Redirecting to {response.Headers.Location.AbsoluteUri}...");
             return await GetRequest(response.Headers.Location.AbsoluteUri);
         }
-        Console.WriteLine($"POST REQ RETURNED: {response.StatusCode}");
+        PrintLineDebugMenu($"POST REQ RETURNED: {response.StatusCode}");
             return body;
     }
 
@@ -175,7 +187,7 @@ public static class NetworkManager
                     url += $"&sid={sid}";
                 }
 
-                Console.WriteLine($"Updated URL with sid: {url}");
+                PrintLineDebugMenu($"Updated URL with sid: {url}");
             }
 
             if (ouid != "" && !url.Contains("ouid="))
@@ -189,7 +201,7 @@ public static class NetworkManager
                     url += $"&ouid={ouid}";
                 }
 
-                Console.WriteLine($"Updated URL with ouid: {url}");
+                PrintLineDebugMenu($"Updated URL with ouid: {url}");
             }
         }
 
@@ -212,24 +224,24 @@ public static class NetworkManager
 
         if (!string.Equals(rawCookie, sanitizedCookie, StringComparison.Ordinal))
         {
-            Console.WriteLine("Cookie header contained non-ASCII or control characters; sanitized before request.");
+            PrintLineDebugMenu("Cookie header contained non-ASCII or control characters; sanitized before request.");
             PrintDifferences(rawCookie, sanitizedCookie);
         }
 
         request.Headers.Add("Cookie", sanitizedCookie);
-        Console.WriteLine("Attached auth cookies to request.");
+        PrintLineDebugMenu("Attached auth cookies to request.");
         request.Headers.Add("User-Agent", "UnofficialGoogleDocs/1.0");
         request.Headers.Add("Accept", "*/*");
         request.Headers.Add("Referer", "https://docs.google.com/");
         request.Headers.Add("X-Same-Domain", "1");
         HttpResponseMessage response = await localClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-        Console.WriteLine($"Response status code: {(int)response.StatusCode} ({response.ReasonPhrase})");
-        Console.WriteLine("GET STREAM RETURNED");
+        PrintLineDebugMenu($"Response status code: {(int)response.StatusCode} ({response.ReasonPhrase})");
+        PrintLineDebugMenu("GET STREAM RETURNED");
         if (response.StatusCode != HttpStatusCode.OK)
         {
-            Console.WriteLine($"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}).");
-            Console.WriteLine($"Response headers: {string.Join(", ", response.Headers)}");
-            Console.WriteLine($"Body: {await response.Content.ReadAsStringAsync()}");
+            PrintLineDebugMenu($"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}).");
+            PrintLineDebugMenu($"Response headers: {string.Join(", ", response.Headers)}");
+            PrintLineDebugMenu($"Body: {await response.Content.ReadAsStringAsync()}");
         }
 
         //return await response.Content.ReadAsStreamAsync();
@@ -329,65 +341,65 @@ Console.Write(c);
                 url += $"&sid={sid}";
             }
 
-            Console.WriteLine($"Updated URL with sid: {url}");
+            PrintLineDebugMenu($"Updated URL with sid: {url}");
         }     
         
         var (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
 
        
 
-        Console.WriteLine("Headers:");
+        PrintLineDebugMenu("Headers:");
         foreach (var header in headers)
         {
-            Console.WriteLine($"{header.Key}: {header.Value.Aggregate((string a, string b) => { return a + ", " + b;})}");
+            PrintLineDebugMenu($"{header.Key}: {header.Value.Aggregate((string a, string b) => { return a + ", " + b;})}");
         }
 if(headers.Contains("reporting-endpoints"))
         {
-            Console.WriteLine("Found reporting-endpoints header:");
+            PrintLineDebugMenu("Found reporting-endpoints header:");
             foreach(var val in headers.GetValues("reporting-endpoints"))
             {
                foreach(var part in val.Split('&'))
                 {
                     if(part.StartsWith("sid="))
                     {
-                        Console.WriteLine("Found sid in reporting-endpoints header.");
+                        PrintLineDebugMenu("Found sid in reporting-endpoints header.");
                         sid = part.SubstringAfter("sid=");
-                        Console.WriteLine($"Extracted sid: {sid}");
+                        PrintLineDebugMenu($"Extracted sid: {sid}");
                     }
                     if(part.StartsWith("ouid="))
                     {
-                        Console.WriteLine("Found ouid in reporting-endpoints header.");
+                        PrintLineDebugMenu("Found ouid in reporting-endpoints header.");
                         ouid = part.SubstringAfter("ouid=");
-                        Console.WriteLine($"Extracted ouid: {ouid}");
+                        PrintLineDebugMenu($"Extracted ouid: {ouid}");
                     }
                 }
-                Console.WriteLine(val);
+                PrintLineDebugMenu(val);
             }   
                
         }
         else
         {
-            Console.WriteLine("No reporting-endpoints header found.");
+            PrintLineDebugMenu("No reporting-endpoints header found.");
         }
         if (headers.Contains("Set-Cookie"))
         {
-            Console.WriteLine("Found Set-Cookie header.");
+            PrintLineDebugMenu("Found Set-Cookie header.");
            CookieManager.IncomingCookies(headers.GetValues("Set-Cookie"));
         }
         
          if (statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
-            Console.WriteLine($"Received {(int)statusCode}. Retrying once with fresh cookie read...");
+            PrintLineDebugMenu($"Received {(int)statusCode}. Retrying once with fresh cookie read...");
             await Task.Delay(200);
             (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
         }
-        Console.WriteLine("End of headers.");
+        PrintLineDebugMenu("End of headers.");
 
-        Console.WriteLine($"Status: {(int)statusCode} {reasonPhrase}");
+        PrintLineDebugMenu($"Status: {(int)statusCode} {reasonPhrase}");
         if (redirectLocation is not null)
-            Console.WriteLine($"Redirect to: {redirectLocation}");
+            PrintLineDebugMenu($"Redirect to: {redirectLocation}");
 
-        Console.WriteLine(body.Length > 500 ? body[..500] : body);
+        PrintLineDebugMenu(body.Length > 500 ? body[..500] : body);
 
         if ((int)statusCode < 200 || (int)statusCode >= 300)
             throw new HttpRequestException($"Response status code does not indicate success: {(int)statusCode} ({reasonPhrase}).");
@@ -402,11 +414,11 @@ if(headers.Contains("reporting-endpoints"))
         var (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
         if(statusCode != HttpStatusCode.OK)
         {
-            Console.WriteLine($"Test endpoint returned {(int)statusCode} {reasonPhrase}");
+            PrintLineDebugMenu($"Test endpoint returned {(int)statusCode} {reasonPhrase}");
         }
         else
         {
-            Console.WriteLine($"Test endpoint returned {(int)statusCode} {reasonPhrase}");
+            PrintLineDebugMenu($"Test endpoint returned {(int)statusCode} {reasonPhrase}");
         }
         return statusCode == HttpStatusCode.OK;
     }
@@ -436,12 +448,12 @@ if(headers.Contains("reporting-endpoints"))
 
         if (!string.Equals(rawCookie, sanitizedCookie, StringComparison.Ordinal))
         {
-            Console.WriteLine("Cookie header contained non-ASCII or control characters; sanitized before request.");
+            PrintLineDebugMenu("Cookie header contained non-ASCII or control characters; sanitized before request.");
             PrintDifferences(rawCookie, sanitizedCookie);
         }
 
         request.Headers.Add("Cookie", sanitizedCookie);
-        Console.WriteLine("Attached auth cookies to request.");
+        PrintLineDebugMenu("Attached auth cookies to request.");
         request.Headers.Add("User-Agent", "UnofficialGoogleDocs/1.0");
         request.Headers.Add("Accept", "*/*");
         request.Headers.Add("Referer", "https://docs.google.com/");
@@ -452,8 +464,8 @@ if(headers.Contains("reporting-endpoints"))
 
         if (response.StatusCode == HttpStatusCode.Found)
         {
-            Console.WriteLine("Found Found Page");
-            Console.WriteLine($"Redirecting to {response.Headers.Location.AbsoluteUri}...");
+            PrintLineDebugMenu("Found Found Page");
+            PrintLineDebugMenu($"Redirecting to {response.Headers.Location.AbsoluteUri}...");
             return await SendRequestOnceAsync(response.Headers.Location.AbsoluteUri);
         }
             return (response.StatusCode, response.ReasonPhrase, response.Headers.Location, body, response.Headers);
@@ -462,22 +474,22 @@ if(headers.Contains("reporting-endpoints"))
     {
         //include url, headers, and body
 
-            Console.WriteLine($"Request URL: {msg.RequestUri}");
-            Console.WriteLine("Headers:");
+            PrintLineDebugMenu($"Request URL: {msg.RequestUri}");
+            PrintLineDebugMenu("Headers:");
             foreach (var header in msg.Headers)
             {
-                Console.WriteLine($"{header.Key}: {string.Join(", ", header.Value)}");
+                PrintLineDebugMenu($"{header.Key}: {string.Join(", ", header.Value)}");
             }
-            Console.WriteLine("");
-            Console.WriteLine("Body:");
+            PrintLineDebugMenu("");
+            PrintLineDebugMenu("Body:");
             if (msg.Content != null)
             {
                 var body = msg.Content.ReadAsStringAsync().Result;
-                Console.WriteLine(body);
+                PrintLineDebugMenu(body);
             }
             else
             {
-                Console.WriteLine("No body content.");
+                PrintLineDebugMenu("No body content.");
             }
     }
     public static void PrintDifferences(string oldText, string newText)
@@ -532,7 +544,7 @@ if(headers.Contains("reporting-endpoints"))
         }
 
         Console.ResetColor();
-        Console.WriteLine();
+        PrintLineDebugMenu("");
     }
     public static string GetSid()
     {
