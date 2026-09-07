@@ -229,7 +229,7 @@ public static class CursorManager
        
         Position += delta;
       //  Position.X = Math.Clamp(Position.X, 0, int.MaxValue);
-       // Position.Y = Math.Clamp(Position.Y, 0, int.MaxValue);
+        Position.Y = Math.Clamp(Position.Y, 0, int.MaxValue);
      /*   Position.X = (int)Position.X;
         Position.Y = (int)Position.Y;*/
  PrintLineDebugMenu($"Delta: {delta} Position: {Position}  ");
