@@ -154,6 +154,7 @@ public class GoogleDoc
     public int revision;
     public string xsrftoken = "";
     public int reqId = 0;
+    public MainWindow loggingdest;
 
     public GoogleDoc(JObject json1, JObject json2)
     {
@@ -165,11 +166,24 @@ public class GoogleDoc
         name = json1["me"]["dkd"][8][0].ToString();
         profpicurl = "https:" + json1["me"]["dkd"][8][2].ToString().SubstringBefore("=");
         revision = int.Parse(json1["r"].ToString());
-        Console.WriteLine("Revision: " + revision);
-        Console.WriteLine("Title: " + title);
-        Console.WriteLine("Token: " + token);
-        Console.WriteLine("Name: " + name);
-        Console.WriteLine("Profile Pic URL: " + profpicurl);
+        PrintLineDebugMenu("Revision: " + revision);
+        PrintLineDebugMenu("Title: " + title);
+        PrintLineDebugMenu("Token: " + token);
+        PrintLineDebugMenu("Name: " + name);
+        PrintLineDebugMenu("Profile Pic URL: " + profpicurl);
+    }
+
+    private void PrintDebugMenu(string s)
+    {
+        if (loggingdest != null)
+        {
+            loggingdest.PrintDebugMenu(s);
+        }
+    }
+
+    private void PrintLineDebugMenu(string s)
+    {
+        PrintDebugMenu(s + "\n");
     }
 
     public async Task<string> GetXsrfToken()
@@ -220,16 +234,16 @@ public class GoogleDoc
         }
         savestring = savestring.TrimEnd(',');
         savestring += "]";
-        Console.WriteLine("Saving changes...");
+        PrintLineDebugMenu("Saving changes...");
         string rev = "rev=" + revision.ToString();
         string bundle = "bundles=" + $"[{{\"commands\": {savestring},\"sid\":\"{NetworkManager.sid}\",\"reqId\":{reqId}}}]";
         reqId++;
         rev = rev.UrlEncode();
         bundle = bundle.UrlEncode();
         string data = rev + "&".UrlEncode() + bundle;
-        Console.WriteLine(bundle);
-        Console.WriteLine(rev);
-        Console.WriteLine(data);
+        PrintLineDebugMenu(bundle);
+        PrintLineDebugMenu(rev);
+        PrintLineDebugMenu(data);
        // var _token = await GetToken(id);
        // string url = $"https://docs.google.com/document/d/{id}/save?id={id}&token={_token}&smv={int.MaxValue}&smb=[{int.MaxValue.ToString()},oAMQAg==]&vc=1&c=1&w=1&flr=0&includes_info_params=true&cros_files=false&nded=false&tab=t.0";
        string url = $"https://docs.google.com/document/d/{id}/save?id={id}";
@@ -260,23 +274,23 @@ public class GoogleDoc
             }
             if (url != "")
             {
-                Console.WriteLine("Got redirect to: " + url);
-                Console.WriteLine("Contents: " + net);
+                PrintLineDebugMenu("Got redirect to: " + url);
+                PrintLineDebugMenu("Contents: " + net);
             }
 
             if (url == "")
             {
-                Console.WriteLine("Reached end of redirect chain, end contents: " + net);
+                PrintLineDebugMenu("Reached end of redirect chain, end contents: " + net);
                 JsonParsing.TryParseFirstJsonObject(net, out var savejson);
-                Console.WriteLine("Save JSON: " + savejson.ToString(Formatting.Indented));
+                PrintLineDebugMenu("Save JSON: " + savejson.ToString(Formatting.Indented));
                 if(savejson is JArray && savejson[0] is JArray && savejson[0][0].ToString() == "er")
                 {
                     iserr = true;
                     var err = savejson[0][1].ToString();
-                    Console.WriteLine("Error: " + err);
+                    PrintLineDebugMenu("Error: " + err);
                     if (err == "XSRF")
                     {
-                        Console.WriteLine("XSRF detected, retrying...");
+                        PrintLineDebugMenu("XSRF detected, retrying...");
                         xsrftoken = savejson[0][4].ToString();
                         url = $"https://docs.google.com/document/d/{id}/save?id={id}&token={xsrftoken}";
                     }
@@ -285,8 +299,8 @@ public class GoogleDoc
                 {
                     if (savejson is JObject && savejson["revisionRanges"] is JArray && savejson["revisionRanges"][0] is JArray)
                     {
-                        Console.WriteLine("Revision ranges: " + savejson["revisionRanges"][0].ToString());
-                        Console.WriteLine("Revision: " + savejson["revisionRanges"][0][0].ToString());
+                        PrintLineDebugMenu("Revision ranges: " + savejson["revisionRanges"][0].ToString());
+                        PrintLineDebugMenu("Revision: " + savejson["revisionRanges"][0][0].ToString());
                         revision = int.Parse(savejson["revisionRanges"][0][0].ToString());
                     }
                     break;
@@ -306,7 +320,7 @@ public class GoogleDoc
 
             count++;
         }
-        Console.WriteLine("Saved changes: " + net);
+        PrintLineDebugMenu("Saved changes: " + net);
     }
 
     private List<Edit> MergeChanges(List<Edit> unsaved)
@@ -360,15 +374,15 @@ public class GoogleDoc
                             {
                                /* foreach (var x in haschecked)
                                 {
-                                    Console.WriteLine(x);
+                                    PrintLineDebugMenu(x);
                                 }*/
 
-                                Console.WriteLine(ai + " " + bi);
-                                Console.WriteLine("Error removing edit: " + ad + " " + bd);
+                                PrintLineDebugMenu(ai + " " + bi);
+                                PrintLineDebugMenu("Error removing edit: " + ad + " " + bd);
                             }
 
                             merged.Insert(ai, replace);
-                            Console.WriteLine($"Merged: {a.FetchSaveString()} + {b.FetchSaveString()} = {replace.FetchSaveString()}");
+                            PrintLineDebugMenu($"Merged: {a.FetchSaveString()} + {b.FetchSaveString()} = {replace.FetchSaveString()}");
                             changed = true;
                             continue;
                         }
@@ -382,7 +396,7 @@ public class GoogleDoc
                             var bd = merged.Remove(b);
                             if (!ad || !bd)
                             {
-                                Console.WriteLine("Error removing edit: " + ad + " " + bd);
+                                PrintLineDebugMenu("Error removing edit: " + ad + " " + bd);
                             }
 
                             merged.Insert(Math.Clamp(bi,0,merged.Count), replace);
@@ -450,17 +464,17 @@ public class GoogleDoc
     }
     public async Task<string> GetToken(string doc_id)
     {
-       /* Console.WriteLine("Getting session ID...");
+       /* PrintLineDebugMenu("Getting session ID...");
         var config = JsonParsing.GetUrlConfig();
         string bindurl = JsonParsing.GetBindPostReq(id,config);
 
            bindurl += $"&zx={new Random().Next(100000,999999)}{new Random().Next(100000,999999)}";
             bindurl += $"&RID={new Random().Next(10000,99999)}";
-        Console.WriteLine("BIND URL:");
-        Console.WriteLine(bindurl);
+        PrintLineDebugMenu("BIND URL:");
+        PrintLineDebugMenu(bindurl);
         var response = await NetworkManager.PostRequest(bindurl,"count=0");
-        Console.WriteLine("BIND POST RESPONSE:");
-        Console.WriteLine(response);
+        PrintLineDebugMenu("BIND POST RESPONSE:");
+        PrintLineDebugMenu(response);
         return "";*/
        var watch2 = new Stopwatch();
        watch2.Start();
@@ -468,13 +482,13 @@ public class GoogleDoc
            await NetworkManager.GetRequest(
                $"https://docs.google.com/document/d/{doc_id}/edit?tab=t.0");
        watch2.Stop();
-       Console.WriteLine($"Main HTML request took {watch2.ElapsedMilliseconds} ms");
+       PrintLineDebugMenu($"Main HTML request took {watch2.ElapsedMilliseconds} ms");
        //File.WriteAllText("main.html", mainhtml);
-       Console.WriteLine("Parsing main HTML...");
+       PrintLineDebugMenu("Parsing main HTML...");
        string token = mainhtml.SubstringAfter("\"token\":\"").SubstringBefore("\"");
        //string smv = mainhtml.SubstringAfter("\"docs-smv\":").SubstringBefore(",");
-       Console.WriteLine("MAIN HTML TOKEN: " + token);
-     //  Console.WriteLine("MAIN HTML SMV: " + smv);
+       PrintLineDebugMenu("MAIN HTML TOKEN: " + token);
+     //  PrintLineDebugMenu("MAIN HTML SMV: " + smv);
        return token;
     }
 
@@ -569,7 +583,7 @@ public class GoogleDoc
                             var op = cv["op"].GetValue<string>();
                             if (op == "set")
                             {
-                            Console.WriteLine("OP-SET: " + cv["opValue"].ToString());
+                            PrintLineDebugMenu("OP-SET: " + cv["opValue"].ToString());
                             }
                         }
                     }

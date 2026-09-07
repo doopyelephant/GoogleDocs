@@ -93,18 +93,18 @@ public partial class MainWindow : Window
             UrlConfig = JsonParsing.GetUrlConfig();
             if (UrlConfig.version != urlconfig_version)
             {
-                Console.WriteLine("WARNING, URL config version mismatch.");
+                PrintLineDebugMenu("WARNING, URL config version mismatch.");
             }
 
             browsercookiepaths = JsonParsing.GetBrowserCookiePaths();
             if (browsercookiepaths.version != browsercookiepath_version)
             {
-                Console.WriteLine("WARNING, browser cookie paths version mismatch.");
+                PrintLineDebugMenu("WARNING, browser cookie paths version mismatch.");
             }
 
             if (SaveKeys.debugmenu)
             {
-                Console.WriteLine("Debug menu enabled.");
+                PrintLineDebugMenu("Debug menu enabled.");
                 DebugMenuPopup.IsOpen = true;
                 Program.DebugMenu();
             }
@@ -122,9 +122,9 @@ public partial class MainWindow : Window
             //  PrintLineDebugMenu("C:\\Users\\##SYSUSER##\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies".GetRealPath());
             //    ActiveElement(Toolbar, false);
             /* var items = NetworkManager.PostRequest("https://docs.google.com/v1/items:get").GetAwaiter().GetResult();
-             Console.WriteLine("ITEMS: " + items);*/
+             PrintLineDebugMenu("ITEMS: " + items);*/
             //SetCursorOffsets(50, 0);
-            //Console.WriteLine(GetCookies().ToString());
+            //PrintLineDebugMenu(GetCookies().ToString());
             if (SaveKeys.acceptedbrowserscraping)
             {
                 CookieManager.InitCookies(SaveKeys);
@@ -246,7 +246,7 @@ public partial class MainWindow : Window
     {
        var watch = new Stopwatch();
        watch.Start();
-       // Console.WriteLine("Setting main text: " + text + " " + recurs);
+       // PrintLineDebugMenu("Setting main text: " + text + " " + recurs);
         if(!recurs)
         {
             MainText.Text = "";
@@ -261,7 +261,7 @@ public partial class MainWindow : Window
             if(ctns)
             {
                 int tmpindex = text.IndexOf(inlines[i], StringComparison.Ordinal);
-                // Console.WriteLine("Found inline " + inlines[i] + " at index " + tmpindex);
+                // PrintLineDebugMenu("Found inline " + inlines[i] + " at index " + tmpindex);
                 if(tmpindex != -1)
                 {
                 index = Math.Min(index, tmpindex);
@@ -270,7 +270,7 @@ public partial class MainWindow : Window
         }
         if (ctns)
         {
-            //Console.WriteLine("Adding plain text inline: " + text.Substring(0, index));
+            //PrintLineDebugMenu("Adding plain text inline: " + text.Substring(0, index));
             MainText.Inlines.Add(new Run(text.Substring(0, index)));
              // MainText.Inlines.Add(new Run("1237656544444"));
             string remaining = text.Substring(index);
@@ -278,33 +278,33 @@ public partial class MainWindow : Window
             if(remaining.StartsWith("<Bl/>"))
             {
                 string bld = remaining.Substring(5, remaining.IndexOf("</Bl>", StringComparison.Ordinal) - 5);
-               //Console.WriteLine("Adding bold text inline: " + bld);
+               //PrintLineDebugMenu("Adding bold text inline: " + bld);
                 var bold = new Bold();
                 bold.Inlines.Add(new Run(bld));
                 MainText.Inlines.Add(bold);
                 after = remaining.Substring(5 + bld.Length + 5);
-                //Console.WriteLine("Remaining text: " + after);
+                //PrintLineDebugMenu("Remaining text: " + after);
             }
             else if(remaining.StartsWith("<It/>"))
             {
                string itl = remaining.Substring(5, remaining.IndexOf("</It>", StringComparison.Ordinal) - 5);
-                Console.WriteLine("Adding italic text inline: " + itl);
+                PrintLineDebugMenu("Adding italic text inline: " + itl);
                 var italic = new Italic();
                 italic.Inlines.Add(new Run(itl));
                 MainText.Inlines.Add(italic);
                 after = remaining.Substring(5 + itl.Length + 5);
-               // Console.WriteLine("Remaining text: " + after); 
+               // PrintLineDebugMenu("Remaining text: " + after);
             }
             else if(remaining.StartsWith("<Tb/>"))
             {
-               // Console.WriteLine("Adding table inline");
+               // PrintLineDebugMenu("Adding table inline");
                 string tbl = remaining.Substring(5, remaining.IndexOf("</Tb>", StringComparison.Ordinal) - 5);
                 int height = Regex.Count(tbl,"\u0012");
                 int total = Regex.Count(tbl,'\u001c'.ToString());
                 int width = total / height;
-                //Console.WriteLine("Adding table inline with width " + width + " and height " + height);
+                //PrintLineDebugMenu("Adding table inline with width " + width + " and height " + height);
                 string[,] table = new string[width,height];
-              //  Console.WriteLine("Adding table text inline: " + tbl);
+              //  PrintLineDebugMenu("Adding table text inline: " + tbl);
                 var tablecon = new InlineUIContainer();
                 var grid = new Grid();
                 grid.ColumnDefinitions = new ColumnDefinitions();
@@ -336,7 +336,7 @@ public partial class MainWindow : Window
                 tablecon.Child = grid;
                 MainText.Inlines.Add(tablecon);
                 after = remaining.Substring(5 + tbl.Length + 5);
-               // Console.WriteLine("Remaining text: " + after);
+               // PrintLineDebugMenu("Remaining text: " + after);
             }
             if(!string.IsNullOrEmpty(after.Trim()))
             {
@@ -350,15 +350,15 @@ public partial class MainWindow : Window
         
           /* foreach(var inline in MainText.Inlines)
         {
-           Console.WriteLine(inline);
+           PrintLineDebugMenu(inline);
             if(inline is Run run)
             {
-                Console.WriteLine("Run text: " + run.Text);
+                PrintLineDebugMenu("Run text: " + run.Text);
              //   run.Text = run.Text.Replace("\\n","\n");
             }
             else
             {
-                Console.WriteLine("Not run");
+                PrintLineDebugMenu("Not run");
             }
         }*/
           if (!recurs)
@@ -367,7 +367,7 @@ public partial class MainWindow : Window
           }
           watch.Stop();
 
-        Console.WriteLine($"Set main text in {watch.ElapsedMilliseconds} ms");
+        PrintLineDebugMenu($"Set main text in {watch.ElapsedMilliseconds} ms");
 
     }
 
@@ -428,7 +428,7 @@ public partial class MainWindow : Window
     }
     public void SetPickOptions(List<string> options)
     {
-        Console.WriteLine($"SetPickOptions called. options={options.Count}, existingChildren={BrowserList.Children.Count}");
+        PrintLineDebugMenu($"SetPickOptions called. options={options.Count}, existingChildren={BrowserList.Children.Count}");
         if (BrowserList.Children.Count > 1)
         {
             while (BrowserList.Children.Count > 1)
@@ -451,10 +451,10 @@ public partial class MainWindow : Window
                 CookieManager.PickBrowserCallback(option);
                 PickCookiePopup.IsOpen = false;
             };
-            Console.WriteLine("Adding browser option: " + option);
+            PrintLineDebugMenu("Adding browser option: " + option);
             BrowserList.Children.Add(button);
         }
-        Console.WriteLine($"BrowserList now has {BrowserList.Children.Count} children.");
+        PrintLineDebugMenu($"BrowserList now has {BrowserList.Children.Count} children.");
     }
 
     public void OpenDebugMenu(object? sender, RoutedEventArgs e)
@@ -511,7 +511,7 @@ public partial class MainWindow : Window
         if (!string.IsNullOrEmpty(sid))
         {
             url += $"&sid={sid}";
-            Console.WriteLine($"Updated bind URL with sid: {url}");
+            PrintLineDebugMenu($"Updated bind URL with sid: {url}");
         }
 
         await foreach (var block in NetworkManager.GetStreamAsync(url, cancel, true))
@@ -527,10 +527,10 @@ public partial class MainWindow : Window
     url += $"&RID={rid++}";*/
     url += extra;
 
-    Console.WriteLine(url);
+    PrintLineDebugMenu(url);
   /*  while (true)
     {
-        Console.WriteLine("Binding...");
+        PrintLineDebugMenu("Binding...");
         Stream jsonstream = await BindRequest(url);
         StreamReader jsonreader = new StreamReader(jsonstream);
         String blocksize = "";
@@ -552,36 +552,41 @@ public partial class MainWindow : Window
       JsonParsing.TryParseFirstJsonObject(strjson, out var fjson);
      /* foreach (var json in fjson[0][1][2]["c"][])
       {*/
-          Console.WriteLine("JSON: " + fjson.ToString(Formatting.Indented));
+          PrintLineDebugMenu("JSON: " + fjson.ToString(Formatting.Indented));
           foreach (var innerjson in fjson.Select(x =>
                    {
                        if (x.Count() < 1)
                        {
-                           Console.WriteLine("noop");
+                           PrintLineDebugMenu("noop");
                            return new JArray();
                        }
                        var p = x[1];
                        if (p.Count() < 2)
                        {
-                           Console.WriteLine("noop");
+                           PrintLineDebugMenu("noop");
                            return new JArray();
                        }
                        if (p[2] is JObject && p[2]["c"] is JArray)
                        {
                            return p[2]["c"];
                        }
-                       Console.WriteLine("noop");
+                       PrintLineDebugMenu("noop");
                        return new JArray();
                    }).ToList())
           {
               foreach (var json in innerjson.Select(x => x[0]))
               {
+                  if (json.Parent[4].Type == JTokenType.String && json.Parent[4].ToString() == NetworkManager.sid)
+                  {
+                    PrintLineDebugMenu("sid matched, loopback detected, skipping");
+                    continue;
+                  }
                   if (json["ty"].ToString() == "noop")
                   {
                       doc.history.Edits.Add(new Edit(EditType.Noop, new string[0],true));
                       continue;
                   }
-                    Console.WriteLine("TYPE : " + json["ty"].ToString());
+                    PrintLineDebugMenu("TYPE : " + json["ty"].ToString());
                   if (json["ty"].ToString() == "as" && json["st"].ToString() == "spellcheck")
                   {
                       continue;
@@ -590,10 +595,10 @@ public partial class MainWindow : Window
                   doc.history.Edits.Add(edit);
                   if (edit.Type == EditType.Insert)
                   {
-                      Console.WriteLine("Offseting..");
+                      PrintLineDebugMenu("Offseting..");
                       for(int i = 0; i < edit.Params[1].Length; i++)
                       {
-                          Console.WriteLine("Offseting "  +int.Parse(edit.Params[0]) + i);
+                          PrintLineDebugMenu("Offseting "  +int.Parse(edit.Params[0]) + i);
                           doc.OffsetAltersAfter(1,int.Parse(edit.Params[0]) + i);
                       }
                   }
@@ -608,7 +613,7 @@ public partial class MainWindow : Window
                       SetMainText(doc.GetText());
                   }
 
-                  Console.WriteLine(json);
+                  PrintLineDebugMenu(json.ToString());
               }
           }
           //  }
@@ -624,7 +629,7 @@ public partial class MainWindow : Window
         var watch = new Stopwatch();
         watch.Start();
 SetMainText("Loading...");
-Console.WriteLine("Loading...");
+PrintLineDebugMenu("Loading...");
 string url = "";
 if (string.IsNullOrEmpty(docid))
 {
@@ -635,13 +640,13 @@ else
     doc_id = docid;
     url = JsonParsing.InitialReq(docid, UrlConfig);
 }
-Console.WriteLine(url);
+PrintLineDebugMenu(url);
 try
 {
 
 
     string json = await NetworkManager.GetRequest(url);
-    Console.WriteLine(json);
+    PrintLineDebugMenu(json);
   if (!JsonParsing.TryExtractFirstJsonObject(json, out JObject? parsed, out int firstStart, out int firstEnd, out string rawFirst))
   {
       SetMainText("Failed to parse first JSON object");
@@ -655,8 +660,8 @@ try
   }
 
 
-  Console.WriteLine($"First JSON chars: {rawFirst.Length}");
-  Console.WriteLine($"Second segment chars: {json2Raw.Length}");
+  PrintLineDebugMenu($"First JSON chars: {rawFirst.Length}");
+  PrintLineDebugMenu($"Second segment chars: {json2Raw.Length}");
 
 // If json2Raw itself contains wrappers, extract first object from it:
   if (!JsonParsing.TryExtractFirstJsonObject(json2Raw, out JObject? parsed2, out _, out _, out _))
@@ -684,10 +689,10 @@ try
   ProfilePicture.Source = new Bitmap(bitstream);
   ActiveElement(ProfilePicture,true,true);
     watch.Stop();
-  Console.WriteLine($"Document loaded successfully in {watch.ElapsedMilliseconds} ms.");
+  PrintLineDebugMenu($"Document loaded successfully in {watch.ElapsedMilliseconds} ms.");
   SaveKeys.lastopened = doc_id;
   JsonParsing.SaveKeys(SaveKeys);
-  Console.WriteLine(doc.GetText());
+  PrintLineDebugMenu(doc.GetText());
  // File.WriteAllText("items.txt",await NetworkManager.GetRequest("https://drivefrontend-pa.clients6.google.com/v1/items:list"/*"[25,\"https://docs.google.com/document/u/0/?usp=docs_web\",25,\"en\",\"ca\",1,null,0,0,\"\",\"\",1,0,null,72175901,[[1,9,13],0,1,1],[1],null,0,1,\"CAMSIhUn9NL9N67auQayvgTkiQWnBp6WpgL58FLkoEXMsBP6gR0=\",{\"1001\":1}]"*/,true));
  // File.WriteAllText("BindTest.txt",await NetworkManager.GetRequest(
      // "https://docs.google.com/document/d/1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI/bind?id=1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI&sid=5e31d1095e7c74c5&token=AJagN6Q3L3VTlm0lH1eRvrcxnAZY:1788285353340&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&lsq=1788285346255&vc=1&c=1&w=1&flr=0&gsi=0&smv=2147483647&smb=[2147483647, oAMQAg==]&cimpl=1&RID=rpc&SID=8EC8391587DD515B&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1"));
@@ -712,16 +717,21 @@ try
 }
 catch (HttpRequestException err)
 {
-    Console.WriteLine(err.Message);
+    PrintLineDebugMenu(err.Message);
     SetMainText(err.Message);
 }
     }
 
     public void PrintDebugMenu(string s)
     {
+        if (SaveKeys.verbose)
+        {
+            Console.Write(s);
+        }
+
         if (SaveKeys.log)
         {
-        DebugMenuTextBlock.Text += s;
+            DebugMenuTextBlock.Text += s;
             lock (debugLogLock)
             {
                 debugmenulog += s;
@@ -740,19 +750,19 @@ catch (HttpRequestException err)
        var token = await doc.GetXsrfToken();
     var bindpost = await NetworkManager.PostRequest(JsonParsing.GetBindPostReq(doc_id,UrlConfig) + $"&token={token}", "count=0");
     var jsonobj = JsonParsing.TryParseFirstJsonObject(bindpost, out JContainer? obj) ? obj : new JObject();
-    Console.WriteLine(jsonobj.ToString(Formatting.Indented));
+    PrintLineDebugMenu(jsonobj.ToString(Formatting.Indented));
     var postsid = jsonobj[0][1][1];
-    Console.WriteLine("Post Sid: " + postsid);
-   /* Console.WriteLine("ITEMS LIST:");
+    PrintLineDebugMenu("Post Sid: " + postsid);
+   /* PrintLineDebugMenu("ITEMS LIST:");
     var list = await NetworkManager.PostRequest(
         $"https://drivefrontend-pa.clients6.google.com/v1/items:list?key=AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0&SID={postsid}","[[null,null,null,null,0,null,null,null,[[\"application/vnd.google-apps.document\"],[\"application/vnd.msword\"],[\"application/vnd.ms-word\"],[\"application/vnd.ms-word.document.macroenabled.12\"],[\"application/msword\"],[\"application/vnd.ms-word.document.12\"],[\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"],[\"application/vnd.google-gsuite.encrypted; content=\\\"application/vnd.google-gsuite.document-blob\\\"\"],[\"application/vnd.google-gsuite.encrypted; content=\\\"application/vnd.google-apps.document\\\"\"]],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[1,2]],[50,\"\"]]");
-    Console.WriteLine(list);*/
-    //Console.WriteLine(BINDPOST);
+    PrintLineDebugMenu(list);*/
+    //PrintLineDebugMenu(BINDPOST);
     /*  File.WriteAllText("bindpost.html", BINDPOST);
       var SID = BINDPOST.SubstringAfter("\"c\",\"").SubstringBefore("\"");
       var lsq = BINDPOST.SubstringAfter("1788").SubstringAfter("1788").SubstringBefore(",");
-      Console.WriteLine("Binding to document...");
-      Console.WriteLine("BIND TEST");
+      PrintLineDebugMenu("Binding to document...");
+      PrintLineDebugMenu("BIND TEST");
       var stream = await NetworkManager
           .GetStreamAsync(
               $"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&t=1" + /*&SID={SID}*/
@@ -760,7 +770,7 @@ catch (HttpRequestException err)
        await using var output = File.OpenWrite("BindStream.txt");
           await stream.CopyToAsync(output);*/
       //File.WriteAllText("BindGetRequestTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&zx=lwq349tga0r7&t=1" + $"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]"));
-      //Console.WriteLine("BIND TEST END");
+      //PrintLineDebugMenu("BIND TEST END");
       var aid = jsonobj[jsonobj.Count - 1][0];
       await BindToDoc($"&SID={postsid}&AID={aid}"/*$"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}"*/,true);
     }
@@ -819,6 +829,10 @@ catch (HttpRequestException err)
 
     public void PrintLineDebugMenu(string s)
     {
+        if (SaveKeys.verbose)
+        {
+            Console.WriteLine(s);
+        }
         if (SaveKeys.log)
         {
             DebugMenuTextBlock.Text += s + "\n";
@@ -846,7 +860,7 @@ catch (HttpRequestException err)
                         return DebugReadText;
                     }
                     await Task.Delay(100);
-                   // Console.WriteLine(DebugReadText);
+                   // PrintLineDebugMenu(DebugReadText);
                 }
     }
 
@@ -872,7 +886,7 @@ catch (HttpRequestException err)
             default:
                 if (ctrl)
                 {
-                    Console.WriteLine($"CTRL+{e.Key} pressed.");
+                    PrintLineDebugMenu($"CTRL+{e.Key} pressed.");
                     if (e.Key == Key.S)
                     {
                         doc.Save();

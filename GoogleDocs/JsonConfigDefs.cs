@@ -73,4 +73,5 @@ public struct SaveKeys
     public List<string> promptcacherequests;
     public List<int> promptcache;
     public string defaultbrowser;
+    public bool verbose;
 }
