@@ -36,7 +36,7 @@ public static class CursorManager
     private static Vector2 Acceleration = new(0f,0f);
     private static DateTime lastkey = DateTime.Now;
     private static DateTime lastupdate = DateTime.Now;
-    private static Vector2 Position = new(0f,0f);
+    public static Vector2 Position = new(0f,0f);
     private static MainWindow window;
     private static TextBlock? mainText = null;
     private static TextLayout textlayout;

@@ -417,6 +417,19 @@ public class GoogleDoc
                     edit.Params[2] = (end + offset).ToString();
                 }
             }
+            if (edit.Type == EditType.Insert)
+            {
+                int start = Convert.ToInt32(edit.Params[0]);
+                if (start - 1 >= after)
+                {
+                    edit.Params[0] = (start + offset).ToString();
+                }
+            }
+        }
+
+        if (CursorManager.GetCursorPosition() > after)
+        {
+            CursorManager.Position = CursorManager.Position with { X = CursorManager.Position.X + offset };
         }
     }
 

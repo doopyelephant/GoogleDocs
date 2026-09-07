@@ -361,8 +361,14 @@ public partial class MainWindow : Window
                 Console.WriteLine("Not run");
             }
         }*/
-        watch.Stop();
+          if (!recurs)
+          {
+              UpdateSelections();
+          }
+          watch.Stop();
+
         Console.WriteLine($"Set main text in {watch.ElapsedMilliseconds} ms");
+
     }
 
 
@@ -648,7 +654,7 @@ try
       return;
   }
 
-// Optional sanity log (rawFirst is exact substring from server)
+
   Console.WriteLine($"First JSON chars: {rawFirst.Length}");
   Console.WriteLine($"Second segment chars: {json2Raw.Length}");
 
@@ -682,6 +688,7 @@ try
   SaveKeys.lastopened = doc_id;
   JsonParsing.SaveKeys(SaveKeys);
   Console.WriteLine(doc.GetText());
+ // File.WriteAllText("items.txt",await NetworkManager.GetRequest("https://drivefrontend-pa.clients6.google.com/v1/items:list"/*"[25,\"https://docs.google.com/document/u/0/?usp=docs_web\",25,\"en\",\"ca\",1,null,0,0,\"\",\"\",1,0,null,72175901,[[1,9,13],0,1,1],[1],null,0,1,\"CAMSIhUn9NL9N67auQayvgTkiQWnBp6WpgL58FLkoEXMsBP6gR0=\",{\"1001\":1}]"*/,true));
  // File.WriteAllText("BindTest.txt",await NetworkManager.GetRequest(
      // "https://docs.google.com/document/d/1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI/bind?id=1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI&sid=5e31d1095e7c74c5&token=AJagN6Q3L3VTlm0lH1eRvrcxnAZY:1788285353340&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&lsq=1788285346255&vc=1&c=1&w=1&flr=0&gsi=0&smv=2147483647&smb=[2147483647, oAMQAg==]&cimpl=1&RID=rpc&SID=8EC8391587DD515B&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1"));
 
@@ -699,7 +706,7 @@ try
   PrevSelections = new List<(int, int)>();
   Selections = new List<(int, int)>();
   Selections.Add((5, 100));
-  UpdateSelections();
+
   // MainText.Inlines.Add(new Run("Hello World"));
 
 }
@@ -943,6 +950,10 @@ catch (HttpRequestException err)
 
     public void UpdateSelections()
     {
+        if (Selections == null)
+        {
+            return;
+        }
         if (Selections.Count != SelectionRects.Count)
         {
             while (Selections.Count > SelectionRects.Count)
@@ -980,7 +991,7 @@ catch (HttpRequestException err)
 
             foreach (var i in Changed)
             {
-                Vector2 start = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item1));
+                Vector2 start = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item1,0));
                 if (Selections[i].Item1 == Selections[i].Item2)
                 {
                     var r = SelectionRects[i];
@@ -992,7 +1003,7 @@ catch (HttpRequestException err)
                 }
                 else
                 {
-                    Vector2 end = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item2));
+                    Vector2 end = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item2,0));
                     var r = SelectionRects[i];
                     r.Width = Math.Abs(start.X - end.X) + 2;
                     r.Height = 20;
