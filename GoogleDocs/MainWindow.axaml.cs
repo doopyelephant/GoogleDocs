@@ -924,7 +924,7 @@ catch (HttpRequestException err)
                 {
                     doc.history.Edits.Add(edit);
                     SetMainText(doc.GetText());
-                    CursorManager.MoveCursor();
+                    //CursorManager.MoveCursor();
                     doc.OffsetAltersAfter(1, pos);
                 }
 
