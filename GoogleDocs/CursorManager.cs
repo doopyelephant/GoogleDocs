@@ -149,6 +149,35 @@ public static class CursorManager
         }
         PrintDebugMenu($"Moved to next line: {tmp} ");
         }
+        while (tmp.X < 0)
+        {
+            if (tmp.Y > 0)
+            {
+                tmp.Y--;
+                Position.Y--;
+                if (tmp.Y < textlayout.TextLines.Count)
+                {
+                    Console.WriteLine("Y: " + tmp.Y);
+                    length = textlayout.TextLines[(int)tmp.Y].Length;
+                }
+
+                tmp.X = length;
+                Position.X = length;
+                PrintDebugMenu($"Moved to previous line: {tmp} ");
+            }
+            else
+            {
+                tmp.X = 0;
+                tmp.Y = 0;
+                Position.X = 0;
+                Position.Y = 0;
+                if (tmp.Y < textlayout.TextLines.Count)
+                {
+                    length = textlayout.TextLines[(int)tmp.Y].Length;
+                }
+                PrintDebugMenu($"Moved to start: {tmp} ");
+            }
+        }
         int index = 0;
         int charcnt = 0;
         foreach (var line in textlayout.TextLines)
@@ -162,6 +191,7 @@ public static class CursorManager
 
             index++;
         }
+
          var box = new Avalonia.Rect();
         try
         {
@@ -198,8 +228,8 @@ public static class CursorManager
         var delta = Acceleration * dt;
        
         Position += delta;
-        Position.X = Math.Clamp(Position.X, 0, int.MaxValue);
-        Position.Y = Math.Clamp(Position.Y, 0, int.MaxValue);
+      //  Position.X = Math.Clamp(Position.X, 0, int.MaxValue);
+       // Position.Y = Math.Clamp(Position.Y, 0, int.MaxValue);
      /*   Position.X = (int)Position.X;
         Position.Y = (int)Position.Y;*/
  PrintLineDebugMenu($"Delta: {delta} Position: {Position}  ");
