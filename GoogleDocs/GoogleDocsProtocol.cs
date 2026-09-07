@@ -43,10 +43,11 @@ public class Edit
             paramstmp[3] = json["sm"].ToString();
             Params = paramstmp;
         }
-        else if (typestring == "ml") // Not sure code could be mt,mlt or smth
+        else if (typestring == "mlti")
         {
             Type = EditType.Multi;
-            string[] paramstmp = new string[0];
+            string[] paramstmp = new string[1];
+            paramstmp[0] = json["mts"].ToString();
             Params = paramstmp;
         }
         else if (typestring == "noop")
@@ -75,7 +76,8 @@ public class Edit
                $"{(Type == EditType.Alter ? $"\"ei\" : {int.Parse(Params[2]) + 1}," : "")}" + // Alteration end index
                $"{(Type == EditType.Alter ? $"\"sm\" : {Params[3]}," : "")}" + // Alteration property json string
                $"{(Type == EditType.Insert ? $"\"ibi\" : {int.Parse(Params[0]) + 1}," : "")}" + // Insertion index
-               $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1]}\"," : "")}" // Insertion string
+               $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1]}\"," : "")}" + // Insertion string
+               $"{(Type == EditType.Multi ? $"\"mts\" : {Params[0]}" : "")}" // Multi Contents
                ;
         json = json.TrimEnd(',');
         json += "}";
@@ -94,7 +96,7 @@ public class Edit
                 return "is";
                 break;
             case EditType.Multi:
-                return "ml";
+                return "mlti";
                 break;
             case EditType.Noop:
                 return "noop";
@@ -478,8 +480,32 @@ public class GoogleDoc
 
     public string GetText()
     {
+        var expanded = new List<Edit>();
+        expanded = history.Edits.ToArray().ToList();
+        for (int i = 0; i < expanded.Count; i++)
+        {
+            if (expanded[i].Type == EditType.Multi)
+            {
+                var json = expanded[i].Params[0];
+                JsonParsing.TryParseFirstJsonObject(json, out var parsed);
+                if (parsed is JArray)
+                {
+                    List<Edit> tmpedits = new List<Edit>();
+                    foreach (var editjson in (parsed as JArray))
+                    {
+                        if (editjson is not JObject)
+                        {
+                            continue;
+                        }
+                        tmpedits.Add(new Edit(editjson as JObject,expanded[i].IsSaved));
+                    }
+                    expanded.RemoveAt(i);
+                    expanded.InsertRange(i, tmpedits);
+                }
+            }
+        }
         string content = "";
-        foreach (var edit in history.Edits)
+        foreach (var edit in expanded)
         {
             if (edit.Type == EditType.Insert)
             {
@@ -494,7 +520,7 @@ public class GoogleDoc
             }
         }
         int offset = 0;
-        foreach(var edit in history.Edits)
+        foreach(var edit in expanded)
         {
             if(edit.Type == EditType.Alter)
             {
