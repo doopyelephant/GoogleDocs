@@ -178,6 +178,20 @@ public static class CursorManager
                 PrintDebugMenu($"Moved to start: {tmp} ");
             }
         }
+
+        if (tmp.Y >= textlayout.TextLines.Count - 1 && tmp.X > length)
+        {
+            tmp.Y = textlayout.TextLines.Count - 1;
+            Position.Y = textlayout.TextLines.Count - 1;
+            if (tmp.Y < textlayout.TextLines.Count)
+            {
+                Console.WriteLine("Y: " + tmp.Y);
+                length = textlayout.TextLines[(int)tmp.Y].Length;
+            }
+            tmp.X = length;
+            Position.X = length;
+
+        }
         int index = 0;
         int charcnt = 0;
         foreach (var line in textlayout.TextLines)
