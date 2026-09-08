@@ -649,30 +649,45 @@ try
 
     string json = await NetworkManager.GetRequest(url);
     PrintLineDebugMenu(json);
-  if (!JsonParsing.TryExtractFirstJsonObject(json, out JObject? parsed, out int firstStart, out int firstEnd, out string rawFirst))
+    int firstEnd = 0;
+  if (!JsonParsing.TryExtractFirstJsonObject(json, out JObject? parsed, out int firstStart, out firstEnd, out string rawFirst))
   {
       SetMainText("Failed to parse first JSON object");
       return;
   }
 
-  if (!JsonParsing.TryReadLengthPrefixedSegment(json, firstEnd, out string json2Raw, out int _))
+  List<JObject> jsons = new List<JObject>();
+
+  while (JsonParsing.TryReadLengthPrefixedSegment(json, firstEnd, out string json2, out firstEnd))
   {
-     SetMainText("Failed to parse length-prefixed second segment");
-      return;
+      if (!JsonParsing.TryExtractFirstJsonObject(json2, out JObject? parsed2, out _, out _, out _))
+      {
+
+          if (jsons.Count == 0)
+          {
+              SetMainText("Failed to parse second JSON object");
+              return;
+          }
+          else
+          {
+              PrintLineDebugMenu("Failed to parse second JSON object");
+
+              break;
+          }
+      }
+      else
+      {
+          PrintLineDebugMenu("Adding Jsons");
+          jsons.Add(parsed2);
+      }
+  }
+  PrintLineDebugMenu($"Jsons Finished: {jsons.Count} ");
+  foreach (var x in jsons)
+  {
+      PrintLineDebugMenu($"JSON XX:" + x.ToString(Formatting.Indented));
   }
 
-
-  PrintLineDebugMenu($"First JSON chars: {rawFirst.Length}");
-  PrintLineDebugMenu($"Second segment chars: {json2Raw.Length}");
-
-// If json2Raw itself contains wrappers, extract first object from it:
-  if (!JsonParsing.TryExtractFirstJsonObject(json2Raw, out JObject? parsed2, out _, out _, out _))
-  {
-      SetMainText("Failed to parse second JSON object");
-      return;
-  }
-
-  doc = new GoogleDoc(parsed!, parsed2!);
+  doc = new GoogleDoc(parsed!, jsons.ToArray()!);
   doc.id = doc_id;
   //await doc.GetSessionId();
   SetMainText(doc.GetText());

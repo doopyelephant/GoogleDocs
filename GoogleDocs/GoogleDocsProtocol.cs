@@ -112,19 +112,22 @@ public class DocHistory
 {
     public List<Edit> Edits { get; set; }
 
-    public DocHistory(JObject json)
+    public DocHistory(JObject[] jsons)
     {
         Edits = new List<Edit>();
-        if (json is null) return;
-
-        var edits = json["sc"] as JArray;
-        if (edits is null) return;
-
-        foreach (var token in edits)
+        foreach (var json in jsons)
         {
-            if (token is JObject obj)
+            if (json is null) return;
+
+            var edits = json["sc"] as JArray;
+            if (edits is null) return;
+
+            foreach (var token in edits)
             {
-                Edits.Add(new Edit(obj,true));
+                if (token is JObject obj)
+                {
+                    Edits.Add(new Edit(obj, true));
+                }
             }
         }
     }
@@ -144,7 +147,8 @@ public class DocHistory
 public class GoogleDoc
 {
     JObject? json1;
-    JObject? json2;
+
+    JObject? [] jsons;
     public DocHistory? history;
     public string id;
     public string token;
@@ -154,18 +158,28 @@ public class GoogleDoc
     public int revision;
     public string xsrftoken = "";
     public int reqId = 0;
+    private SaveKeys savekeys;
     public static MainWindow loggingdest;
 
-    public GoogleDoc(JObject json1, JObject json2)
+    public GoogleDoc(JObject json1, JObject[] jsons)
     {
         this.json1 = json1;
-        this.json2 = json2;
-        history = new DocHistory(json2);
+        this.jsons = jsons;
+        history = new DocHistory(jsons);
         title = json1["me"]["t"].ToString();
         token = json1["me"]["dkd"][10].ToString();
         name = json1["me"]["dkd"][8][0].ToString();
         profpicurl = "https:" + json1["me"]["dkd"][8][2].ToString().SubstringBefore("=");
         revision = int.Parse(json1["r"].ToString());
+        savekeys = JsonParsing.GetSaveKeys();
+        if (savekeys.verbose)
+        {
+            File.WriteAllText("rawjson1.json", json1.ToString(Formatting.Indented));
+            foreach (var json in jsons)
+            {
+                File.WriteAllText("rawjson" + (jsons.IndexOf(json) + 1).ToString() + ".json", json.ToString(Formatting.Indented));
+            }
+        }
         PrintLineDebugMenu("Revision: " + revision);
         PrintLineDebugMenu("Title: " + title);
         PrintLineDebugMenu("Token: " + token);
@@ -609,6 +623,11 @@ public class GoogleDoc
         offset += 4 * countstart;
         content = content.Replace("\u0011","</Tb>");
         offset += 4 * countend;
+        }
+
+        if (savekeys.verbose)
+        {
+            File.WriteAllText("doc.txt", content.ToString());
         }
         return content;
     }
