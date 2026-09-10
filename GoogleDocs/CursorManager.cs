@@ -42,6 +42,7 @@ public static class CursorManager
     private static TextLayout textlayout;
     private static Vector2 LastCursorPosition = new(0f,0f);
     private static SaveKeys SaveKeys;
+    private static bool verticalmove;
 
     public static void Init(MainWindow _window)
     {
@@ -128,7 +129,7 @@ public static class CursorManager
         }
 
        // var textlayout = mainText.TextLayout;
-        
+
         var length = 0;
         if(tmp.Y < textlayout.TextLines.Count)
         {
@@ -136,6 +137,11 @@ public static class CursorManager
         }
 
         PrintDebugMenu($"Length: {length} ");
+        if (verticalmove && length < tmp.X)
+        {
+            tmp.X = length;
+            Position.X = length;
+        }
         while (length < tmp.X)
         {
         tmp.X = 0;
@@ -244,6 +250,7 @@ public static class CursorManager
         Position += delta;
       //  Position.X = Math.Clamp(Position.X, 0, int.MaxValue);
         Position.Y = Math.Clamp(Position.Y, 0, int.MaxValue);
+      verticalmove = delta.Y != 0;
      /*   Position.X = (int)Position.X;
         Position.Y = (int)Position.Y;*/
  PrintLineDebugMenu($"Delta: {delta} Position: {Position}  ");

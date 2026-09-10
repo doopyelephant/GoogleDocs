@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace GoogleDocs;
-public enum EditType { Insert, Alter, Multi,Noop,Unknown}
+public enum EditType { Insert, Alter, Multi,Delete,Noop,Unknown}
 public class Edit
 {
     public bool IsSaved = false;
@@ -56,6 +56,14 @@ public class Edit
             string[] paramstmp = new string[0];
             Params = paramstmp;
         }
+        else if (typestring == "ds")
+        {
+            Type = EditType.Delete;
+            string[] paramstmp = new string[2];
+            paramstmp[0] = (Convert.ToInt32(json["si"]) - 1).ToString();
+            paramstmp[1] = (Convert.ToInt32(json["ei"]) - 1).ToString();
+            Params = paramstmp;
+        }
         else
         {
             Type = EditType.Unknown;
@@ -77,7 +85,9 @@ public class Edit
                $"{(Type == EditType.Alter ? $"\"sm\" : {Params[3]}," : "")}" + // Alteration property json string
                $"{(Type == EditType.Insert ? $"\"ibi\" : {int.Parse(Params[0]) + 1}," : "")}" + // Insertion index
                $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1]}\"," : "")}" + // Insertion string
-               $"{(Type == EditType.Multi ? $"\"mts\" : {Params[0]}" : "")}" // Multi Contents
+               $"{(Type == EditType.Multi ? $"\"mts\" : {Params[0]}" : "")}" + // Multi Contents
+               $"{(Type == EditType.Delete ? $"\"si\" : {int.Parse(Params[0]) + 1}," : "")}" + // Delete start index
+               $"{(Type == EditType.Delete ? $"\"ei\" : {int.Parse(Params[1]) + 1}," : "")}" // Delete end index
                ;
         json = json.TrimEnd(',');
         json += "}";
@@ -103,6 +113,9 @@ public class Edit
                 break;
             case EditType.Unknown:
                 return "unk";
+                break;
+            case EditType.Delete:
+                return "ds";
                 break;
         }
         return "unk";
@@ -430,7 +443,7 @@ public class GoogleDoc
     }
 
 
-    public void OffsetAltersAfter(int offset, int after)
+    public void OffsetAltersAfter(int offset, int after,bool cursor = true)
     {
         foreach (var edit in history.Edits)
         {
@@ -447,7 +460,20 @@ public class GoogleDoc
                     edit.Params[2] = (end + offset).ToString();
                 }
             }
-            if (edit.Type == EditType.Insert)
+            else if (edit.Type == EditType.Delete)
+            {
+                int start = Convert.ToInt32(edit.Params[0]);
+                int end = Convert.ToInt32(edit.Params[1]);
+                if (start - 1 >= after)
+                {
+                    edit.Params[0] = (start + offset).ToString();
+                }
+                if (end >= after)
+                {
+                    edit.Params[1] = (end + offset).ToString();
+                }
+            }
+            else if (edit.Type == EditType.Insert)
             {
                 int start = Convert.ToInt32(edit.Params[0]);
                 if (start - 1 >= after)
@@ -457,7 +483,52 @@ public class GoogleDoc
             }
         }
 
-        if (CursorManager.GetCursorPosition() >= after)
+        if (cursor && CursorManager.GetCursorPosition() >= after)
+        {
+            CursorManager.Position = CursorManager.Position with { X = CursorManager.Position.X + offset };
+        }
+    }
+    public void OffsetAltersAfter(int offset, int after, ref List<Edit> edits,bool cursor = true)
+    {
+        foreach (var edit in edits)
+        {
+            if (edit.Type == EditType.Alter)
+            {
+                int start = Convert.ToInt32(edit.Params[1]);
+                int end = Convert.ToInt32(edit.Params[2]);
+                if (start - 1 >= after)
+                {
+                    edit.Params[1] = (start + offset).ToString();
+                }
+                if (end >= after)
+                {
+                    edit.Params[2] = (end + offset).ToString();
+                }
+            }
+            else if (edit.Type == EditType.Delete)
+            {
+                int start = Convert.ToInt32(edit.Params[0]);
+                int end = Convert.ToInt32(edit.Params[1]);
+                if (start - 1 >= after)
+                {
+                    edit.Params[0] = (start + offset).ToString();
+                }
+                if (end >= after)
+                {
+                    edit.Params[1] = (end + offset).ToString();
+                }
+            }
+            else if (edit.Type == EditType.Insert)
+            {
+                int start = Convert.ToInt32(edit.Params[0]);
+                if (start - 1 >= after)
+                {
+                    edit.Params[0] = (start + offset).ToString();
+                }
+            }
+        }
+
+        if (cursor && CursorManager.GetCursorPosition() >= after)
         {
             CursorManager.Position = CursorManager.Position with { X = CursorManager.Position.X + offset };
         }
@@ -533,6 +604,11 @@ public class GoogleDoc
             }
         }
         string content = "";
+     /*   foreach (var edit in expanded)
+        {
+
+        }*/
+        int offset = 0;
         foreach (var edit in expanded)
         {
             if (edit.Type == EditType.Insert)
@@ -546,10 +622,42 @@ public class GoogleDoc
                     content = content.Substring(0, Convert.ToInt32(edit.Params[0])) + edit.Params[1].Replace("\\n","\n") + content.Substring(Convert.ToInt32(edit.Params[0]));
                 }
             }
+            else if (edit.Type == EditType.Delete)
+            {
+                var start = Convert.ToInt32(edit.Params[0]);
+                var end = Convert.ToInt32(edit.Params[1]);
+                if (start < content.Length && end <= content.Length)
+                {
+                    content = content.Remove(start, (end - start) + 1);
+                }
+            }
         }
-        int offset = 0;
+
+        int since = 0;
+        int until = 20;
+        int index = 0;
+        foreach (var c in content)
+        {
+            if (c == '\n')
+            {
+                since = 0;
+            }
+
+            if (since > until)
+            {
+                since = 0;
+                content.Insert(index, "\n");
+                OffsetAltersAfter(1, index, ref expanded, false);
+            }
+
+            since++;
+
+            index++;
+        }
+
         foreach(var edit in expanded)
         {
+
             if(edit.Type == EditType.Alter)
             {
                 int start = Convert.ToInt32(edit.Params[1]);
