@@ -74,4 +74,6 @@ public struct SaveKeys
     public List<int> promptcache;
     public string defaultbrowser;
     public bool verbose;
+    public uint wraplength;
+    public bool cursorupdatelog;
 }

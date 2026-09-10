@@ -75,5 +75,7 @@
   "promptcacherequests": [],
   "promptcache": [],
   "defaultbrowser": "",
-  "verbose" : true
+  "verbose" : true,
+  "wraplength": 100,
+  "cursorupdatelog": true
 }

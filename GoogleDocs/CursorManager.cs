@@ -61,14 +61,14 @@ public static class CursorManager
         var dt = (float)(DateTime.Now - lastkey).TotalSeconds;
         var x = (keystate.left ? -1f : 0f) + (keystate.right ? 1f : 0f);
         var y = (keystate.up ? -1f : 0f) + (keystate.down ? 1f : 0f);
-        PrintDebugMenu($"dt: {dt} x: {x} y: {y} ");
+        PrintLineDebugMenu($"dt: {dt} x: {x} y: {y} ");
        // window.PrintLineDebugMenu($"x: {x} y: {y}");
      /*   x = (float)Math.Pow(x, 2f) * 0.2f * (x < 0 ? -1f : 0f) + (x > 0 ? 5f : 0f) - (x < 0 ? 5f : 0f);
         y = (float)Math.Pow(y, 2f) * 0.2f * (y < 0 ? -1f : 0f) + (y > 0 ? 5f : 0f) - (y < 0 ? 5f : 0f);*/
      x = ((float)Math.Pow(dt, 2f) * 0.3f) * x;
      y = ((float)Math.Pow(dt, 2f) * 0.3f) * y;
         Acceleration = new Vector2(x,y);
-        PrintDebugMenu($"Acceleration: {Acceleration} ");
+        PrintLineDebugMenu($"Acceleration: {Acceleration} ");
     }
     public static int GetCursorPosition()
     {
@@ -87,7 +87,7 @@ public static class CursorManager
             length = textlayout.TextLines[(int)tmp.Y].Length;
         }
 
-        PrintDebugMenu($"Length: {length} ");
+        PrintLineDebugMenu($"Length: {length} ");
         while (length < tmp.X)
         {
         tmp.X = 0;
@@ -99,7 +99,7 @@ public static class CursorManager
         {
             length = textlayout.TextLines[(int)tmp.Y].Length;
         }
-        PrintDebugMenu($"Moved to next line: {tmp} ");
+        PrintLineDebugMenu($"Moved to next line: {tmp} ");
         }
         int index = 0;
         int charcnt = 0;
@@ -136,7 +136,7 @@ public static class CursorManager
             length = textlayout.TextLines[(int)tmp.Y].Length;
         }
 
-        PrintDebugMenu($"Length: {length} ");
+        PrintLineDebugMenu($"Length: {length} ");
         if (verticalmove && length < tmp.X)
         {
             tmp.X = length;
@@ -153,7 +153,7 @@ public static class CursorManager
         {
             length = textlayout.TextLines[(int)tmp.Y].Length;
         }
-        PrintDebugMenu($"Moved to next line: {tmp} ");
+        PrintLineDebugMenu($"Moved to next line: {tmp} ");
         }
         while (tmp.X < 0)
         {
@@ -169,7 +169,7 @@ public static class CursorManager
 
                 tmp.X = length;
                 Position.X = length;
-                PrintDebugMenu($"Moved to previous line: {tmp} ");
+                PrintLineDebugMenu($"Moved to previous line: {tmp} ");
             }
             else
             {
@@ -181,7 +181,7 @@ public static class CursorManager
                 {
                     length = textlayout.TextLines[(int)tmp.Y].Length;
                 }
-                PrintDebugMenu($"Moved to start: {tmp} ");
+                PrintLineDebugMenu($"Moved to start: {tmp} ");
             }
         }
 
@@ -219,16 +219,16 @@ public static class CursorManager
         }
         catch(Exception ex)
         {
-            PrintDebugMenu($"[WARNING] Textlayout is too small: {ex.Message}");
+            PrintLineDebugMenu($"[WARNING] Textlayout is too small: {ex.Message}");
             return LastCursorPosition;
         }
         PrintLineDebugMenu($"Hit test position: {box.X}, {box.Y}");
         for (int i = 0; i < textlayout.TextLines.Count; i++)
         {
             var line = textlayout.TextLines[i];
-            PrintDebugMenu($"Line {i}: {line.Length} chars");
+            PrintLineDebugMenu($"Line {i}: {line.Length} chars");
         }
-        PrintDebugMenu("\n");
+        PrintLineDebugMenu("\n");
         return new Vector2((float)box.X, (float)box.Y);
     }
 
@@ -311,14 +311,14 @@ public static class CursorManager
 
     public static void PrintLineDebugMenu(string text)
     {
-        if (SaveKeys.log)
+        if (SaveKeys.cursorupdatelog)
         {
             Dispatcher.UIThread.InvokeAsync(() => { window.PrintLineDebugMenu(text); });
         }
     }
     public static void PrintDebugMenu(string text)
     {
-        if (SaveKeys.log)
+        if (SaveKeys.cursorupdatelog)
         {
             Dispatcher.UIThread.InvokeAsync(() => { window.PrintDebugMenu(text); });
         }

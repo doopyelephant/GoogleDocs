@@ -634,7 +634,7 @@ public class GoogleDoc
         }
 
         int since = 0;
-        int until = 20;
+        uint until = savekeys.wraplength;
         int index = 0;
         foreach (var c in content)
         {
@@ -646,7 +646,7 @@ public class GoogleDoc
             if (since > until)
             {
                 since = 0;
-                content.Insert(index, "\n");
+               content = content.Insert(index, "\n");
                 OffsetAltersAfter(1, index, ref expanded, false);
             }
 

@@ -67,6 +67,7 @@ public partial class MainWindow : Window
             Program.mainWindow = this;
             CookieManager.mainWindow = this;
             NetworkManager.loggingdest = this;
+            CursorManager.Init(this);
             GoogleDoc.loggingdest = this;
             SaveKeys = JsonParsing.GetSaveKeys();
             if (SaveKeys.log)
