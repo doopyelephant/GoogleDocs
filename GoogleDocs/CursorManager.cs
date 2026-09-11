@@ -41,6 +41,7 @@ public static class CursorManager
     private static TextBlock? mainText = null;
     private static TextLayout textlayout;
     private static Vector2 LastCursorPosition = new(0f,0f);
+    private static Vector2 LastCursorOffset = new(0f,0f);
     private static SaveKeys SaveKeys;
     private static bool verticalmove;
 
@@ -137,6 +138,42 @@ public static class CursorManager
         }
 
         PrintLineDebugMenu($"Length: {length} ");
+
+        if (verticalmove)
+        {
+            int iter = 15;
+            int beforechars = 0;
+            for (int i = 0; i < tmp.Y; i++)
+            {
+                beforechars += textlayout.TextLines[i].Length + 1;
+            }
+            Vector2 httpvec = new(tmp.X, tmp.Y);
+            int startcut = 0;
+            int endcut = length;
+            int mid = 0;
+            //Binary search for the correct position
+            for (int i = iter; i > 0; i--)
+            {
+                mid = (int)((startcut + endcut) * 0.5);
+                var http = textlayout.HitTestTextPosition(beforechars + (int)tmp.X);
+                httpvec = new Vector2((float)http.X, (float)http.Y);
+                if (LastCursorOffset.X < mid)
+                {
+                    endcut = (int)mid;
+                }
+
+                else if (LastCursorOffset.X > mid)
+                {
+                    startcut = (int)mid;
+                }
+                else
+
+                {
+                    break;
+                }
+            }
+            tmp.X = mid;
+        }
         if (verticalmove && length < tmp.X)
         {
             tmp.X = length;
@@ -223,12 +260,13 @@ public static class CursorManager
             return LastCursorPosition;
         }
         PrintLineDebugMenu($"Hit test position: {box.X}, {box.Y}");
-        for (int i = 0; i < textlayout.TextLines.Count; i++)
+    /*    for (int i = 0; i < textlayout.TextLines.Count; i++)
         {
             var line = textlayout.TextLines[i];
             PrintLineDebugMenu($"Line {i}: {line.Length} chars");
-        }
+        }*/
         PrintLineDebugMenu("\n");
+        LastCursorOffset = new Vector2((float)box.X, (float)box.Y);
         return new Vector2((float)box.X, (float)box.Y);
     }
 
