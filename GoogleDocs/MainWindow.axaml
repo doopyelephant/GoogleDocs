@@ -41,7 +41,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="800"
                           Width="1700">
             <Panel  Name="SelectionParent">
-                <TextBlock Text="Loading..." Name="MainText"></TextBlock>
+                <TextBlock Text="Loading..." Name="MainText" TextWrapping="NoWrap"></TextBlock>
                 <Rectangle Name="Cursor" Fill="Red" Width="2" Height="20" HorizontalAlignment="Left" VerticalAlignment="Top" />
             </Panel>
         </ScrollViewer>

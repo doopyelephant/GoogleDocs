@@ -139,30 +139,39 @@ public static class CursorManager
 
         PrintLineDebugMenu($"Length: {length} ");
 
-        if (verticalmove)
+        if (verticalmove && position == null)
         {
-            int iter = 15;
+
+            int iter = (int)Math.Ceiling(Math.Log2(length));
             int beforechars = 0;
             for (int i = 0; i < tmp.Y; i++)
             {
-                beforechars += textlayout.TextLines[i].Length + 1;
+                beforechars += textlayout.TextLines[i].Length + textlayout.TextLines[i].NewLineLength;
             }
-            Vector2 httpvec = new(tmp.X, tmp.Y);
+            Vector2 httpvec = new Vector2();
             int startcut = 0;
             int endcut = length;
             int mid = 0;
             //Binary search for the correct position
+            Console.WriteLine("Target: " + LastCursorOffset.X);
+            Console.WriteLine("Current: " + textlayout.HitTestTextPosition(beforechars + (int)tmp.X).X);
             for (int i = iter; i > 0; i--)
             {
-                mid = (int)((startcut + endcut) * 0.5);
-                var http = textlayout.HitTestTextPosition(beforechars + (int)tmp.X);
+                Console.WriteLine("Iter: " + i);
+                Console.WriteLine("Start: " + startcut + " End: " + endcut);
+
+                mid = startcut + (endcut - startcut) / 2;
+                Console.WriteLine("Mid: " + mid);
+                var http = textlayout.HitTestTextPosition(beforechars + mid);
                 httpvec = new Vector2((float)http.X, (float)http.Y);
-                if (LastCursorOffset.X < mid)
+                Console.WriteLine("Http Vec: " + httpvec.X);
+
+                if (LastCursorOffset.X < httpvec.X)
                 {
                     endcut = (int)mid;
                 }
 
-                else if (LastCursorOffset.X > mid)
+                else if (LastCursorOffset.X > httpvec.X)
                 {
                     startcut = (int)mid;
                 }
@@ -173,8 +182,9 @@ public static class CursorManager
                 }
             }
             tmp.X = mid;
+            Position.X = mid;
         }
-        if (verticalmove && length < tmp.X)
+        if (verticalmove && length < tmp.X && position == null)
         {
             tmp.X = length;
             Position.X = length;
@@ -244,7 +254,7 @@ public static class CursorManager
                 charcnt += (int)tmp.X;
                 break;
             }
-            charcnt += line.Length + 1;
+            charcnt += line.Length + line.NewLineLength;
 
             index++;
         }
@@ -259,14 +269,20 @@ public static class CursorManager
             PrintLineDebugMenu($"[WARNING] Textlayout is too small: {ex.Message}");
             return LastCursorPosition;
         }
-        PrintLineDebugMenu($"Hit test position: {box.X}, {box.Y}");
-    /*    for (int i = 0; i < textlayout.TextLines.Count; i++)
+        Console.WriteLine($"Hit test position: {box.X}, {box.Y}");
+
+        /*    for (int i = 0; i < textlayout.TextLines.Count; i++)
         {
             var line = textlayout.TextLines[i];
             PrintLineDebugMenu($"Line {i}: {line.Length} chars");
         }*/
         PrintLineDebugMenu("\n");
         LastCursorOffset = new Vector2((float)box.X, (float)box.Y);
+        if (position == null)
+        {
+            verticalmove = false;
+        }
+
         return new Vector2((float)box.X, (float)box.Y);
     }
 
@@ -288,16 +304,18 @@ public static class CursorManager
         Position += delta;
       //  Position.X = Math.Clamp(Position.X, 0, int.MaxValue);
         Position.Y = Math.Clamp(Position.Y, 0, int.MaxValue);
-      verticalmove = delta.Y != 0;
      /*   Position.X = (int)Position.X;
         Position.Y = (int)Position.Y;*/
- PrintLineDebugMenu($"Delta: {delta} Position: {Position}  ");
+        PrintLineDebugMenu($"Delta: {delta} Position: {Position}  ");
+        verticalmove = (int)LastCursorPosition.Y != (int)Position.Y || verticalmove;
         var cursorPosition = GetOffsetFromCharacter();
+        //Console.WriteLine("Verticalmove: " + verticalmove);
         Dispatcher.UIThread.InvokeAsync(() =>
         {
           //  window.PrintLineDebugMenu($"Position: {Position.X} {Position.Y}");
             window.SetCursorOffsets(cursorPosition.X, cursorPosition.Y);
         });
+        LastCursorPosition = Position;
         lastupdate = DateTime.Now;
     }
     public static void KeyDown(Move move)
@@ -308,10 +326,12 @@ public static class CursorManager
         {
             case Move.Up:
                 keystate.up = true;
+                verticalmove = true;
                 MoveCursor(new Vector2(0,-1));
                 break;
             case Move.Down:
                 keystate.down = true;
+                verticalmove = true;
                 MoveCursor(new Vector2(0,1));
                 break;
             case Move.Left:

@@ -229,7 +229,7 @@ public partial class MainWindow : Window
             CursorManager.UpdateCursor();
             CursorManager.UpdateCursorPosition();
             stopwatch.Stop();
-            CursorManager.PrintLineDebugMenu($"Cursor update took {stopwatch.ElapsedTicks * 100} ns");
+            CursorManager.PrintLineDebugMenu($"Cursor update took {(stopwatch.ElapsedTicks * 100f)/1000000f} ms");
             int sleepTime = cursorupdateinterval - (int)stopwatch.ElapsedMilliseconds;
             Thread.Sleep(Math.Max(0, sleepTime));
         }
