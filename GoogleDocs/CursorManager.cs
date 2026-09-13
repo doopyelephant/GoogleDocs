@@ -120,6 +120,13 @@ public static class CursorManager
     public static Vector2 GetOffsetFromCharacter(Vector2? position = null)
     {
         var tmp = Position;
+        var textlength = 0;
+        foreach (var line in textlayout.TextLines)
+        {
+            textlength += line.Length + line.NewLineLength;
+        }
+        tmp.X = Math.Clamp(tmp.X, 0, textlength);
+        Position.X = Math.Clamp(Position.X, 0, textlength);
         if (position != null)
         {
             tmp = position.Value;
@@ -154,7 +161,9 @@ public static class CursorManager
             int mid = 0;
             //Binary search for the correct position
             PrintLineDebugMenu("Target: " + LastCursorOffset.X);
-            PrintLineDebugMenu("Current: " + textlayout.HitTestTextPosition(beforechars + (int)tmp.X).X);
+            //PrintLineDebugMenu("Current: " + textlayout.HitTestTextPosition(Math.Clamp((beforechars + (int)tmp.X),0,textlength)).X);
+
+
             for (int i = iter; i > 0; i--)
             {
                 PrintLineDebugMenu("Iter: " + i);

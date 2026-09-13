@@ -17,6 +17,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -889,7 +890,7 @@ catch (HttpRequestException err)
                 }
     }
 
-    private void MainTextKeyDown(object? sender, KeyEventArgs e)
+    private async void MainTextKeyDown(object? sender, KeyEventArgs e)
     {
         switch (e.Key)
         {
@@ -909,6 +910,8 @@ catch (HttpRequestException err)
                 CursorManager.KeyDown(Move.Down);
                 break;
             default:
+                Edit? edit = null;
+                var pos = CursorManager.GetCursorPosition();
                 if (ctrl)
                 {
                     PrintLineDebugMenu($"CTRL+{e.Key} pressed.");
@@ -916,11 +919,44 @@ catch (HttpRequestException err)
                     {
                         doc.Save();
                     }
+
+                    if (e.Key == Key.V)
+                    {
+                       PrintLineDebugMenu("Paste");
+                        var toplevel = TopLevel.GetTopLevel(this);
+                        if (toplevel is not null && toplevel.Clipboard is not null)
+                        {
+                            string? contents = await toplevel.Clipboard.TryGetTextAsync();
+                            if (contents is not null)
+                            {
+                                PrintLineDebugMenu($"Pasting {contents} at {pos}");
+                            edit = new Edit(EditType.Insert,new []{pos.ToString(),contents});
+
+                            }
+                            else
+                            {
+                                PrintLineDebugMenu("No clipboard contents or the contents is not text");
+                            }
+                        }
+                        else
+                        {
+                            PrintLineDebugMenu("Toplevel is null or clipboard is null");
+                        }
+                    }
+                    if (edit != null && doc != null)
+                    {
+                        doc.history.Edits.Add(edit);
+                        SetMainText(doc.GetText());
+                        //CursorManager.MoveCursor();
+                        for (int i = 0; i < edit.Params[1].Length; i++)
+                        {
+                            doc.OffsetAltersAfter(1, pos + i);
+                        }
+                    }
                     break;
                 }
                 bool isAlphabet = e.Key >= Key.A && e.Key <= Key.Z;
-                Edit? edit = null;
-                var pos = CursorManager.GetCursorPosition();
+
                 if(isAlphabet)
                 {
                     int letter = e.Key - Key.A + 1;
@@ -948,7 +984,8 @@ catch (HttpRequestException err)
                     doc.history.Edits.Add(edit);
                     SetMainText(doc.GetText());
                     //CursorManager.MoveCursor();
-                    doc.OffsetAltersAfter(1, pos);
+                        doc.OffsetAltersAfter(1, pos);
+
                 }
 
                 break;
