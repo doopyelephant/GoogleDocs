@@ -153,18 +153,18 @@ public static class CursorManager
             int endcut = length;
             int mid = 0;
             //Binary search for the correct position
-            Console.WriteLine("Target: " + LastCursorOffset.X);
-            Console.WriteLine("Current: " + textlayout.HitTestTextPosition(beforechars + (int)tmp.X).X);
+            PrintLineDebugMenu("Target: " + LastCursorOffset.X);
+            PrintLineDebugMenu("Current: " + textlayout.HitTestTextPosition(beforechars + (int)tmp.X).X);
             for (int i = iter; i > 0; i--)
             {
-                Console.WriteLine("Iter: " + i);
-                Console.WriteLine("Start: " + startcut + " End: " + endcut);
+                PrintLineDebugMenu("Iter: " + i);
+                PrintLineDebugMenu("Start: " + startcut + " End: " + endcut);
 
                 mid = startcut + (endcut - startcut) / 2;
-                Console.WriteLine("Mid: " + mid);
+                PrintLineDebugMenu("Mid: " + mid);
                 var http = textlayout.HitTestTextPosition(beforechars + mid);
                 httpvec = new Vector2((float)http.X, (float)http.Y);
-                Console.WriteLine("Http Vec: " + httpvec.X);
+                PrintLineDebugMenu("Http Vec: " + httpvec.X);
 
                 if (LastCursorOffset.X < httpvec.X)
                 {
@@ -211,7 +211,7 @@ public static class CursorManager
                 Position.Y--;
                 if (tmp.Y < textlayout.TextLines.Count)
                 {
-                    Console.WriteLine("Y: " + tmp.Y);
+                    PrintLineDebugMenu("Y: " + tmp.Y);
                     length = textlayout.TextLines[(int)tmp.Y].Length;
                 }
 
@@ -239,7 +239,7 @@ public static class CursorManager
             Position.Y = textlayout.TextLines.Count - 1;
             if (tmp.Y < textlayout.TextLines.Count)
             {
-                Console.WriteLine("Y: " + tmp.Y);
+                PrintLineDebugMenu("Y: " + tmp.Y);
                 length = textlayout.TextLines[(int)tmp.Y].Length;
             }
             tmp.X = length;
@@ -270,7 +270,7 @@ public static class CursorManager
             PrintLineDebugMenu($"[WARNING] Textlayout is too small: {ex.Message}");
             return LastCursorPosition;
         }
-        Console.WriteLine($"Hit test position: {box.X}, {box.Y}");
+        PrintLineDebugMenu($"Hit test position: {box.X}, {box.Y}");
 
         /*    for (int i = 0; i < textlayout.TextLines.Count; i++)
         {
@@ -310,7 +310,7 @@ public static class CursorManager
         PrintLineDebugMenu($"Delta: {delta} Position: {Position}  ");
         verticalmove = (int)LastCursorPosition.Y != (int)Position.Y;
         var cursorPosition = GetOffsetFromCharacter();
-        //Console.WriteLine("Verticalmove: " + verticalmove);
+        //PrintLineDebugMenu("Verticalmove: " + verticalmove);
         Dispatcher.UIThread.InvokeAsync(() =>
         {
           //  window.PrintLineDebugMenu($"Position: {Position.X} {Position.Y}");
