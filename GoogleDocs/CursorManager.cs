@@ -40,7 +40,7 @@ public static class CursorManager
     private static MainWindow window;
     private static TextBlock? mainText = null;
     private static TextLayout textlayout;
-    private static Vector2 LastCursorPosition = new(0f,0f);
+    public static Vector2 LastCursorPosition = new(0f,0f);
     private static Vector2 LastCursorOffset = new(0f,0f);
     private static SaveKeys SaveKeys;
     private static bool verticalmove;
@@ -191,9 +191,10 @@ public static class CursorManager
         }
         while (length < tmp.X)
         {
-        tmp.X = 0;
+            var lsty = tmp.Y;
+        tmp.X -= textlayout.TextLines[(int)lsty].Length + textlayout.TextLines[(int)lsty].NewLineLength;
         tmp.Y++;
-        Position.X = 0;
+        Position.X  -= textlayout.TextLines[(int)lsty].Length + textlayout.TextLines[(int)lsty].NewLineLength;
         Position.Y++;
         length = 0;
         if(tmp.Y < textlayout.TextLines.Count)
@@ -307,7 +308,7 @@ public static class CursorManager
      /*   Position.X = (int)Position.X;
         Position.Y = (int)Position.Y;*/
         PrintLineDebugMenu($"Delta: {delta} Position: {Position}  ");
-        verticalmove = (int)LastCursorPosition.Y != (int)Position.Y || verticalmove;
+        verticalmove = (int)LastCursorPosition.Y != (int)Position.Y;
         var cursorPosition = GetOffsetFromCharacter();
         //Console.WriteLine("Verticalmove: " + verticalmove);
         Dispatcher.UIThread.InvokeAsync(() =>

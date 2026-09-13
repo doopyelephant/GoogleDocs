@@ -63,7 +63,7 @@ public partial class MainWindow : Window
         InitializeComponent();
             this.AddHandler(InputElement.KeyDownEvent, MainTextKeyDown, RoutingStrategies.Tunnel);
             this.AddHandler(InputElement.KeyUpEvent, MainTextKeyUp, RoutingStrategies.Tunnel);
-
+            this.AddHandler(InputElement.PointerPressedEvent, MainTextMouseDown, RoutingStrategies.Tunnel);
             Program.mainWindow = this;
             CookieManager.mainWindow = this;
             NetworkManager.loggingdest = this;
@@ -135,6 +135,13 @@ public partial class MainWindow : Window
 
             StartSaveThread();
 
+    }
+
+    private void MainTextMouseDown(object? sender, PointerPressedEventArgs e)
+    {
+        CursorManager.Position.X = MainText.TextLayout.HitTestPoint(e.GetPosition(MainText)).TextPosition;
+        CursorManager.Position.Y = 0;
+        CursorManager.LastCursorPosition = CursorManager.Position;
     }
 
     public void InitLogThread()
