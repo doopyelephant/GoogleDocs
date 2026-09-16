@@ -48,6 +48,7 @@ public partial class MainWindow : Window
     private static SaveKeys SaveKeys;
     private readonly object debugLogLock = new();
     private bool ctrl = false;
+    private bool shift = false;
     public List<(int, int)> Selections;
     private List<(int, int)> PrevSelections;
     private List<Rectangle> SelectionRects;
@@ -64,7 +65,7 @@ public partial class MainWindow : Window
         InitializeComponent();
             this.AddHandler(InputElement.KeyDownEvent, MainTextKeyDown, RoutingStrategies.Tunnel);
             this.AddHandler(InputElement.KeyUpEvent, MainTextKeyUp, RoutingStrategies.Tunnel);
-            this.AddHandler(InputElement.PointerPressedEvent, MainTextMouseDown, RoutingStrategies.Tunnel);
+            MainText.AddHandler(InputElement.PointerPressedEvent, MainTextMouseDown, RoutingStrategies.Tunnel);
             Program.mainWindow = this;
             CookieManager.mainWindow = this;
             NetworkManager.loggingdest = this;
@@ -637,6 +638,16 @@ public partial class MainWindow : Window
     }
     public async void OpenDoc(string docid = "")
     {
+        if (SaveKeys.verbose)
+        {
+           /* var homepage = await NetworkManager.GetRequest("https://docs.google.com/document/u/0",true,new [] {("Sec-Fetch-Dest","document"),("Priority","u=0, i"),("Sec-Fetch-Mode","navigate"),("Sec-Fetch-Site","none"),("Sec-Fetch-User","?1"),("Sec-GPC","1"),("Upgrade-Insecure-Requests","1")}.ToList());
+            File.WriteAllText("homepage.txt",homepage);
+            var key = homepage.SubstringAfter("\"homescreen_drive_client_key\":\"").SubstringBefore("\"");//* "AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0";
+            File.WriteAllText("homekey.txt",key);
+            File.WriteAllText("items.txt",
+                await NetworkManager.PostRequest($"https://drivefrontend-pa.clients6.google.com/v1/changes:list?key={key}",
+                    "[[null,1,null,null,1],[33501,1000]]",true,new [] {("authorization","SAPISIDHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID1PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID3PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u")}.ToList()));
+     */   }
         var watch = new Stopwatch();
         watch.Start();
 SetMainText("Loading...");
@@ -720,8 +731,8 @@ try
   JsonParsing.SaveKeys(SaveKeys);
   PrintLineDebugMenu(doc.GetText());
  // File.WriteAllText("items.txt",await NetworkManager.GetRequest("https://drivefrontend-pa.clients6.google.com/v1/items:list"/*"[25,\"https://docs.google.com/document/u/0/?usp=docs_web\",25,\"en\",\"ca\",1,null,0,0,\"\",\"\",1,0,null,72175901,[[1,9,13],0,1,1],[1],null,0,1,\"CAMSIhUn9NL9N67auQayvgTkiQWnBp6WpgL58FLkoEXMsBP6gR0=\",{\"1001\":1}]"*/,true));
- // File.WriteAllText("BindTest.txt",await NetworkManager.GetRequest(
-     // "https://docs.google.com/document/d/1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI/bind?id=1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI&sid=5e31d1095e7c74c5&token=AJagN6Q3L3VTlm0lH1eRvrcxnAZY:1788285353340&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&lsq=1788285346255&vc=1&c=1&w=1&flr=0&gsi=0&smv=2147483647&smb=[2147483647, oAMQAg==]&cimpl=1&RID=rpc&SID=8EC8391587DD515B&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1"));
+  // File.WriteAllText("BindTest.txt",await NetworkManager.GetRequest(
+ // "https://docs.google.com/document/d/1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI/bind?id=1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI&sid=5e31d1095e7c74c5&token=AJagN6Q3L3VTlm0lH1eRvrcxnAZY:1788285353340&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&lsq=1788285346255&vc=1&c=1&w=1&flr=0&gsi=0&smv=2147483647&smb=[2147483647, oAMQAg==]&cimpl=1&RID=rpc&SID=8EC8391587DD515B&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1"));
 
 //File.WriteAllText("MobileBindTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/mobile/bind?id={docid}"));
   if(SaveKeys.bind)
@@ -890,12 +901,17 @@ catch (HttpRequestException err)
                 }
     }
 
-    private async void MainTextKeyDown(object? sender, KeyEventArgs e)
+    private void MainTextKeyDown(object? sender, KeyEventArgs e)
     {
         switch (e.Key)
         {
             case Key.LeftCtrl:
                 ctrl = true;
+                PrintLineDebugMenu("CTRL pressed");
+                break;
+            case Key.LeftShift:
+                PrintLineDebugMenu("Shift pressed");
+                shift = true;
                 break;
             case Key.Left:
                 CursorManager.KeyDown(Move.Left);
@@ -926,7 +942,7 @@ catch (HttpRequestException err)
                         var toplevel = TopLevel.GetTopLevel(this);
                         if (toplevel is not null && toplevel.Clipboard is not null)
                         {
-                            string? contents = await toplevel.Clipboard.TryGetTextAsync();
+                            string? contents = toplevel.Clipboard.TryGetTextAsync().Result;
                             if (contents is not null)
                             {
                                 PrintLineDebugMenu($"Pasting {contents} at {pos}");
@@ -946,25 +962,40 @@ catch (HttpRequestException err)
                     if (edit != null && doc != null)
                     {
                         doc.history.Edits.Add(edit);
-                        SetMainText(doc.GetText());
-                        //CursorManager.MoveCursor();
                         for (int i = 0; i < edit.Params[1].Length; i++)
                         {
                             doc.OffsetAltersAfter(1, pos + i);
                         }
+                        SetMainText(doc.GetText());
+                        //CursorManager.MoveCursor();
+
                     }
                     break;
                 }
-                bool isAlphabet = e.Key >= Key.A && e.Key <= Key.Z;
 
+                int capitaloffset = 'a' - 'A';
+                bool isAlphabet = e.Key >= Key.A && e.Key <= Key.Z;
+                bool isNumber = e.Key >= Key.D0 && e.Key <= Key.D9;
                 if(isAlphabet)
                 {
-                    int letter = e.Key - Key.A + 1;
+                    int letter = e.Key - Key.A + 1 - (shift ? capitaloffset : 0);
                     char c = (char)('a' + letter - 1);
                     string s = CharToString(c);
                     edit = new Edit(EditType.Insert,
                         new string[] { pos.ToString(),s});
                     Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
+                    doc.OffsetAltersAfter(1, pos);
+                }
+
+                if (isNumber)
+                {
+                    int letter = e.Key - Key.D0 + 1;
+                    char c = (char)('0' + letter - 1);
+                    string s = CharToString(c);
+                    edit = new Edit(EditType.Insert,
+                        new string[] { pos.ToString(),s});
+                    Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
+                    doc.OffsetAltersAfter(1, pos);
                 }
 
                 switch (e.Key)
@@ -972,10 +1003,22 @@ catch (HttpRequestException err)
                     case Key.Enter:
                         edit = new Edit(EditType.Insert,
                             new string[] { pos.ToString(),"\n"});
+                        doc.OffsetAltersAfter(1, pos);
                         break;
                     case Key.Tab:
                         edit = new Edit(EditType.Insert,
                             new string[] { pos.ToString(),"\u0009"});
+                        doc.OffsetAltersAfter(1, pos);
+                        break;
+                    case Key.Back:
+                        edit = new Edit(EditType.Delete,
+                            new string[] { (pos - 1).ToString(),(pos - 1).ToString()});
+                        doc.OffsetAltersAfter(-1, pos);
+                        break;
+                    case Key.Delete:
+                        edit = new Edit(EditType.Delete,
+                            new string[] { (pos).ToString(),(pos).ToString()});
+                        doc.OffsetAltersAfter(-1, pos + 1);
                         break;
                 }
 
@@ -984,7 +1027,7 @@ catch (HttpRequestException err)
                     doc.history.Edits.Add(edit);
                     SetMainText(doc.GetText());
                     //CursorManager.MoveCursor();
-                        doc.OffsetAltersAfter(1, pos);
+
 
                 }
 
@@ -998,6 +1041,11 @@ catch (HttpRequestException err)
         {
             case Key.LeftCtrl:
                 ctrl = false;
+                PrintLineDebugMenu("CTRL released");
+                break;
+            case Key.LeftShift:
+                shift = false;
+                PrintLineDebugMenu("Shift released");
                 break;
             case Key.Left:
                 CursorManager.KeyUp(Move.Left);

@@ -196,6 +196,10 @@ public class GoogleDoc
         PrintLineDebugMenu("Revision: " + revision);
         PrintLineDebugMenu("Title: " + title);
         PrintLineDebugMenu("Token: " + token);
+        if (savekeys.verbose)
+        {
+            File.WriteAllText("token.txt", token);
+        }
         PrintLineDebugMenu("Name: " + name);
         PrintLineDebugMenu("Profile Pic URL: " + profpicurl);
     }
@@ -460,7 +464,7 @@ public class GoogleDoc
                     edit.Params[2] = (end + offset).ToString();
                 }
             }
-            else if (edit.Type == EditType.Delete)
+          /*  else if (edit.Type == EditType.Delete)
             {
                 int start = Convert.ToInt32(edit.Params[0]);
                 int end = Convert.ToInt32(edit.Params[1]);
@@ -480,7 +484,7 @@ public class GoogleDoc
                 {
                     edit.Params[0] = (start + offset).ToString();
                 }
-            }
+            }*/
         }
 
         if (cursor && CursorManager.GetCursorPosition() >= after)
@@ -505,7 +509,7 @@ public class GoogleDoc
                     edit.Params[2] = (end + offset).ToString();
                 }
             }
-            else if (edit.Type == EditType.Delete)
+          /*  else if (edit.Type == EditType.Delete)
             {
                 int start = Convert.ToInt32(edit.Params[0]);
                 int end = Convert.ToInt32(edit.Params[1]);
@@ -525,7 +529,7 @@ public class GoogleDoc
                 {
                     edit.Params[0] = (start + offset).ToString();
                 }
-            }
+            }*/
         }
 
         if (cursor && CursorManager.GetCursorPosition() >= after)
@@ -633,7 +637,7 @@ public class GoogleDoc
             }
         }
 
-        int since = 0;
+      /*  int since = 0;
         uint until = savekeys.wraplength;
         int index = 0;
         foreach (var c in content)
@@ -653,7 +657,7 @@ public class GoogleDoc
             since++;
 
             index++;
-        }
+        }*/
 
         foreach(var edit in expanded)
         {

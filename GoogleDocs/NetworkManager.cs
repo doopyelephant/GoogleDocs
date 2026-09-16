@@ -49,7 +49,7 @@ public static class NetworkManager
 
         return new string(filtered, 0, write);
     }
-    public static async Task<string> PostRequest(string url,string postdata = "",bool bypassattachments = false)
+    public static async Task<string> PostRequest(string url,string postdata = "",bool bypassattachments = false,List<(string,string)>? extraheaders = null)
     {
         if (!bypassattachments)
         {
@@ -125,6 +125,13 @@ public static class NetworkManager
         request.Headers.Add("Referer", "https://docs.google.com/");
         request.Headers.Add("Origin", "https://docs.google.com");
         request.Headers.Add("X-Same-Domain", "1");
+        if (extraheaders != null)
+        {
+            foreach (var header in extraheaders)
+            {
+                request.Headers.Add(header.Item1, header.Item2);
+            }
+        }
         PrintHttpRequestData(request);
         using var response = await localClient.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
@@ -328,7 +335,7 @@ Console.Write(c);
     {
         return c == ']' || c == '}';
     }
-     public static async Task<string> GetRequest(string url,bool bypassattachments = false)
+     public static async Task<string> GetRequest(string url,bool bypassattachments = false, List<(string, string)>? extraheaders = null)
     {
          if(sid != "" && !bypassattachments)
         {
@@ -391,7 +398,7 @@ if(headers.Contains("reporting-endpoints"))
         {
             PrintLineDebugMenu($"Received {(int)statusCode}. Retrying once with fresh cookie read...");
             await Task.Delay(200);
-            (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url);
+            (statusCode, reasonPhrase, redirectLocation, body, headers) = await SendRequestOnceAsync(url,false,extraheaders);
         }
         PrintLineDebugMenu("End of headers.");
 
@@ -424,7 +431,7 @@ if(headers.Contains("reporting-endpoints"))
     }
 
 
-    private static async Task<(HttpStatusCode StatusCode, string? ReasonPhrase, Uri? RedirectLocation, string Body, HttpResponseHeaders headers)> SendRequestOnceAsync(string url, bool completeEarly = false)
+    private static async Task<(HttpStatusCode StatusCode, string? ReasonPhrase, Uri? RedirectLocation, string Body, HttpResponseHeaders headers)> SendRequestOnceAsync(string url, bool completeEarly = false, List<(string, string)>? extraheaders = null)
     {
         using var handler = new HttpClientHandler
         {
@@ -457,6 +464,13 @@ if(headers.Contains("reporting-endpoints"))
         request.Headers.Add("User-Agent", "UnofficialGoogleDocs/1.0");
         request.Headers.Add("Accept", "*/*");
         request.Headers.Add("Referer", "https://docs.google.com/");
+        if (extraheaders != null)
+        {
+            foreach (var header in extraheaders)
+            {
+                request.Headers.Add(header.Item1, header.Item2);
+            }
+        }
 
         PrintHttpRequestData(request);
         using var response = completeEarly ? await localClient.SendAsync(request,HttpCompletionOption.ResponseHeadersRead) : await localClient.SendAsync(request);

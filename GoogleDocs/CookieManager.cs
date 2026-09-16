@@ -617,7 +617,7 @@ public static class CookieManager
 
         foreach (var cookie in browserCookieJar.cookies)
         {
-            if (cookie.host == ".google.com" || cookie.host == ".docs.google.com" || cookie.host == "accounts.google.com" || cookie.host == "docs.google.com")
+            if (cookie.host == ".google.com" || cookie.host == ".docs.google.com" || cookie.host == "accounts.google.com" || cookie.host == "docs.google.com" || cookie.host == "drivefrontend-pa.clients6.google.com" || cookie.host == "ogs.google.com")
             {
                 PrintLineDebugMenu(cookie.name);
                 if (cookie.value.Length > 50)
