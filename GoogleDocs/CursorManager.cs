@@ -44,6 +44,7 @@ public static class CursorManager
     private static Vector2 LastCursorOffset = new(0f,0f);
     private static SaveKeys SaveKeys;
     private static bool verticalmove;
+    public static KeyState numpadkeystate = new();
 
     public static void Init(MainWindow _window)
     {

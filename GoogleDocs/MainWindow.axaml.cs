@@ -640,14 +640,14 @@ public partial class MainWindow : Window
     {
         if (SaveKeys.verbose)
         {
-           /* var homepage = await NetworkManager.GetRequest("https://docs.google.com/document/u/0",true,new [] {("Sec-Fetch-Dest","document"),("Priority","u=0, i"),("Sec-Fetch-Mode","navigate"),("Sec-Fetch-Site","none"),("Sec-Fetch-User","?1"),("Sec-GPC","1"),("Upgrade-Insecure-Requests","1")}.ToList());
+          /*  var homepage = await NetworkManager.GetRequest("https://docs.google.com/document/u/0",true,new [] {("Sec-Fetch-Dest","document"),("Priority","u=0, i"),("Sec-Fetch-Mode","navigate"),("Sec-Fetch-Site","none"),("Sec-Fetch-User","?1"),("Sec-GPC","1"),("Upgrade-Insecure-Requests","1")}.ToList());
             File.WriteAllText("homepage.txt",homepage);
-            var key = homepage.SubstringAfter("\"homescreen_drive_client_key\":\"").SubstringBefore("\"");//* "AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0";
+            var key = homepage.SubstringAfter("client_key\":\"").SubstringBefore("\"");//* "AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0";
             File.WriteAllText("homekey.txt",key);
             File.WriteAllText("items.txt",
                 await NetworkManager.PostRequest($"https://drivefrontend-pa.clients6.google.com/v1/changes:list?key={key}",
                     "[[null,1,null,null,1],[33501,1000]]",true,new [] {("authorization","SAPISIDHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID1PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID3PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u")}.ToList()));
-     */   }
+      */ }
         var watch = new Stopwatch();
         watch.Start();
 SetMainText("Loading...");
@@ -914,6 +914,7 @@ catch (HttpRequestException err)
                 shift = true;
                 break;
             case Key.Left:
+
                 CursorManager.KeyDown(Move.Left);
                 break;
             case Key.Right:
@@ -976,6 +977,7 @@ catch (HttpRequestException err)
                 int capitaloffset = 'a' - 'A';
                 bool isAlphabet = e.Key >= Key.A && e.Key <= Key.Z;
                 bool isNumber = e.Key >= Key.D0 && e.Key <= Key.D9;
+                bool isnumpadnum = e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9;
                 if(isAlphabet)
                 {
                     int letter = e.Key - Key.A + 1 - (shift ? capitaloffset : 0);
@@ -991,11 +993,91 @@ catch (HttpRequestException err)
                 {
                     int letter = e.Key - Key.D0 + 1;
                     char c = (char)('0' + letter - 1);
-                    string s = CharToString(c);
-                    edit = new Edit(EditType.Insert,
-                        new string[] { pos.ToString(),s});
-                    Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
-                    doc.OffsetAltersAfter(1, pos);
+                    if (shift)
+                    {
+                        switch (c)
+                        {
+                            case '1':
+                                c = '!';
+                                break;
+                            case '2':
+                                c = '@';
+                                break;
+                            case '3':
+                                c = '#';
+                                break;
+                            case '4':
+                                c = '$';
+                                break;
+                            case '5':
+                                c = '%';
+                                break;
+                            case '6':
+                                c = '^';
+                                break;
+                            case '7':
+                                c = '&';
+                                break;
+                            case '8':
+                                c = '*';
+                                break;
+                            case '9':
+                                c = '(';
+                                break;
+                            case '0':
+                                c = ')';
+                                break;
+                        }
+                        string s = CharToString(c);
+                        edit = new Edit(EditType.Insert,
+                            new string[] { pos.ToString(), s });
+                        Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
+                        doc.OffsetAltersAfter(1, pos);
+                    }
+                    else
+                    {
+                        string s = CharToString(c);
+                        edit = new Edit(EditType.Insert,
+                            new string[] { pos.ToString(), s });
+                        Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
+                        doc.OffsetAltersAfter(1, pos);
+                    }
+                }
+
+                if (isnumpadnum)
+                {
+                    int letter = e.Key - Key.NumPad0 + 1;
+                    char c = (char)('0' + letter - 1);
+                    if (shift)
+                    {
+                        switch (c)
+                        {
+                            case '8':
+                                CursorManager.numpadkeystate = CursorManager.numpadkeystate with { up = true };
+                                CursorManager.KeyDown(Move.Up);
+                                break;
+                            case '4':
+                                CursorManager.numpadkeystate = CursorManager.numpadkeystate with { left = true };
+                                CursorManager.KeyDown(Move.Left);
+                                break;
+                            case '6':
+                                CursorManager.numpadkeystate = CursorManager.numpadkeystate with { right = true };
+                                CursorManager.KeyDown(Move.Right);
+                                break;
+                            case '2':
+                                CursorManager.numpadkeystate = CursorManager.numpadkeystate with { down = true };
+                                CursorManager.KeyDown(Move.Down);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        string s = CharToString(c);
+                        edit = new Edit(EditType.Insert,
+                            new string[] { pos.ToString(), s });
+                        Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
+                        doc.OffsetAltersAfter(1, pos);
+                    }
                 }
 
                 switch (e.Key)
@@ -1059,6 +1141,38 @@ catch (HttpRequestException err)
             case Key.Down:
                 CursorManager.KeyUp(Move.Down);
                 break;
+            case Key.NumPad4:
+                if (shift && CursorManager.numpadkeystate.left)
+                {
+                    CursorManager.numpadkeystate = CursorManager.numpadkeystate with { left = false };
+                    CursorManager.KeyUp(Move.Left);
+                }
+
+                break;
+            case Key.NumPad6:
+                if (shift && CursorManager.numpadkeystate.right)
+                {
+                    CursorManager.numpadkeystate = CursorManager.numpadkeystate with { right = false };
+                    CursorManager.KeyUp(Move.Right);
+                }
+
+                break;
+            case Key.NumPad8:
+            if (shift && CursorManager.numpadkeystate.up)
+            {
+                CursorManager.numpadkeystate = CursorManager.numpadkeystate with { up = false };
+                CursorManager.KeyUp(Move.Up);
+            }
+
+            break;
+            case Key.NumPad2:
+            if (shift && CursorManager.numpadkeystate.down)
+            {
+                CursorManager.numpadkeystate = CursorManager.numpadkeystate with { down = false };
+                CursorManager.KeyUp(Move.Down);
+            }
+
+            break;
             default:
                 break;
         }
