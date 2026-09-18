@@ -464,7 +464,7 @@ public class GoogleDoc
                     edit.Params[2] = (end + offset).ToString();
                 }
             }
-          /*  else if (edit.Type == EditType.Delete)
+            else if (edit.Type == EditType.Delete)
             {
                 int start = Convert.ToInt32(edit.Params[0]);
                 int end = Convert.ToInt32(edit.Params[1]);
@@ -484,7 +484,7 @@ public class GoogleDoc
                 {
                     edit.Params[0] = (start + offset).ToString();
                 }
-            }*/
+            }
         }
 
         if (cursor && CursorManager.GetCursorPosition() >= after)
@@ -509,7 +509,7 @@ public class GoogleDoc
                     edit.Params[2] = (end + offset).ToString();
                 }
             }
-          /*  else if (edit.Type == EditType.Delete)
+            else if (edit.Type == EditType.Delete)
             {
                 int start = Convert.ToInt32(edit.Params[0]);
                 int end = Convert.ToInt32(edit.Params[1]);
@@ -529,7 +529,7 @@ public class GoogleDoc
                 {
                     edit.Params[0] = (start + offset).ToString();
                 }
-            }*/
+            }
         }
 
         if (cursor && CursorManager.GetCursorPosition() >= after)
@@ -583,6 +583,11 @@ public class GoogleDoc
 
     public string GetText()
     {
+        if (savekeys.verbose)
+        {
+            File.WriteAllText("docedits.json",JsonConvert.SerializeObject(history.Edits,Formatting.Indented));
+        }
+
         var expanded = new List<Edit>();
         expanded = history.Edits.ToArray().ToList();
         for (int i = 0; i < expanded.Count; i++)
@@ -607,11 +612,17 @@ public class GoogleDoc
                 }
             }
         }
+        if (savekeys.verbose)
+        {
+            File.WriteAllText("expandeddocedits.json",JsonConvert.SerializeObject(expanded,Formatting.Indented));
+        }
+
         string content = "";
      /*   foreach (var edit in expanded)
         {
 
         }*/
+
         int offset = 0;
         foreach (var edit in expanded)
         {
@@ -625,6 +636,15 @@ public class GoogleDoc
                 {
                     content = content.Substring(0, Convert.ToInt32(edit.Params[0])) + edit.Params[1].Replace("\\n","\n") + content.Substring(Convert.ToInt32(edit.Params[0]));
                 }
+                else
+                {
+                    //PrintLineDebugMenu($"Error: Insert offset out of bounds, Max: {content.Length}, Insert offset: {Convert.ToInt32(edit.Params[0])}, Insert string: {edit.Params[1]}");
+                    while (Convert.ToInt32(edit.Params[0]) > content.Length)
+                    {
+                        content += " ";
+                    }
+                    content += edit.Params[1].Replace("\\n","\n");
+                }
             }
             else if (edit.Type == EditType.Delete)
             {
@@ -637,7 +657,7 @@ public class GoogleDoc
             }
         }
 
-      /*  int since = 0;
+        int since = 0;
         uint until = savekeys.wraplength;
         int index = 0;
         foreach (var c in content)
@@ -650,14 +670,14 @@ public class GoogleDoc
             if (since > until)
             {
                 since = 0;
-               content = content.Insert(index, "\n");
+                content = content.Insert(index, "\n");
                 OffsetAltersAfter(1, index, ref expanded, false);
             }
 
             since++;
 
             index++;
-        }*/
+        }
 
         foreach(var edit in expanded)
         {

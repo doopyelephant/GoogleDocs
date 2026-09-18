@@ -9,7 +9,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -588,9 +590,18 @@ public partial class MainWindow : Window
           {
               foreach (var json in innerjson.Select(x => x[0]))
               {
+                  if (json.Parent[4].Type == JTokenType.String && SaveKeys.verbose)
+                  {
+                      if (!File.Exists("siddebug.txt"))
+                      {
+                          File.Create("siddebug.txt").Dispose();
+                      }
+                      File.WriteAllText("siddebug.txt",File.ReadAllText("siddebug.txt") + ", " + json.Parent[4].ToString());
+                  }
                   if (json.Parent[4].Type == JTokenType.String && json.Parent[4].ToString() == NetworkManager.sid)
                   {
-                    PrintLineDebugMenu("sid matched, loopback detected, skipping");
+
+                      PrintLineDebugMenu("sid matched, loopback detected, skipping");
                     continue;
                   }
                   if (json["ty"].ToString() == "noop")
