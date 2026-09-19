@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,7 +14,7 @@ using Newtonsoft.Json.Linq;
 
 namespace GoogleDocs;
 public enum EditType { Insert, Alter, Multi,Delete,Noop,Unknown}
-public class Edit
+public class Edit : INotifyPropertyChanged
 {
     public bool IsSaved = false;
     public Edit(EditType type, string[] Params, bool isSaved = false)
@@ -25,7 +27,7 @@ public class Edit
     {
         IsSaved = isSaved;
         string typestring = json["ty"].ToString();
-        if (typestring == "is")
+        if (typestring == "is") //Insert
         {
             Type = EditType.Insert;
             string[] paramstmp = new string[2];
@@ -33,7 +35,7 @@ public class Edit
             paramstmp[1] = json["s"].ToString();
             Params = paramstmp;
         }
-        else if (typestring == "as")
+        else if (typestring == "as") //Alter String
         {
             Type = EditType.Alter;
             string[] paramstmp = new string[4];
@@ -43,20 +45,20 @@ public class Edit
             paramstmp[3] = json["sm"].ToString();
             Params = paramstmp;
         }
-        else if (typestring == "mlti")
+        else if (typestring == "mlti") //Multi
         {
             Type = EditType.Multi;
             string[] paramstmp = new string[1];
             paramstmp[0] = json["mts"].ToString();
             Params = paramstmp;
         }
-        else if (typestring == "noop")
+        else if (typestring == "noop") //No Operation
         {
             Type = EditType.Noop;
             string[] paramstmp = new string[0];
             Params = paramstmp;
         }
-        else if (typestring == "ds")
+        else if (typestring == "ds") // Delete String
         {
             Type = EditType.Delete;
             string[] paramstmp = new string[2];
@@ -64,7 +66,7 @@ public class Edit
             paramstmp[1] = (Convert.ToInt32(json["ei"]) - 1).ToString();
             Params = paramstmp;
         }
-        else
+        else //Unknown
         {
             Type = EditType.Unknown;
             string[] paramstmp = new string[0];
@@ -120,14 +122,17 @@ public class Edit
         }
         return "unk";
     }
+
+    public event PropertyChangedEventHandler PropertyChanged;
 }
 public class DocHistory
 {
-    public List<Edit> Edits { get; set; }
+    public ObservableCollection<Edit> Edits { get; set; }
 
-    public DocHistory(JObject[] jsons)
+    public DocHistory(JObject[] jsons,Func<string,bool>? logger = null)
     {
-        Edits = new List<Edit>();
+        Edits = new ObservableCollection<Edit>();
+
         foreach (var json in jsons)
         {
             if (json is null) return;
@@ -139,9 +144,18 @@ public class DocHistory
             {
                 if (token is JObject obj)
                 {
-                    Edits.Add(new Edit(obj, true));
+                    var edit = new Edit(obj, true);
+                    Edits.Add(edit);
                 }
             }
+        }
+
+        if (true)
+        {
+            Edits.CollectionChanged += (sender, e) =>
+            {
+                Console.WriteLine("Document History Changed: " + e.Action);
+            };
         }
     }
     private static JObject? AsJObject(JToken? token)
@@ -178,7 +192,19 @@ public class GoogleDoc
     {
         this.json1 = json1;
         this.jsons = jsons;
-        history = new DocHistory(jsons);
+        if (savekeys.verbose)
+        {
+            history = new DocHistory(jsons, (string s) =>
+            {
+                PrintLineDebugMenu(s);
+                return true;
+            });
+        }
+        else
+        {
+            history = new DocHistory(jsons);
+        }
+
         title = json1["me"]["t"].ToString();
         token = json1["me"]["dkd"][10].ToString();
         name = json1["me"]["dkd"][8][0].ToString();
@@ -449,6 +475,12 @@ public class GoogleDoc
 
     public void OffsetAltersAfter(int offset, int after,bool cursor = true)
     {
+        if (savekeys.verbose)
+        {
+            File.WriteAllText("doceditsbefore.json", JsonConvert.SerializeObject(history.Edits, Formatting.Indented));
+        }
+        PrintLineDebugMenu($"Offsetting alters after {after} by {offset}");
+        var i = 0;
         foreach (var edit in history.Edits)
         {
             if (edit.Type == EditType.Alter)
@@ -463,33 +495,40 @@ public class GoogleDoc
                 {
                     edit.Params[2] = (end + offset).ToString();
                 }
+              //  PrintLineDebugMenu($"Offsetting edit: Start={start}, End={end}, Offset={offset}, After={after}, Index={i} , Result={edit.Params[1]}-{edit.Params[2]}");
             }
-            else if (edit.Type == EditType.Delete)
-            {
-                int start = Convert.ToInt32(edit.Params[0]);
-                int end = Convert.ToInt32(edit.Params[1]);
-                if (start - 1 >= after)
-                {
-                    edit.Params[0] = (start + offset).ToString();
-                }
-                if (end >= after)
-                {
-                    edit.Params[1] = (end + offset).ToString();
-                }
-            }
-            else if (edit.Type == EditType.Insert)
-            {
-                int start = Convert.ToInt32(edit.Params[0]);
-                if (start - 1 >= after)
-                {
-                    edit.Params[0] = (start + offset).ToString();
-                }
-            }
+
+            i++;
+            /* else if (edit.Type == EditType.Delete)
+             {
+                 int start = Convert.ToInt32(edit.Params[0]);
+                 int end = Convert.ToInt32(edit.Params[1]);
+                 if (start - 1 >= after)
+                 {
+                     edit.Params[0] = (start + offset).ToString();
+                 }
+                 if (end >= after)
+                 {
+                     edit.Params[1] = (end + offset).ToString();
+                 }
+             }
+             else if (edit.Type == EditType.Insert)
+             {
+                 int start = Convert.ToInt32(edit.Params[0]);
+                 if (start - 1 >= after)
+                 {
+                     edit.Params[0] = (start + offset).ToString();
+                 }
+             }*/
         }
 
         if (cursor && CursorManager.GetCursorPosition() >= after)
         {
             CursorManager.Position = CursorManager.Position with { X = CursorManager.Position.X + offset };
+        }
+        if (savekeys.verbose)
+        {
+            File.WriteAllText("doceditsafter.json", JsonConvert.SerializeObject(history.Edits, Formatting.Indented));
         }
     }
     public void OffsetAltersAfter(int offset, int after, ref List<Edit> edits,bool cursor = true)
@@ -509,7 +548,7 @@ public class GoogleDoc
                     edit.Params[2] = (end + offset).ToString();
                 }
             }
-            else if (edit.Type == EditType.Delete)
+           /* else if (edit.Type == EditType.Delete)
             {
                 int start = Convert.ToInt32(edit.Params[0]);
                 int end = Convert.ToInt32(edit.Params[1]);
@@ -529,7 +568,7 @@ public class GoogleDoc
                 {
                     edit.Params[0] = (start + offset).ToString();
                 }
-            }
+            }*/
         }
 
         if (cursor && CursorManager.GetCursorPosition() >= after)
