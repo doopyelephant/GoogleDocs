@@ -619,11 +619,7 @@ public partial class MainWindow : Window
                   if (edit.Type == EditType.Insert)
                   {
                       PrintLineDebugMenu("Offseting..");
-                      for(int i = 0; i < edit.Params[1].Length; i++)
-                      {
-                          PrintLineDebugMenu("Offseting "  +int.Parse(edit.Params[0]) + i);
-                          doc.OffsetAltersAfter(1,int.Parse(edit.Params[0]) + i);
-                      }
+                      doc.OffsetAltersAfter(edit.Params[1].Length,int.Parse(edit.Params[0]));
                   }
 
 

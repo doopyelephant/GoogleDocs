@@ -710,7 +710,7 @@ public class GoogleDoc
             {
                 since = 0;
                 content = content.Insert(index, "\n");
-                OffsetAltersAfter(1, index, ref expanded, false);
+                //OffsetAltersAfter(1, index, ref expanded, false);
             }
 
             since++;
