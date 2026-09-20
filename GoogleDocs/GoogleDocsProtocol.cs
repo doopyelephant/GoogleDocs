@@ -524,8 +524,12 @@ public class GoogleDoc
 
         if (cursor && CursorManager.GetCursorPosition() >= after)
         {
-            CursorManager.Position = CursorManager.Position with { X = CursorManager.Position.X + offset };
+            lock (CursorManager.CursorLock)
+            {
+                CursorManager.Position = CursorManager.Position with { X = CursorManager.Position.X + offset };
+            }
         }
+
         if (savekeys.verbose)
         {
             File.WriteAllText("doceditsafter.json", JsonConvert.SerializeObject(history.Edits, Formatting.Indented));
@@ -573,7 +577,10 @@ public class GoogleDoc
 
         if (cursor && CursorManager.GetCursorPosition() >= after)
         {
-            CursorManager.Position = CursorManager.Position with { X = CursorManager.Position.X + offset };
+            lock (CursorManager.CursorLock)
+            {
+                CursorManager.Position = CursorManager.Position with { X = CursorManager.Position.X + offset };
+            }
         }
     }
 
@@ -710,7 +717,7 @@ public class GoogleDoc
             {
                 since = 0;
                 content = content.Insert(index, "\n");
-                //OffsetAltersAfter(1, index, ref expanded, false);
+                OffsetAltersAfter(1, index, ref expanded, false);
             }
 
             since++;

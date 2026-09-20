@@ -143,9 +143,13 @@ public partial class MainWindow : Window
 
     private void MainTextMouseDown(object? sender, PointerPressedEventArgs e)
     {
-        CursorManager.Position.X = MainText.TextLayout.HitTestPoint(e.GetPosition(MainText)).TextPosition;
-        CursorManager.Position.Y = 0;
-        CursorManager.LastCursorPosition = CursorManager.Position;
+        lock (CursorManager.CursorLock)
+        {
+            CursorManager.Position.X = MainText.TextLayout.HitTestPoint(e.GetPosition(MainText)).TextPosition;
+            CursorManager.Position.Y = 0;
+            CursorManager.LastCursorPosition = CursorManager.Position;
+            CursorManager.changedflag = true;
+        }
     }
 
     public void InitLogThread()
@@ -970,11 +974,13 @@ catch (HttpRequestException err)
                     if (edit != null && doc != null)
                     {
                         doc.history.Edits.Add(edit);
-                        for (int i = 0; i < edit.Params[1].Length; i++)
-                        {
-                            doc.OffsetAltersAfter(1, pos + i);
-                        }
+                        doc.OffsetAltersAfter(edit.Params[1].Length, pos);
                         SetMainText(doc.GetText());
+                        MainText.UpdateLayout();
+                        lock (CursorManager.CursorLock)
+                        {
+                            CursorManager.SetTextLayout(MainText.TextLayout);
+                        }
                         //CursorManager.MoveCursor();
 
                     }
@@ -1115,6 +1121,8 @@ catch (HttpRequestException err)
                 {
                     doc.history.Edits.Add(edit);
                     SetMainText(doc.GetText());
+                    MainText.UpdateLayout();
+                    CursorManager.SetTextLayout(MainText.TextLayout);
                     //CursorManager.MoveCursor();
 
 
