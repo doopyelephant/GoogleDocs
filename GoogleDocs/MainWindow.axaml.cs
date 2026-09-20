@@ -267,63 +267,53 @@ public partial class MainWindow : Window
         var margin = new Thickness(x, y, 0, 0);
       Cursor.Margin = margin;
     }
-    private void SetMainText(string text,bool recurs = false)
+    private void SetMainText(string text,List<RichText>? richTexts = null)
     {
+        // Start Table \u0010
+        //End Table \u0011
        var watch = new Stopwatch();
        watch.Start();
-       // PrintLineDebugMenu("Setting main text: " + text + " " + recurs);
-        if(!recurs)
-        {
-            MainText.Text = "";
-        MainText.Inlines.Clear();
-        }
-        string[] inlines = new[] {"<Bl/>", "</Bl>", "<It/>", "</It>", "<Tb/>", "</Tb>"};
-        bool ctns = false;
-        int index = int.MaxValue;
-        for (int i = 0; i < inlines.Length; i++)
-        {
-            ctns = ctns || text.Contains(inlines[i]);
-            if(ctns)
-            {
-                int tmpindex = text.IndexOf(inlines[i], StringComparison.Ordinal);
-                // PrintLineDebugMenu("Found inline " + inlines[i] + " at index " + tmpindex);
-                if(tmpindex != -1)
-                {
-                index = Math.Min(index, tmpindex);
-                }
-            }
-        }
-        if (ctns)
-        {
-            //PrintLineDebugMenu("Adding plain text inline: " + text.Substring(0, index));
-            MainText.Inlines.Add(new Run(text.Substring(0, index)));
-             // MainText.Inlines.Add(new Run("1237656544444"));
-            string remaining = text.Substring(index);
-            string after = "";
-            if(remaining.StartsWith("<Bl/>"))
-            {
-                string bld = remaining.Substring(5, remaining.IndexOf("</Bl>", StringComparison.Ordinal) - 5);
-               //PrintLineDebugMenu("Adding bold text inline: " + bld);
-                var bold = new Bold();
-                bold.Inlines.Add(new Run(bld));
-                MainText.Inlines.Add(bold);
-                after = remaining.Substring(5 + bld.Length + 5);
-                //PrintLineDebugMenu("Remaining text: " + after);
-            }
-            else if(remaining.StartsWith("<It/>"))
-            {
-               string itl = remaining.Substring(5, remaining.IndexOf("</It>", StringComparison.Ordinal) - 5);
-                PrintLineDebugMenu("Adding italic text inline: " + itl);
-                var italic = new Italic();
-                italic.Inlines.Add(new Run(itl));
-                MainText.Inlines.Add(italic);
-                after = remaining.Substring(5 + itl.Length + 5);
-               // PrintLineDebugMenu("Remaining text: " + after);
-            }
-            else if(remaining.StartsWith("<Tb/>"))
-            {
-               // PrintLineDebugMenu("Adding table inline");
-                string tbl = remaining.Substring(5, remaining.IndexOf("</Tb>", StringComparison.Ordinal) - 5);
+       MainText.Text = "";
+       MainText.Inlines = new InlineCollection();
+       if (richTexts == null)
+       {
+           MainText.Text = text;
+       }
+       else
+       {
+           richTexts.Sort((x, y) => { return x.start - y.start; });
+           for (int j = 0; j < richTexts.Count; j++)
+           {
+               int jtmp = j;
+               List<RichText> alike = new List<RichText>();
+               alike.Add(richTexts[j]);
+               List<(int, int, List<RichText>)> stages = new List<(int, int, List<RichText>)>();
+               while (j < richTexts.Count && richTexts[j].start == richTexts[j + 1].start)
+               {
+                   j++;
+                   alike.Add(richTexts[j]);
+               }
+
+               if (alike.Count > 1)
+               {
+                   if (alike.Select(x => x.end).Distinct().Count() == 1)
+                   {
+                    stages.Add((richTexts[j].start, richTexts[j].end, alike.ToList()));
+                   }
+                   else
+                   {
+                       alike.Sort((x, y) => { return x.end - y.end; });
+
+                   }
+               }
+               else
+               {
+                   stages.Add((richTexts[j].start, richTexts[j].end, new [] {richTexts[j]}.ToList()));
+               }
+           }
+       }
+
+                string tbl = ""/* Table Text*/;
                 int height = Regex.Count(tbl,"\u0012");
                 int total = Regex.Count(tbl,'\u001c'.ToString());
                 int width = total / height;
@@ -360,39 +350,10 @@ public partial class MainWindow : Window
                 }
                 tablecon.Child = grid;
                 MainText.Inlines.Add(tablecon);
-                after = remaining.Substring(5 + tbl.Length + 5);
-               // PrintLineDebugMenu("Remaining text: " + after);
-            }
-            if(!string.IsNullOrEmpty(after.Trim()))
-            {
-            SetMainText(after,true);
-            }
-        }
-        else
-        {
-            MainText.Inlines.Add(new Run(text));
-        }
-        
-          /* foreach(var inline in MainText.Inlines)
-        {
-           PrintLineDebugMenu(inline);
-            if(inline is Run run)
-            {
-                PrintLineDebugMenu("Run text: " + run.Text);
-             //   run.Text = run.Text.Replace("\\n","\n");
-            }
-            else
-            {
-                PrintLineDebugMenu("Not run");
-            }
-        }*/
-          if (!recurs)
-          {
-              UpdateSelections();
-          }
-          watch.Stop();
+                UpdateSelections();
+                watch.Stop();
 
-        PrintLineDebugMenu($"Set main text in {watch.ElapsedMilliseconds} ms");
+                PrintLineDebugMenu($"Set main text in {watch.ElapsedMilliseconds} ms");
 
     }
 
