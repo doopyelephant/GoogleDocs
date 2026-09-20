@@ -100,8 +100,6 @@ public static class CursorManager
             {
                 tmp.X = 0;
                 tmp.Y++;
-                Position.X = 0;
-                Position.Y++;
                 length = 0;
                 if (tmp.Y < textlayout.TextLines.Count)
                 {
@@ -321,7 +319,7 @@ public static class CursorManager
                 verticalmove = false;
             }
 
-            Position = tmp;
+           // Position = tmp;
         }
         return new Vector2((float)box.X, (float)box.Y);
     }
