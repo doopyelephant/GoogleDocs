@@ -145,9 +145,12 @@ public partial class MainWindow : Window
     {
         lock (CursorManager.CursorLock)
         {
-            CursorManager.Position.X = MainText.TextLayout.HitTestPoint(e.GetPosition(MainText)).TextPosition;
+            var hittest = MainText.TextLayout.HitTestPoint(e.GetPosition(MainText));
+            CursorManager.Position.X = hittest.TextPosition;
             CursorManager.Position.Y = 0;
             CursorManager.LastCursorPosition = CursorManager.Position;
+            var offset = MainText.TextLayout.HitTestTextPosition(hittest.TextPosition);
+            CursorManager.LastCursorOffset = new Vector2((float)offset.X, (float)offset.Y);
             CursorManager.changedflag = true;
         }
     }
@@ -228,12 +231,16 @@ public partial class MainWindow : Window
         Program.CleanUp.Add(cursorthread);
         cursorthread.Start();
     }
+
     public static void OnTextLayoutUpdated(object? sender, EventArgs e)
     {
-        Program.mainWindow.PrintLineDebugMenu("\n Text layout updated");
-        var mainText = Program.mainWindow.GetMainText();
-        var textlayout = mainText.TextLayout;
-        CursorManager.SetTextLayout(textlayout);
+        lock (CursorManager.CursorLock)
+        {
+            Program.mainWindow.PrintLineDebugMenu("\n Text layout updated");
+            var mainText = Program.mainWindow.GetMainText();
+            var textlayout = mainText.TextLayout;
+            CursorManager.SetTextLayout(textlayout);
+        }
     }
 
     public static void UpdateCursorThread()
@@ -999,6 +1006,7 @@ catch (HttpRequestException err)
                     edit = new Edit(EditType.Insert,
                         new string[] { pos.ToString(),s});
                     Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
+                    doc.history.Edits.Add(edit);
                     doc.OffsetAltersAfter(1, pos);
                 }
 
@@ -1045,6 +1053,7 @@ catch (HttpRequestException err)
                         edit = new Edit(EditType.Insert,
                             new string[] { pos.ToString(), s });
                         Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
+                        doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(1, pos);
                     }
                     else
@@ -1053,6 +1062,7 @@ catch (HttpRequestException err)
                         edit = new Edit(EditType.Insert,
                             new string[] { pos.ToString(), s });
                         Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
+                        doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(1, pos);
                     }
                 }
@@ -1089,6 +1099,7 @@ catch (HttpRequestException err)
                         edit = new Edit(EditType.Insert,
                             new string[] { pos.ToString(), s });
                         Program.mainWindow.PrintLineDebugMenu($"Inserting {s} at {pos}");
+                        doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(1, pos);
                     }
                 }
@@ -1098,28 +1109,31 @@ catch (HttpRequestException err)
                     case Key.Enter:
                         edit = new Edit(EditType.Insert,
                             new string[] { pos.ToString(),"\n"});
+                        doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(1, pos);
                         break;
                     case Key.Tab:
                         edit = new Edit(EditType.Insert,
                             new string[] { pos.ToString(),"\u0009"});
+                        doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(1, pos);
                         break;
                     case Key.Back:
                         edit = new Edit(EditType.Delete,
                             new string[] { (pos - 1).ToString(),(pos - 1).ToString()});
+                        doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(-1, pos);
                         break;
                     case Key.Delete:
                         edit = new Edit(EditType.Delete,
                             new string[] { (pos).ToString(),(pos).ToString()});
+                        doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(-1, pos + 1);
                         break;
                 }
 
                 if (edit != null && doc != null)
                 {
-                    doc.history.Edits.Add(edit);
                     SetMainText(doc.GetText());
                     MainText.UpdateLayout();
                     CursorManager.SetTextLayout(MainText.TextLayout);

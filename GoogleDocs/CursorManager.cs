@@ -42,7 +42,7 @@ public static class CursorManager
     private static TextBlock? mainText = null;
     private static TextLayout textlayout;
     public static Vector2 LastCursorPosition = new(0f,0f);
-    private static Vector2 LastCursorOffset = new(0f,0f);
+    public static Vector2 LastCursorOffset = new(0f,0f);
     private static SaveKeys SaveKeys;
     private static bool verticalmove;
     public static KeyState numpadkeystate = new();
@@ -121,7 +121,7 @@ public static class CursorManager
                     break;
                 }
 
-                charcnt += line.Length + 1;
+                charcnt += line.Length + line.NewLineLength;
 
                 index++;
             }
@@ -137,9 +137,9 @@ public static class CursorManager
         lock (CursorLock)
         {
             tmp = Position;
-        }
 
-        var textlength = 0;
+
+            var textlength = 0;
             foreach (var line in textlayout.TextLines)
             {
                 textlength += line.Length + line.NewLineLength;
@@ -208,6 +208,8 @@ public static class CursorManager
                     else
 
                     {
+                        startcut = mid;
+                        endcut = mid;
                         break;
                     }
                 }
@@ -269,15 +271,15 @@ public static class CursorManager
                     PrintLineDebugMenu("Y: " + tmp.Y);
                     length = textlayout.TextLines[(int)tmp.Y].Length;
                 }
+
                 tmp.X = length;
 
 
             }
 
-            lock (CursorLock)
-            {
-                Position = tmp;
-            }
+
+
+
 
             int index = 0;
             int charcnt = 0;
@@ -319,7 +321,8 @@ public static class CursorManager
                 verticalmove = false;
             }
 
-
+            Position = tmp;
+        }
         return new Vector2((float)box.X, (float)box.Y);
     }
 
