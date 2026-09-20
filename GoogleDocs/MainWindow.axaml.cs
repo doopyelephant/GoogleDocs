@@ -281,6 +281,7 @@ public partial class MainWindow : Window
        }
        else
        {
+           var masterstages = new List<(int, int, List<RichText>)>();
            richTexts.Sort((x, y) => { return x.start - y.start; });
            for (int j = 0; j < richTexts.Count; j++)
            {
@@ -303,18 +304,62 @@ public partial class MainWindow : Window
                    else
                    {
                        alike.Sort((x, y) => { return x.end - y.end; });
-
+                       int curend = alike[0].end;
+                       List<int> tmpindices = new List<int>();
+                       for (int k = 1; k < alike.Count; k++)
+                       {
+                           if (alike[k].end != curend)
+                           {
+                               curend = alike[k].end;
+                               stages.Add((alike[k - 1].start, richTexts[k - 1].end, tmpindices.Select(x => alike[x]).ToList()));
+                               tmpindices.Clear();
+                           }
+                           else
+                           {
+                               tmpindices.Add(k);
+                           }
+                       }
                    }
                }
                else
                {
                    stages.Add((richTexts[j].start, richTexts[j].end, new [] {richTexts[j]}.ToList()));
                }
+
+               foreach (var stage in stages)
+               {
+                   masterstages.Add(stage);
+               }
+           }
+           int inserted = 0;
+           foreach (var stage in masterstages)
+           {
+               var start = stage.Item1;
+               var end = stage.Item2;
+               var texts = stage.Item3;
+               if (inserted < start)
+               {
+                   MainText.Inlines.Add(new Run(text.Substring(inserted, start - inserted)));
+               }
+                var inline = new Run(text.Substring(start, end - start));
+                foreach (var t in texts)
+                {
+                    switch (t.Type)
+                    {
+                        case RichTextType.Bold:
+                            inline.FontWeight = FontWeight.Bold;
+                            break;
+                        case RichTextType.Italic:
+                            inline.FontStyle = FontStyle.Italic;
+                            break;
+                    }
+                }
+                MainText.Inlines.Add(inline);
            }
        }
 
-                string tbl = ""/* Table Text*/;
-                int height = Regex.Count(tbl,"\u0012");
+              //  string tbl = ""/* Table Text*/;
+              /*  int height = Regex.Count(tbl,"\u0012");
                 int total = Regex.Count(tbl,'\u001c'.ToString());
                 int width = total / height;
                 //PrintLineDebugMenu("Adding table inline with width " + width + " and height " + height);
@@ -349,7 +394,7 @@ public partial class MainWindow : Window
                     i++;
                 }
                 tablecon.Child = grid;
-                MainText.Inlines.Add(tablecon);
+                MainText.Inlines.Add(tablecon);*/
                 UpdateSelections();
                 watch.Stop();
 
@@ -597,11 +642,13 @@ public partial class MainWindow : Window
 
                   if (isexternalthread)
                   {
-                      Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => SetMainText(doc.GetText()));
+                      var text = doc.GetText();
+                      Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => SetMainText(text.Item1,text.Item2));
                   }
                   else
                   {
-                      SetMainText(doc.GetText());
+                      var text = doc.GetText();
+                      SetMainText(text.Item1,text.Item2);
                   }
 
                   PrintLineDebugMenu(json.ToString());
@@ -689,7 +736,8 @@ try
   doc = new GoogleDoc(parsed!, jsons.ToArray()!);
   doc.id = doc_id;
   //await doc.GetSessionId();
-  SetMainText(doc.GetText());
+  var text = doc.GetText();
+  SetMainText(text.Item1,text.Item2);
 
   ActiveElement(FeelingLuckyButton,false,true);
   ActiveElement(OpenDebugMenuButton,false,true);
@@ -708,7 +756,8 @@ try
   PrintLineDebugMenu($"Document loaded successfully in {watch.ElapsedMilliseconds} ms.");
   SaveKeys.lastopened = doc_id;
   JsonParsing.SaveKeys(SaveKeys);
-  PrintLineDebugMenu(doc.GetText());
+  var text2 = doc.GetText();
+  PrintLineDebugMenu(text2.Item1);
  // File.WriteAllText("items.txt",await NetworkManager.GetRequest("https://drivefrontend-pa.clients6.google.com/v1/items:list"/*"[25,\"https://docs.google.com/document/u/0/?usp=docs_web\",25,\"en\",\"ca\",1,null,0,0,\"\",\"\",1,0,null,72175901,[[1,9,13],0,1,1],[1],null,0,1,\"CAMSIhUn9NL9N67auQayvgTkiQWnBp6WpgL58FLkoEXMsBP6gR0=\",{\"1001\":1}]"*/,true));
   // File.WriteAllText("BindTest.txt",await NetworkManager.GetRequest(
  // "https://docs.google.com/document/d/1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI/bind?id=1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI&sid=5e31d1095e7c74c5&token=AJagN6Q3L3VTlm0lH1eRvrcxnAZY:1788285353340&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&lsq=1788285346255&vc=1&c=1&w=1&flr=0&gsi=0&smv=2147483647&smb=[2147483647, oAMQAg==]&cimpl=1&RID=rpc&SID=8EC8391587DD515B&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1"));
@@ -943,7 +992,8 @@ catch (HttpRequestException err)
                     {
                         doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(edit.Params[1].Length, pos);
-                        SetMainText(doc.GetText());
+                        var text = doc.GetText();
+                        SetMainText(text.Item1, text.Item2);
                         MainText.UpdateLayout();
                         lock (CursorManager.CursorLock)
                         {
@@ -1095,7 +1145,8 @@ catch (HttpRequestException err)
 
                 if (edit != null && doc != null)
                 {
-                    SetMainText(doc.GetText());
+                    var text = doc.GetText();
+                    SetMainText(text.Item1, text.Item2);
                     MainText.UpdateLayout();
                     CursorManager.SetTextLayout(MainText.TextLayout);
                     //CursorManager.MoveCursor();
