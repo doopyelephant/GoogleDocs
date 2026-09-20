@@ -14,6 +14,27 @@ using Newtonsoft.Json.Linq;
 
 namespace GoogleDocs;
 public enum EditType { Insert, Alter, Multi,Delete,Noop,Unknown}
+
+public enum RichTextType
+{
+    Bold,Italic,Underline
+}
+
+public class RichText
+{
+    public RichTextType Type;
+    public int start;
+    public int end;
+    public string[]? Params;
+
+    public RichText(RichTextType type, int start, int end, string[]? params1 = null)
+    {
+        Type = type;
+        this.start = start;
+        this.end = end;
+        Params = params1;
+    }
+}
 public class Edit : INotifyPropertyChanged
 {
     public bool IsSaved = false;
@@ -627,7 +648,7 @@ public class GoogleDoc
        return token;
     }
 
-    public string GetText()
+    public (string,List<RichText>) GetText()
     {
         if (savekeys.verbose)
         {
@@ -724,6 +745,7 @@ public class GoogleDoc
 
             index++;
         }
+        var riches = new List<RichText>();
 
         foreach(var edit in expanded)
         {
@@ -735,8 +757,6 @@ public class GoogleDoc
                 end++;
                 if (start >= 1 && end <= content.Length)
                 {
-                     var wrapstart = "";
-                    var wrapend ="";
                     JsonObject alteration = JsonNode.Parse(edit.Params[3]).AsObject();
                     if(alteration.ContainsKey("ts_bd_i"))
                     {
@@ -746,9 +766,7 @@ public class GoogleDoc
                             var bd = alteration["ts_bd"].GetValue<bool>();
                             if (bd)
                             {
-                                wrapstart += "<Bl/>";
-                                wrapend += "</Bl>";
-                                //content = content.Substring(0, start - 1) + "<b>" + content.Substring(start - 1, end - start + 1) + "</b>" + content.Substring(end);
+                                riches.Add(new RichText(RichTextType.Bold, start,end));
                             }
                         }
                     }
@@ -760,9 +778,7 @@ public class GoogleDoc
                             var bd = alteration["ts_it"].GetValue<bool>();
                             if (bd)
                             {
-                                wrapstart += "<It/>";
-                                wrapend += "</It>";
-                                //content = content.Substring(0, start - 1) + "<i>" + content.Substring(start - 1, end - start + 1) + "</i>" + content.Substring(end);
+                                riches.Add(new RichText(RichTextType.Italic, start,end));
                             }
                         }
                     }
@@ -779,35 +795,15 @@ public class GoogleDoc
                             }
                         }
                     }
-
-                    if(wrapstart == "" && wrapend == "")
-                    {
-                        continue;
-                    }
-                   
-                    content = content.Substring(0, Math.Clamp(start + offset,0,content.Length)) + wrapstart + content.Substring(Math.Clamp(start + offset,0,content.Length));
-                    offset += wrapstart.Length;
-                    content = content.Substring(0, Math.Clamp(end + offset,0,content.Length)) + wrapend + content.Substring(Math.Clamp(end + offset,0,content.Length));
-                    offset += wrapend.Length;
                 }
             }
-        }
-        // Tables
-        if(content.Contains("\u0011") && content.Contains("\u0010"))
-        {
-        int countstart = Regex.Count(content, "\u0010");
-        int countend = Regex.Count(content, "\u0011"); 
-        content = content.Replace("\u0010", "<Tb/>");
-        offset += 4 * countstart;
-        content = content.Replace("\u0011","</Tb>");
-        offset += 4 * countend;
         }
 
         if (savekeys.verbose)
         {
             File.WriteAllText("doc.txt", content.ToString());
         }
-        return content;
+        return (content,riches);
     }
 }
 
