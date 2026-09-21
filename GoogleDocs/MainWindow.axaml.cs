@@ -289,7 +289,7 @@ public partial class MainWindow : Window
                List<RichText> alike = new List<RichText>();
                alike.Add(richTexts[j]);
                List<(int, int, List<RichText>)> stages = new List<(int, int, List<RichText>)>();
-               while (j < richTexts.Count && richTexts[j].start == richTexts[j + 1].start)
+               while (j < richTexts.Count - 1 && richTexts[j].start == richTexts[j + 1].start)
                {
                    j++;
                    alike.Add(richTexts[j]);
@@ -355,6 +355,12 @@ public partial class MainWindow : Window
                     }
                 }
                 MainText.Inlines.Add(inline);
+                inserted = end;
+           }
+
+           if (inserted < text.Length)
+           {
+               MainText.Inlines.Add(new Run(text.Substring(inserted, text.Length - inserted)));
            }
        }
 
@@ -551,7 +557,7 @@ public partial class MainWindow : Window
         };
     }
 
-    private async Task BindToDoc(string extra = "",bool isexternalthread = false)
+    private async Task<string> BindToDoc(string extra = "",bool isexternalthread = false)
     {
     String url = JsonParsing.GetBindReq(doc_id,UrlConfig);
   /*  url += $"&zx={new Random().Next(100000,999999)}";
@@ -559,6 +565,7 @@ public partial class MainWindow : Window
     url += extra;
 
     PrintLineDebugMenu(url);
+    string tmpaid = "";
   /*  while (true)
     {
         PrintLineDebugMenu("Binding...");
@@ -599,6 +606,8 @@ public partial class MainWindow : Window
                        }
                        if (p[2] is JObject && p[2]["c"] is JArray)
                        {
+                           PrintLineDebugMenu("AID: " + x[0].ToString());
+                           tmpaid = x[0].ToString();
                            return p[2]["c"];
                        }
                        PrintLineDebugMenu("noop");
@@ -638,6 +647,11 @@ public partial class MainWindow : Window
                       PrintLineDebugMenu("Offseting..");
                       doc.OffsetAltersAfter(edit.Params[1].Length,int.Parse(edit.Params[0]));
                   }
+                  if (edit.Type == EditType.Delete)
+                  {
+                      PrintLineDebugMenu("Negative Offseting..");
+                      doc.OffsetAltersAfter(int.Parse(edit.Params[1]) - int.Parse(edit.Params[0]),int.Parse(edit.Params[1]));
+                  }
 
 
                   if (isexternalthread)
@@ -656,6 +670,8 @@ public partial class MainWindow : Window
           }
           //  }
   }
+
+  return tmpaid;
   // }
     }
     private void OpenDocButtonCallback(object? sender, RoutedEventArgs e)
@@ -837,7 +853,16 @@ catch (HttpRequestException err)
       //File.WriteAllText("BindGetRequestTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&zx=lwq349tga0r7&t=1" + $"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]"));
       //PrintLineDebugMenu("BIND TEST END");
       var aid = jsonobj[jsonobj.Count - 1][0];
-      await BindToDoc($"&SID={postsid}&AID={aid}"/*$"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}"*/,true);
+      while (true)
+      {
+          var tmpaid = await BindToDoc(
+              $"&SID={postsid}&AID={aid}" /*$"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}"*/,
+              true);
+          if (tmpaid != "")
+          {
+              aid = tmpaid;
+          }
+      }
     }
 
     public async Task AnimateHeight(InputElement element, double fullheight, double duration = 0.2, double targetheight = 0, double resolution = 30)

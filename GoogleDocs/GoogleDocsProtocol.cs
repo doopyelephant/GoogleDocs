@@ -738,7 +738,22 @@ public class GoogleDoc
             {
                 since = 0;
                 content = content.Insert(index, "\n");
-             //   OffsetAltersAfter(1, index, ref expanded, false);
+               // OffsetAltersAfter(1, index, ref expanded, false);
+               for (int i = 0; i < expanded.Count; i++)
+               {
+                   if (expanded[i].Type == EditType.Alter)
+                   {
+                       if (Convert.ToInt32(expanded[i].Params[1]) > index)
+                       {
+                           expanded[i].Params[1] = (Convert.ToInt32(expanded[i].Params[1]) + 1).ToString();
+                       }
+
+                       if (Convert.ToInt32(expanded[i].Params[2]) > index)
+                       {
+                           expanded[i].Params[2] = (Convert.ToInt32(expanded[i].Params[2]) + 1).ToString();
+                       }
+                   }
+               }
             }
 
             since++;
