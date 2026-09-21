@@ -267,64 +267,105 @@ public partial class MainWindow : Window
         var margin = new Thickness(x, y, 0, 0);
       Cursor.Margin = margin;
     }
-    private void SetMainText(string text,bool recurs = false)
+    private void SetMainText(string text,List<RichText>? richTexts = null)
     {
+        // Start Table \u0010
+        //End Table \u0011
        var watch = new Stopwatch();
        watch.Start();
-       // PrintLineDebugMenu("Setting main text: " + text + " " + recurs);
-        if(!recurs)
-        {
-            MainText.Text = "";
-        MainText.Inlines.Clear();
-        }
-        string[] inlines = new[] {"<Bl/>", "</Bl>", "<It/>", "</It>", "<Tb/>", "</Tb>"};
-        bool ctns = false;
-        int index = int.MaxValue;
-        for (int i = 0; i < inlines.Length; i++)
-        {
-            ctns = ctns || text.Contains(inlines[i]);
-            if(ctns)
-            {
-                int tmpindex = text.IndexOf(inlines[i], StringComparison.Ordinal);
-                // PrintLineDebugMenu("Found inline " + inlines[i] + " at index " + tmpindex);
-                if(tmpindex != -1)
+       MainText.Text = "";
+       MainText.Inlines = new InlineCollection();
+       if (richTexts == null)
+       {
+           MainText.Text = text;
+       }
+       else
+       {
+           var masterstages = new List<(int, int, List<RichText>)>();
+           richTexts.Sort((x, y) => { return x.start - y.start; });
+           for (int j = 0; j < richTexts.Count; j++)
+           {
+               int jtmp = j;
+               List<RichText> alike = new List<RichText>();
+               alike.Add(richTexts[j]);
+               List<(int, int, List<RichText>)> stages = new List<(int, int, List<RichText>)>();
+               while (j < richTexts.Count - 1 && richTexts[j].start == richTexts[j + 1].start)
+               {
+                   j++;
+                   alike.Add(richTexts[j]);
+               }
+
+               if (alike.Count > 1)
+               {
+                   if (alike.Select(x => x.end).Distinct().Count() == 1)
+                   {
+                    stages.Add((richTexts[j].start, richTexts[j].end, alike.ToList()));
+                   }
+                   else
+                   {
+                       alike.Sort((x, y) => { return x.end - y.end; });
+                       int curend = alike[0].end;
+                       List<int> tmpindices = new List<int>();
+                       for (int k = 1; k < alike.Count; k++)
+                       {
+                           if (alike[k].end != curend)
+                           {
+                               curend = alike[k].end;
+                               stages.Add((alike[k - 1].start, richTexts[k - 1].end, tmpindices.Select(x => alike[x]).ToList()));
+                               tmpindices.Clear();
+                           }
+                           else
+                           {
+                               tmpindices.Add(k);
+                           }
+                       }
+                   }
+               }
+               else
+               {
+                   stages.Add((richTexts[j].start, richTexts[j].end, new [] {richTexts[j]}.ToList()));
+               }
+
+               foreach (var stage in stages)
+               {
+                   masterstages.Add(stage);
+               }
+           }
+           int inserted = 0;
+           foreach (var stage in masterstages)
+           {
+               var start = stage.Item1;
+               var end = stage.Item2;
+               var texts = stage.Item3;
+               if (inserted < start)
+               {
+                   MainText.Inlines.Add(new Run(text.Substring(inserted, start - inserted)));
+               }
+                var inline = new Run(text.Substring(start, end - start));
+                foreach (var t in texts)
                 {
-                index = Math.Min(index, tmpindex);
+                    switch (t.Type)
+                    {
+                        case RichTextType.Bold:
+                            inline.FontWeight = FontWeight.Bold;
+                            break;
+                        case RichTextType.Italic:
+                            inline.FontStyle = FontStyle.Italic;
+                            break;
+                    }
                 }
-            }
-        }
-        if (ctns)
-        {
-            //PrintLineDebugMenu("Adding plain text inline: " + text.Substring(0, index));
-            MainText.Inlines.Add(new Run(text.Substring(0, index)));
-             // MainText.Inlines.Add(new Run("1237656544444"));
-            string remaining = text.Substring(index);
-            string after = "";
-            if(remaining.StartsWith("<Bl/>"))
-            {
-                string bld = remaining.Substring(5, remaining.IndexOf("</Bl>", StringComparison.Ordinal) - 5);
-               //PrintLineDebugMenu("Adding bold text inline: " + bld);
-                var bold = new Bold();
-                bold.Inlines.Add(new Run(bld));
-                MainText.Inlines.Add(bold);
-                after = remaining.Substring(5 + bld.Length + 5);
-                //PrintLineDebugMenu("Remaining text: " + after);
-            }
-            else if(remaining.StartsWith("<It/>"))
-            {
-               string itl = remaining.Substring(5, remaining.IndexOf("</It>", StringComparison.Ordinal) - 5);
-                PrintLineDebugMenu("Adding italic text inline: " + itl);
-                var italic = new Italic();
-                italic.Inlines.Add(new Run(itl));
-                MainText.Inlines.Add(italic);
-                after = remaining.Substring(5 + itl.Length + 5);
-               // PrintLineDebugMenu("Remaining text: " + after);
-            }
-            else if(remaining.StartsWith("<Tb/>"))
-            {
-               // PrintLineDebugMenu("Adding table inline");
-                string tbl = remaining.Substring(5, remaining.IndexOf("</Tb>", StringComparison.Ordinal) - 5);
-                int height = Regex.Count(tbl,"\u0012");
+                MainText.Inlines.Add(inline);
+                inserted = end;
+           }
+
+           if (inserted < text.Length)
+           {
+               MainText.Inlines.Add(new Run(text.Substring(inserted, text.Length - inserted)));
+           }
+       }
+
+              //  string tbl = ""/* Table Text*/;
+              /*  int height = Regex.Count(tbl,"\u0012");
                 int total = Regex.Count(tbl,'\u001c'.ToString());
                 int width = total / height;
                 //PrintLineDebugMenu("Adding table inline with width " + width + " and height " + height);
@@ -359,40 +400,11 @@ public partial class MainWindow : Window
                     i++;
                 }
                 tablecon.Child = grid;
-                MainText.Inlines.Add(tablecon);
-                after = remaining.Substring(5 + tbl.Length + 5);
-               // PrintLineDebugMenu("Remaining text: " + after);
-            }
-            if(!string.IsNullOrEmpty(after.Trim()))
-            {
-            SetMainText(after,true);
-            }
-        }
-        else
-        {
-            MainText.Inlines.Add(new Run(text));
-        }
-        
-          /* foreach(var inline in MainText.Inlines)
-        {
-           PrintLineDebugMenu(inline);
-            if(inline is Run run)
-            {
-                PrintLineDebugMenu("Run text: " + run.Text);
-             //   run.Text = run.Text.Replace("\\n","\n");
-            }
-            else
-            {
-                PrintLineDebugMenu("Not run");
-            }
-        }*/
-          if (!recurs)
-          {
-              UpdateSelections();
-          }
-          watch.Stop();
+                MainText.Inlines.Add(tablecon);*/
+                UpdateSelections();
+                watch.Stop();
 
-        PrintLineDebugMenu($"Set main text in {watch.ElapsedMilliseconds} ms");
+                PrintLineDebugMenu($"Set main text in {watch.ElapsedMilliseconds} ms");
 
     }
 
@@ -545,7 +557,7 @@ public partial class MainWindow : Window
         };
     }
 
-    private async Task BindToDoc(string extra = "",bool isexternalthread = false)
+    private async Task<string> BindToDoc(string extra = "",bool isexternalthread = false)
     {
     String url = JsonParsing.GetBindReq(doc_id,UrlConfig);
   /*  url += $"&zx={new Random().Next(100000,999999)}";
@@ -553,6 +565,7 @@ public partial class MainWindow : Window
     url += extra;
 
     PrintLineDebugMenu(url);
+    string tmpaid = "";
   /*  while (true)
     {
         PrintLineDebugMenu("Binding...");
@@ -593,6 +606,8 @@ public partial class MainWindow : Window
                        }
                        if (p[2] is JObject && p[2]["c"] is JArray)
                        {
+                           PrintLineDebugMenu("AID: " + x[0].ToString());
+                           tmpaid = x[0].ToString();
                            return p[2]["c"];
                        }
                        PrintLineDebugMenu("noop");
@@ -632,15 +647,22 @@ public partial class MainWindow : Window
                       PrintLineDebugMenu("Offseting..");
                       doc.OffsetAltersAfter(edit.Params[1].Length,int.Parse(edit.Params[0]));
                   }
+                  if (edit.Type == EditType.Delete)
+                  {
+                      PrintLineDebugMenu("Negative Offseting..");
+                      doc.OffsetAltersAfter(int.Parse(edit.Params[1]) - int.Parse(edit.Params[0]),int.Parse(edit.Params[1]));
+                  }
 
 
                   if (isexternalthread)
                   {
-                      Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => SetMainText(doc.GetText()));
+                      var text = doc.GetText();
+                      Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => SetMainText(text.Item1,text.Item2));
                   }
                   else
                   {
-                      SetMainText(doc.GetText());
+                      var text = doc.GetText();
+                      SetMainText(text.Item1,text.Item2);
                   }
 
                   PrintLineDebugMenu(json.ToString());
@@ -648,6 +670,8 @@ public partial class MainWindow : Window
           }
           //  }
   }
+
+  return tmpaid;
   // }
     }
     private void OpenDocButtonCallback(object? sender, RoutedEventArgs e)
@@ -728,7 +752,8 @@ try
   doc = new GoogleDoc(parsed!, jsons.ToArray()!);
   doc.id = doc_id;
   //await doc.GetSessionId();
-  SetMainText(doc.GetText());
+  var text = doc.GetText();
+  SetMainText(text.Item1,text.Item2);
 
   ActiveElement(FeelingLuckyButton,false,true);
   ActiveElement(OpenDebugMenuButton,false,true);
@@ -747,7 +772,8 @@ try
   PrintLineDebugMenu($"Document loaded successfully in {watch.ElapsedMilliseconds} ms.");
   SaveKeys.lastopened = doc_id;
   JsonParsing.SaveKeys(SaveKeys);
-  PrintLineDebugMenu(doc.GetText());
+  var text2 = doc.GetText();
+  PrintLineDebugMenu(text2.Item1);
  // File.WriteAllText("items.txt",await NetworkManager.GetRequest("https://drivefrontend-pa.clients6.google.com/v1/items:list"/*"[25,\"https://docs.google.com/document/u/0/?usp=docs_web\",25,\"en\",\"ca\",1,null,0,0,\"\",\"\",1,0,null,72175901,[[1,9,13],0,1,1],[1],null,0,1,\"CAMSIhUn9NL9N67auQayvgTkiQWnBp6WpgL58FLkoEXMsBP6gR0=\",{\"1001\":1}]"*/,true));
   // File.WriteAllText("BindTest.txt",await NetworkManager.GetRequest(
  // "https://docs.google.com/document/d/1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI/bind?id=1rbtpzc2QUrT0nT60ZMSlELxujgHzw2UUxn3xmu7z2pI&sid=5e31d1095e7c74c5&token=AJagN6Q3L3VTlm0lH1eRvrcxnAZY:1788285353340&ouid=107343423057709043354&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&lsq=1788285346255&vc=1&c=1&w=1&flr=0&gsi=0&smv=2147483647&smb=[2147483647, oAMQAg==]&cimpl=1&RID=rpc&SID=8EC8391587DD515B&CI=0&AID=2&TYPE=xmlhttp&zx=lwqqs9qya0r7&t=1"));
@@ -827,7 +853,16 @@ catch (HttpRequestException err)
       //File.WriteAllText("BindGetRequestTest.txt",await NetworkManager.GetRequest($"https://docs.google.com/document/d/{docid}/bind?id={docid}&includes_info_params=true&cros_files=false&nded=false&VER=8&tab=t.0&vc=1&c=1&w=1&flr=0&gsi=0&cimpl=1&RID=rpc&CI=0&AID=2&TYPE=xmlhttp&zx=lwq349tga0r7&t=1" + $"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb=[{int.MaxValue.ToString()},oAMQAg==]"));
       //PrintLineDebugMenu("BIND TEST END");
       var aid = jsonobj[jsonobj.Count - 1][0];
-      await BindToDoc($"&SID={postsid}&AID={aid}"/*$"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}"*/,true);
+      while (true)
+      {
+          var tmpaid = await BindToDoc(
+              $"&SID={postsid}&AID={aid}" /*$"&SID={SID}&token={token}&smv={int.MaxValue}&lsq=1788{lsq}&smb={$"[{int.MaxValue},oAMQAg==]".UrlEncode()}"*/,
+              true);
+          if (tmpaid != "")
+          {
+              aid = tmpaid;
+          }
+      }
     }
 
     public async Task AnimateHeight(InputElement element, double fullheight, double duration = 0.2, double targetheight = 0, double resolution = 30)
@@ -982,7 +1017,8 @@ catch (HttpRequestException err)
                     {
                         doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(edit.Params[1].Length, pos);
-                        SetMainText(doc.GetText());
+                        var text = doc.GetText();
+                        SetMainText(text.Item1, text.Item2);
                         MainText.UpdateLayout();
                         lock (CursorManager.CursorLock)
                         {
@@ -1134,7 +1170,8 @@ catch (HttpRequestException err)
 
                 if (edit != null && doc != null)
                 {
-                    SetMainText(doc.GetText());
+                    var text = doc.GetText();
+                    SetMainText(text.Item1, text.Item2);
                     MainText.UpdateLayout();
                     CursorManager.SetTextLayout(MainText.TextLayout);
                     //CursorManager.MoveCursor();
