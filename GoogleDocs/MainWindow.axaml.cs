@@ -1178,9 +1178,9 @@ catch (HttpRequestException err)
 
 
                 }
-
                 break;
         }
+        e.Handled = true;
     }
 
     private void MainTextKeyUp(object? sender, KeyEventArgs e)

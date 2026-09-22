@@ -119,7 +119,7 @@ public static class CursorManager
                     break;
                 }
 
-                charcnt += line.Length + line.NewLineLength;
+                charcnt += line.Length/* line.NewLineLength*/;
 
                 index++;
             }
@@ -319,7 +319,7 @@ public static class CursorManager
                 verticalmove = false;
             }
 
-           // Position = tmp;
+            Position = tmp;
         }
         return new Vector2((float)box.X, (float)box.Y);
     }

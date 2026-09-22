@@ -175,7 +175,8 @@ public class DocHistory
         {
             Edits.CollectionChanged += (sender, e) =>
             {
-                Console.WriteLine("Document History Changed: " + e.Action);
+               Console.WriteLine("Document History Changed: " + e.Action);
+               Console.WriteLine(JsonConvert.SerializeObject(e.NewItems));
             };
         }
     }
@@ -217,7 +218,7 @@ public class GoogleDoc
         {
             history = new DocHistory(jsons, (string s) =>
             {
-                PrintLineDebugMenu(s);
+                this.PrintLineDebugMenu(s);
                 return true;
             });
         }
