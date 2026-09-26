@@ -1060,6 +1060,15 @@ catch (HttpRequestException err)
                     doc.OffsetAltersAfter(1, pos);
                 }
 
+                if (e.Key == Key.Space)
+                {
+                    edit = new Edit(EditType.Insert,
+                        new string[] { pos.ToString()," "});
+                    Program.mainWindow.PrintLineDebugMenu($"Inserting \" \" at {pos}");
+                    doc.history.Edits.Add(edit);
+                    doc.OffsetAltersAfter(1, pos);
+                }
+
                 if (isNumber)
                 {
                     int letter = e.Key - Key.D0 + 1;

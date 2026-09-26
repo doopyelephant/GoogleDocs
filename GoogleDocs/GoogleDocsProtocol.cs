@@ -107,7 +107,7 @@ public class Edit : INotifyPropertyChanged
                $"{(Type == EditType.Alter ? $"\"ei\" : {int.Parse(Params[2]) + 1}," : "")}" + // Alteration end index
                $"{(Type == EditType.Alter ? $"\"sm\" : {Params[3]}," : "")}" + // Alteration property json string
                $"{(Type == EditType.Insert ? $"\"ibi\" : {int.Parse(Params[0]) + 1}," : "")}" + // Insertion index
-               $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1]}\"," : "")}" + // Insertion string
+               $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1].Replace("\n","\\n")}\"," : "")}" + // Insertion string
                $"{(Type == EditType.Multi ? $"\"mts\" : {Params[0]}" : "")}" + // Multi Contents
                $"{(Type == EditType.Delete ? $"\"si\" : {int.Parse(Params[0]) + 1}," : "")}" + // Delete start index
                $"{(Type == EditType.Delete ? $"\"ei\" : {int.Parse(Params[1]) + 1}," : "")}" // Delete end index
