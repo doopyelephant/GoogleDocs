@@ -107,7 +107,7 @@ public class Edit : INotifyPropertyChanged
                $"{(Type == EditType.Alter ? $"\"ei\" : {int.Parse(Params[2]) + 1}," : "")}" + // Alteration end index
                $"{(Type == EditType.Alter ? $"\"sm\" : {Params[3]}," : "")}" + // Alteration property json string
                $"{(Type == EditType.Insert ? $"\"ibi\" : {int.Parse(Params[0]) + 1}," : "")}" + // Insertion index
-               $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1].Replace("\n","\\n")}\"," : "")}" + // Insertion string
+               $"{(Type == EditType.Insert ? $"\"s\" : \"{Params[1].Replace("\n","\\n").Replace("\r","\\r")}\"," : "")}" + // Insertion string
                $"{(Type == EditType.Multi ? $"\"mts\" : {Params[0]}" : "")}" + // Multi Contents
                $"{(Type == EditType.Delete ? $"\"si\" : {int.Parse(Params[0]) + 1}," : "")}" + // Delete start index
                $"{(Type == EditType.Delete ? $"\"ei\" : {int.Parse(Params[1]) + 1}," : "")}" // Delete end index
@@ -209,6 +209,7 @@ public class GoogleDoc
     public int reqId = 0;
     private SaveKeys savekeys;
     public static MainWindow loggingdest;
+    public List<int> NewlineIndices;
 
     public GoogleDoc(JObject json1, JObject[] jsons)
     {
@@ -695,17 +696,18 @@ public class GoogleDoc
         }*/
 
         int offset = 0;
+
         foreach (var edit in expanded)
         {
             if (edit.Type == EditType.Insert)
             {
                 if (Convert.ToInt32(edit.Params[0]) == content.Length)
                 {
-                    content += edit.Params[1].Replace("\\n","\n");
+                    content += edit.Params[1].Replace("\\n","\n").Replace("\\r","\r");
                 }
                 else if (Convert.ToInt32(edit.Params[0]) < content.Length)
                 {
-                    content = content.Substring(0, Convert.ToInt32(edit.Params[0])) + edit.Params[1].Replace("\\n","\n") + content.Substring(Convert.ToInt32(edit.Params[0]));
+                    content = content.Substring(0, Convert.ToInt32(edit.Params[0])) + edit.Params[1].Replace("\\n","\n").Replace("\\r","\r") + content.Substring(Convert.ToInt32(edit.Params[0]));
                 }
                 else
                 {
@@ -727,7 +729,7 @@ public class GoogleDoc
                 }
             }
         }
-
+        var newlines = new List<int>();
         int since = 0;
         uint until = savekeys.wraplength;
         int index = 0;
@@ -742,6 +744,7 @@ public class GoogleDoc
             {
                 since = 0;
                 content = content.Insert(index, "\n");
+                newlines.Add(index);
                // OffsetAltersAfter(1, index, ref expanded, false);
                for (int i = 0; i < expanded.Count; i++)
                {
@@ -764,6 +767,8 @@ public class GoogleDoc
 
             index++;
         }
+
+        NewlineIndices = newlines;
         var riches = new List<RichText>();
 
         foreach(var edit in expanded)

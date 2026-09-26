@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
 using System.Threading;
 using Avalonia.Controls;
@@ -119,13 +120,35 @@ public static class CursorManager
                     break;
                 }
 
-                charcnt += line.Length/* line.NewLineLength*/;
+               charcnt += line.TextRuns.Select(x =>
+                {
+                    return x.Text.ToString().Replace("\n", "").Replace("\r", "").Length;
+                }).Sum() + line.NewLineLength;
+               //charcnt += line.Length + line.NewLineLength;
 
-                index++;
+            index++;
             }
 
             return charcnt;
         }
+    }
+
+    public static int OffsetCursorAfterNewlines(GoogleDoc doc,int cursorpos)
+    {
+        var newlines = doc.NewlineIndices;
+        var offset = 0;
+        foreach (var newline in newlines)
+        {
+            if (newline < cursorpos)
+            {
+                offset++;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return cursorpos - offset;
     }
 
     public static Vector2 GetOffsetFromCharacter(Vector2? position = null)

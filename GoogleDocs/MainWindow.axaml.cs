@@ -996,6 +996,11 @@ catch (HttpRequestException err)
             default:
                 Edit? edit = null;
                 var pos = CursorManager.GetCursorPosition();
+                if (doc != null)
+                {
+                    pos = CursorManager.OffsetCursorAfterNewlines(doc,pos);
+                }
+
                 if (ctrl)
                 {
                     PrintLineDebugMenu($"CTRL+{e.Key} pressed.");
