@@ -404,26 +404,29 @@ public class GoogleDoc
 
     private List<Edit> MergeChanges(List<Edit> unsaved)
     {
+        return unsaved;
         bool[,] haschecked = new bool[unsaved.Count,unsaved.Count];
-        Edit[] mergeda = new Edit[unsaved.Count];
-        unsaved.CopyTo(mergeda);
-        List<Edit> merged = mergeda.ToList();
+        List<Edit> merged = new List<Edit>();
+        foreach (var us in unsaved)
+        {
+            merged.Add(new Edit(us.Type, (string[])us.Params.Clone(), us.IsSaved));
+        }
         bool changed = true;
         while (changed)
         {
             changed = false;
-            unsaved = merged.ToArray().ToList();
+            unsaved = unsaved.Select(e => new Edit(e.Type, (string[])e.Params.Clone(), e.IsSaved)).ToList();
             haschecked = new bool[unsaved.Count,unsaved.Count];
             for (int ai = 0; ai < unsaved.Count; ai++)
             {
-                var a = unsaved[ai];
+                var a = new Edit(unsaved[ai].Type, (string[])unsaved[ai].Params.Clone(),unsaved[ai].IsSaved);
                 for (int bi = 0; bi < unsaved.Count; bi++)
                 {
                     if (changed)
                     {
                         break;
                     }
-                    var b = unsaved[bi];
+                    var b = new Edit(unsaved[bi].Type, (string[])unsaved[bi].Params.Clone(),unsaved[bi].IsSaved);
                     if (haschecked[bi, ai])
                     {
                         continue;
@@ -444,7 +447,7 @@ public class GoogleDoc
                     {
                         if (int.Parse(a.Params[0]) + a.Params[1].Length == int.Parse(b.Params[0]))
                         {
-                            var p = a.Params;
+                            var p = (string[])a.Params.Clone();
                             p[1] = a.Params[1] + b.Params[1];
                             var replace = new Edit(a.Type, p, true);
                             var ad = merged.Remove(a);

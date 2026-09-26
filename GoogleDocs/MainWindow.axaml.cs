@@ -24,6 +24,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -60,6 +61,7 @@ public partial class MainWindow : Window
     public GoogleDoc? doc = null;
     private string debugmenulog = "";
     private int rid = 0;
+    public CancellationTokenSource cts = new CancellationTokenSource();
 
 
     public MainWindow()
@@ -67,6 +69,11 @@ public partial class MainWindow : Window
         InitializeComponent();
             this.AddHandler(InputElement.KeyDownEvent, MainTextKeyDown, RoutingStrategies.Tunnel);
             this.AddHandler(InputElement.KeyUpEvent, MainTextKeyUp, RoutingStrategies.Tunnel);
+            Closed += (sender, e) =>
+            {
+                cts.Cancel();
+            };
+
             MainText.AddHandler(InputElement.PointerPressedEvent, MainTextMouseDown, RoutingStrategies.Tunnel);
             Program.mainWindow = this;
             CookieManager.mainWindow = this;
@@ -159,6 +166,7 @@ public partial class MainWindow : Window
     {
         Thread logthread = new Thread(new ThreadStart(LogThread));
         Program.CleanUp.Add(logthread);
+        logthread.IsBackground = true;
         logthread.Start();
     }
 
@@ -228,6 +236,7 @@ public partial class MainWindow : Window
             PrintLineDebugMenu($"Line Length: {line.Length}");
         }
         Thread cursorthread = new Thread(new ThreadStart(UpdateCursorThread));
+        cursorthread.IsBackground = true;
         Program.CleanUp.Add(cursorthread);
         cursorthread.Start();
     }
@@ -269,6 +278,7 @@ public partial class MainWindow : Window
     }
     private void SetMainText(string text,List<RichText>? richTexts = null)
     {
+
         // Start Table \u0010
         //End Table \u0011
        var watch = new Stopwatch();
@@ -512,7 +522,7 @@ public partial class MainWindow : Window
         {
             if (doc != null)
             {
-                Avalonia.Threading.Dispatcher.UIThread.Invoke(() => { doc.Save(); });
+                Avalonia.Threading.Dispatcher.UIThread.Invoke(() => { doc.Save(); },DispatcherPriority.Normal,cts.Token);
             }
 
             Thread.Sleep(1000);
@@ -522,6 +532,7 @@ public partial class MainWindow : Window
     public void StartSaveThread()
     {
         var thread = new Thread(SaveThread);
+        thread.IsBackground = true;
         thread.Start();
     }
 
@@ -641,6 +652,7 @@ public partial class MainWindow : Window
                       continue;
                   }
                   var edit = new Edit(json as JObject,true);
+                  Console.WriteLine("Bind is inserting: " + json);
                   doc.history.Edits.Add(edit);
                   if (edit.Type == EditType.Insert)
                   {
@@ -823,6 +835,7 @@ catch (HttpRequestException err)
     public void StartBindThread()
     {
         var thread = new Thread(BindThread);
+        thread.IsBackground = true;
         thread.Start();
     }
     public async void BindThread()
@@ -956,6 +969,7 @@ catch (HttpRequestException err)
 
     private void MainTextKeyDown(object? sender, KeyEventArgs e)
     {
+        PrintLineDebugMenu("Key Down: " + e.Key);
         switch (e.Key)
         {
             case Key.LeftCtrl:
