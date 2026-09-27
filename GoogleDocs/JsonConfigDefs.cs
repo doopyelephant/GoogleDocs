@@ -76,4 +76,6 @@ public struct SaveKeys
     public bool verbose;
     public uint wraplength;
     public bool cursorupdatelog;
+    public List<string> cachedfonts;
+    public string defaultfont;
 }

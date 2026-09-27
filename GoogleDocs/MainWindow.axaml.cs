@@ -368,7 +368,7 @@ public partial class MainWindow : Window
                             inline.FontSize = Convert.ToDouble(t.Params[0]);
                             break;
                         case RichTextType.Family:
-                            inline.FontFamily = new FontFamily(FontBase, t.Params[0]);
+                            inline.FontFamily = FetchFontFamily(t.Params[0]);
                             break;
                         case RichTextType.Clear:
                             switch (t.Params[0])
@@ -383,7 +383,7 @@ public partial class MainWindow : Window
                                     inline.FontSize = 12;
                                     break;
                                 case "Family":
-                                    inline.FontFamily = new FontFamily(FontBase,"Arial");
+                                    inline.FontFamily = FetchFontFamily(SaveKeys.defaultfont);
                                     break;
                             }
                             break;
@@ -441,6 +441,11 @@ public partial class MainWindow : Window
 
                 PrintLineDebugMenu($"Set main text in {watch.ElapsedMilliseconds} ms");
 
+    }
+
+    private FontFamily FetchFontFamily(string family)
+    {
+        return new FontFamily(FontBase,family);
     }
 
 
