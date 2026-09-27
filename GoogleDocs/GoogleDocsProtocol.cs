@@ -18,7 +18,7 @@ public enum EditType { Insert, Alter, Multi,Delete,Noop,Unknown}
 
 public enum RichTextType
 {
-    Bold,Italic,Underline,Color,Size
+    Bold,Italic,Underline,Color,Size,Family,Clear
 }
 
 public class RichText
@@ -794,6 +794,10 @@ public class GoogleDoc
                                 riches.Add(new RichText(RichTextType.Bold, start,end));
                             }
                         }
+                        else
+                        {
+                            riches.Add(new RichText(RichTextType.Clear, start,end,new []{RichTextType.Bold.ToString()}));
+                        }
                     }
                      if(alteration.ContainsKey("ts_it_i"))
                     {
@@ -806,6 +810,10 @@ public class GoogleDoc
                                 riches.Add(new RichText(RichTextType.Italic, start,end));
                             }
                         }
+                        else
+                        {
+                            riches.Add(new RichText(RichTextType.Clear, start,end,new []{RichTextType.Italic.ToString()}));
+                        }
                     }
 
                     if (alteration.ContainsKey("ts_fs_i"))
@@ -815,6 +823,10 @@ public class GoogleDoc
                         {
                             var size = (int)Convert.ToDouble(alteration["ts_fs"].ToString());
                             riches.Add(new RichText(RichTextType.Size, start,end,new []{size.ToString()}));
+                        }
+                        else
+                        {
+                            riches.Add(new RichText(RichTextType.Clear, start,end,new []{RichTextType.Size.ToString()}));
                         }
                     }
 
@@ -828,6 +840,21 @@ public class GoogleDoc
                             {
                             PrintLineDebugMenu("OP-SET: " + cv["opValue"].ToString());
                             }
+                        }
+                    }
+
+                    if (alteration.ContainsKey("ts_ff_i"))
+                    {
+                        var isunique = !alteration["ts_ff_i"].GetValue<bool>();
+                        if (isunique)
+                        {
+                            var font = alteration["ts_ff"].GetValue<string>();
+                            riches.Add(new RichText(RichTextType.Family, start,end,new []{font}));
+                            PrintLineDebugMenu("Font: " + font);
+                        }
+                        else
+                        {
+                            riches.Add(new RichText(RichTextType.Clear, start,end,new []{RichTextType.Family.ToString()}));
                         }
                     }
                 }

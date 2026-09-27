@@ -25,6 +25,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using HarfBuzzSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -61,6 +62,7 @@ public partial class MainWindow : Window
     public GoogleDoc? doc = null;
     private string debugmenulog = "";
     private int rid = 0;
+    private Uri FontBase = new Uri("https://fonts.googleapis.com");
     public CancellationTokenSource cts = new CancellationTokenSource();
 
 
@@ -364,6 +366,26 @@ public partial class MainWindow : Window
                             break;
                         case RichTextType.Size:
                             inline.FontSize = Convert.ToDouble(t.Params[0]);
+                            break;
+                        case RichTextType.Family:
+                            inline.FontFamily = new FontFamily(FontBase, t.Params[0]);
+                            break;
+                        case RichTextType.Clear:
+                            switch (t.Params[0])
+                            {
+                                case "Bold":
+                                    inline.FontWeight = FontWeight.Normal;
+                                    break;
+                                case "Italic":
+                                    inline.FontStyle = FontStyle.Normal;
+                                    break;
+                                case "Size":
+                                    inline.FontSize = 12;
+                                    break;
+                                case "Family":
+                                    inline.FontFamily = new FontFamily(FontBase,"Arial");
+                                    break;
+                            }
                             break;
                     }
                 }
@@ -1211,7 +1233,7 @@ catch (HttpRequestException err)
                 }
                 break;
         }
-        e.Handled = true;
+       // e.Handled = true;
     }
 
     private void MainTextKeyUp(object? sender, KeyEventArgs e)
