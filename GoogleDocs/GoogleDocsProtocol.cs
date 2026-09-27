@@ -730,7 +730,7 @@ public class GoogleDoc
                 }
             }
         }
-        var newlines = new List<int>();
+       /* var newlines = new List<int>();
         int since = 0;
         uint until = savekeys.wraplength;
         int index = 0;
@@ -769,7 +769,7 @@ public class GoogleDoc
             index++;
         }
 
-        NewlineIndices = newlines;
+        NewlineIndices = newlines;*/
         var riches = new List<RichText>();
 
         foreach(var edit in expanded)

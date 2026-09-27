@@ -120,11 +120,11 @@ public static class CursorManager
                     break;
                 }
 
-               charcnt += line.TextRuns.Select(x =>
+            /*   charcnt += line.TextRuns.Select(x =>
                 {
                     return x.Text.ToString().Replace("\n", "").Replace("\r", "").Length;
-                }).Sum() + line.NewLineLength;
-               //charcnt += line.Length + line.NewLineLength;
+                }).Sum() + line.NewLineLength;*/
+               charcnt += line.Length + line.NewLineLength;
 
             index++;
             }
