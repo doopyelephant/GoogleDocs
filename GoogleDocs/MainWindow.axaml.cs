@@ -362,6 +362,9 @@ public partial class MainWindow : Window
                         case RichTextType.Italic:
                             inline.FontStyle = FontStyle.Italic;
                             break;
+                        case RichTextType.Size:
+                            inline.FontSize = Convert.ToDouble(t.Params[0]);
+                            break;
                     }
                 }
                 MainText.Inlines.Add(inline);

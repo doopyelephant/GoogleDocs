@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -17,7 +18,7 @@ public enum EditType { Insert, Alter, Multi,Delete,Noop,Unknown}
 
 public enum RichTextType
 {
-    Bold,Italic,Underline
+    Bold,Italic,Underline,Color,Size
 }
 
 public class RichText
@@ -804,6 +805,16 @@ public class GoogleDoc
                             {
                                 riches.Add(new RichText(RichTextType.Italic, start,end));
                             }
+                        }
+                    }
+
+                    if (alteration.ContainsKey("ts_fs_i"))
+                    {
+                        var isunique = !alteration["ts_fs_i"].GetValue<bool>();
+                        if (isunique)
+                        {
+                            var size = (int)Convert.ToDouble(alteration["ts_fs"].ToString());
+                            riches.Add(new RichText(RichTextType.Size, start,end,new []{size.ToString()}));
                         }
                     }
 
