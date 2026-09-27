@@ -41,7 +41,7 @@ sudo -v && sudo bash -c "$(curl -fsSL "https://raw.githubusercontent.com/doopyel
 - Edge on Windows runs in the background(even when closed) so Google Docs is unable to fetch Edge's Cookies **(Fix: End Task for Edge & Edge for Game Bar in Task Manager)**
 - Currently only Firefox works(On Windows) for providing Google auth cookies, this is due to ABE(App-Bound-Encryption), see [ChromiumABE.md](ChromiumABE.md)
 ## AI Disclaimer
-I use Github Copilot to write the odd snippet or to bounce ideas off of (large % of commit messages are AI Generated), but 95% of code is human written
+I use Github Copilot to write the odd snippet or to bounce ideas off of (large % of commit messages are AI Generated), but ~95% of code is human written
 ## Stardance
 This is part of [The Stardance Project](https://stardance.hackclub.com)
 
