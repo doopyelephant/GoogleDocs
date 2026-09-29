@@ -41,7 +41,7 @@ public static class CursorManager
     public static Vector2 Position = new(0f,0f);
     private static MainWindow window;
     private static TextBlock? mainText = null;
-    private static TextLayout textlayout;
+    public static TextLayout textlayout;
     public static Vector2 LastCursorPosition = new(0f,0f);
     public static Vector2 LastCursorOffset = new(0f,0f);
     private static SaveKeys SaveKeys;

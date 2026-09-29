@@ -277,6 +277,7 @@ public partial class MainWindow : Window
     {
         var margin = new Thickness(x, y, 0, 0);
       Cursor.Margin = margin;
+
     }
     private void SetMainText(string text,List<RichText>? richTexts = null)
     {
@@ -318,17 +319,24 @@ public partial class MainWindow : Window
                        alike.Sort((x, y) => { return x.end - y.end; });
                        int curend = alike[0].end;
                        List<int> tmpindices = new List<int>();
+                       tmpindices.Add(0);
                        for (int k = 1; k < alike.Count; k++)
                        {
                            if (alike[k].end != curend)
                            {
                                curend = alike[k].end;
-                               stages.Add((alike[k - 1].start, richTexts[k - 1].end, tmpindices.Select(x => alike[x]).ToList()));
+                               stages.Add((alike[k - 1].start, alike[k - 1].end, tmpindices.Select(x => alike[x]).ToList()));
                                tmpindices.Clear();
+                               tmpindices.Add(k);
                            }
                            else
                            {
                                tmpindices.Add(k);
+                           }
+
+                           if (k == alike.Count - 1)
+                           {
+                               stages.Add((alike[k].start, alike[k].end, tmpindices.Select(x => alike[x]).ToList()));
                            }
                        }
                    }
@@ -354,23 +362,29 @@ public partial class MainWindow : Window
                    MainText.Inlines.Add(new Run(text.Substring(inserted, start - inserted)));
                }
                 var inline = new Run(text.Substring(start, end - start));
+               PrintLineDebugMenu($"Inserting inline \"{inline.Text}\" with:");
                 foreach (var t in texts)
                 {
                     switch (t.Type)
                     {
                         case RichTextType.Bold:
                             inline.FontWeight = FontWeight.Bold;
+                            PrintLineDebugMenu($"Bold");
                             break;
                         case RichTextType.Italic:
                             inline.FontStyle = FontStyle.Italic;
+                            PrintLineDebugMenu($"Italic");
                             break;
                         case RichTextType.Size:
                             inline.FontSize = Convert.ToDouble(t.Params[0]);
+                            PrintLineDebugMenu($"Size: {t.Params[0]}");
                             break;
                         case RichTextType.Family:
                             inline.FontFamily = FetchFontFamily(t.Params[0]);
+                            PrintLineDebugMenu($"Family: {t.Params[0]}");
                             break;
                         case RichTextType.Clear:
+                            PrintLineDebugMenu($"Clearing: {t.Params[0]}");
                             switch (t.Params[0])
                             {
                                 case "Bold":
@@ -1353,7 +1367,12 @@ catch (HttpRequestException err)
 
             foreach (var i in Changed)
             {
-                Vector2 start = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item1,0));
+                var tmpstart = CursorManager.textlayout.HitTestTextPosition(Selections[i].Item1);
+                Vector2 start = new Vector2()
+                {
+                    X = (float)tmpstart.X,
+                    Y = (float)tmpstart.Y
+                };
                 if (Selections[i].Item1 == Selections[i].Item2)
                 {
                     var r = SelectionRects[i];
@@ -1365,7 +1384,12 @@ catch (HttpRequestException err)
                 }
                 else
                 {
-                    Vector2 end = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item2,0));
+                    var tmpend = CursorManager.textlayout.HitTestTextPosition(Selections[i].Item2);
+                    Vector2 end = new Vector2()
+                    {
+                        X = (float)tmpend.X,
+                        Y = (float)tmpend.Y
+                    };
                     var r = SelectionRects[i];
                     r.Width = Math.Abs(start.X - end.X) + 2;
                     r.Height = 20;
