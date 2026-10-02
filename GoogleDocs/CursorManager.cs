@@ -151,7 +151,7 @@ public static class CursorManager
         return cursorpos - offset;
     }
 
-    public static Vector2 GetOffsetFromCharacter(Vector2? position = null)
+    public static Vector2 GetOffsetFromCharacter(Vector2? position = null,bool save = true)
     {
         var box = new Avalonia.Rect();
         Vector2 tmp = new Vector2();
@@ -342,8 +342,12 @@ public static class CursorManager
                 verticalmove = false;
             }
 
-            Position = tmp;
+            if (save)
+            {
+                Position = tmp;
+            }
         }
+
         return new Vector2((float)box.X, (float)box.Y);
     }
 

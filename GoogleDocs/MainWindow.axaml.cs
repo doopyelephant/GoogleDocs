@@ -738,14 +738,19 @@ public partial class MainWindow : Window
     {
         if (SaveKeys.verbose)
         {
-          /*  var homepage = await NetworkManager.GetRequest("https://docs.google.com/document/u/0",true,new [] {("Sec-Fetch-Dest","document"),("Priority","u=0, i"),("Sec-Fetch-Mode","navigate"),("Sec-Fetch-Site","none"),("Sec-Fetch-User","?1"),("Sec-GPC","1"),("Upgrade-Insecure-Requests","1")}.ToList());
-            File.WriteAllText("homepage.txt",homepage);
-            var key = homepage.SubstringAfter("client_key\":\"").SubstringBefore("\"");//* "AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0";
-            File.WriteAllText("homekey.txt",key);
-            File.WriteAllText("items.txt",
-                await NetworkManager.PostRequest($"https://drivefrontend-pa.clients6.google.com/v1/changes:list?key={key}",
-                    "[[null,1,null,null,1],[33501,1000]]",true,new [] {("authorization","SAPISIDHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID1PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID3PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u")}.ToList()));
-      */ }
+            var testingitems = await NetworkManager.PostRequest(
+                "https://drivefrontend-pa.clients6.google.com/v1/items:list?key=AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0",
+                "", true);
+            File.WriteAllText("items.txt", testingitems);
+            /*  var homepage = await NetworkManager.GetRequest("https://docs.google.com/document/u/0",true,new [] {("Sec-Fetch-Dest","document"),("Priority","u=0, i"),("Sec-Fetch-Mode","navigate"),("Sec-Fetch-Site","none"),("Sec-Fetch-User","?1"),("Sec-GPC","1"),("Upgrade-Insecure-Requests","1")}.ToList());
+              File.WriteAllText("homepage.txt",homepage);
+              var key = homepage.SubstringAfter("client_key\":\"").SubstringBefore("\"");//* "AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0";
+              File.WriteAllText("homekey.txt",key);
+              File.WriteAllText("items.txt",
+                  await NetworkManager.PostRequest($"https://drivefrontend-pa.clients6.google.com/v1/changes:list?key={key}",
+                      "[[null,1,null,null,1],[33501,1000]]",true,new [] {("authorization","SAPISIDHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID1PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID3PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u")}.ToList()));
+        */
+        }
         var watch = new Stopwatch();
         watch.Start();
 SetMainText("Loading...");
@@ -1326,32 +1331,36 @@ catch (HttpRequestException err)
 
     public void UpdateSelections()
     {
-        if (Selections == null)
+        lock (CursorManager.CursorLock)
         {
-            return;
-        }
-        if (Selections.Count != SelectionRects.Count)
-        {
-            while (Selections.Count > SelectionRects.Count)
+            if (Selections == null)
             {
-                var r = new Rectangle();
-                r.Height = 20;
-                r.VerticalAlignment = VerticalAlignment.Top;
-                r.HorizontalAlignment = HorizontalAlignment.Left;
-                r.Fill = new SolidColorBrush(Color.FromRgb(20,100,200),.2);
-                SelectionParent.Children.Add(r);
-                SelectionRects.Add(r);
-
+                return;
             }
-            while (Selections.Count < SelectionRects.Count)
+
+            if (Selections.Count != SelectionRects.Count)
             {
-                var r = SelectionRects[SelectionRects.Count - 1];
-                SelectionParent.Children.Remove(r);
-                SelectionRects.Remove(r);
-            }
-        }
+                while (Selections.Count > SelectionRects.Count)
+                {
+                    var r = new Rectangle();
+                    r.Height = 20;
+                    r.VerticalAlignment = VerticalAlignment.Top;
+                    r.HorizontalAlignment = HorizontalAlignment.Left;
+                    r.Fill = new SolidColorBrush(Color.FromRgb(20, 100, 200), .2);
+                    SelectionParent.Children.Add(r);
+                    SelectionRects.Add(r);
 
-        List<int> Changed = new List<int>();
+                }
+
+                while (Selections.Count < SelectionRects.Count)
+                {
+                    var r = SelectionRects[SelectionRects.Count - 1];
+                    SelectionParent.Children.Remove(r);
+                    SelectionRects.Remove(r);
+                }
+            }
+
+            List<int> Changed = new List<int>();
             for (int i = 0; i < Selections.Count; i++)
             {
                 if (PrevSelections.Count <= i)
@@ -1359,6 +1368,7 @@ catch (HttpRequestException err)
                     Changed.Add(i);
                     continue;
                 }
+
                 if (Selections[i] != PrevSelections[i])
                 {
                     Changed.Add(i);
@@ -1367,7 +1377,8 @@ catch (HttpRequestException err)
 
             foreach (var i in Changed)
             {
-                var tmpstart = CursorManager.textlayout.HitTestTextPosition(Selections[i].Item1);
+                var tmpstart = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item1,0),false);
+                PrintLineDebugMenu("Selection Start: " + tmpstart + " " + Selections[i].Item1);
                 Vector2 start = new Vector2()
                 {
                     X = (float)tmpstart.X,
@@ -1378,13 +1389,14 @@ catch (HttpRequestException err)
                     var r = SelectionRects[i];
                     r.Width = 2;
                     r.Height = 20;
-                    var margin = new Thickness(start.X, start.Y, 0, 0);
+                    var margin = new Thickness(start.X, start.Y, 0, 0);\
                     r.Margin = margin;
                     SelectionRects[i] = r;
                 }
                 else
                 {
-                    var tmpend = CursorManager.textlayout.HitTestTextPosition(Selections[i].Item2);
+                    var tmpend = CursorManager.GetOffsetFromCharacter(new Vector2(Selections[i].Item2,0),false);
+                    PrintLineDebugMenu("Selection End: " + tmpend + " " + Selections[i].Item2);
                     Vector2 end = new Vector2()
                     {
                         X = (float)tmpend.X,
@@ -1393,14 +1405,17 @@ catch (HttpRequestException err)
                     var r = SelectionRects[i];
                     r.Width = Math.Abs(start.X - end.X) + 2;
                     r.Height = 20;
-                    var margin = new Thickness(start.X + (end.X - start.X), start.Y, 0, 0);
+                    var margin = new Thickness(end.X, start.Y, 0, 0);
                     r.Margin = margin;
                     SelectionRects[i] = r;
                 }
 
             }
+          //  PrevSelections = Selections;
 
+        }
     }
+
 
     private void Exit(object? sender, RoutedEventArgs e)
     {
