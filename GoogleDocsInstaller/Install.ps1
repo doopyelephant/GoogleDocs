@@ -115,5 +115,5 @@ if($IsLinux)
     Write-Output $DesktopEntry > "~/.local/share/applications/GoogleDocs.desktop"
 }
     $writer.WriteLine("Progress: 95")
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/GoogleDocs/Uninstall.ps1" -OutFile "$AppData/Release/GoogleDocs/Uninstall.ps1"
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Uninstall.ps1" -OutFile "$AppData/Release/GoogleDocs/Uninstall.ps1"
     $writer.WriteLine("Progress: 100")
