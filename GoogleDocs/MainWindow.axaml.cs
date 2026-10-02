@@ -1389,7 +1389,7 @@ catch (HttpRequestException err)
                     var r = SelectionRects[i];
                     r.Width = 2;
                     r.Height = 20;
-                    var margin = new Thickness(start.X, start.Y, 0, 0);\
+                    var margin = new Thickness(start.X, start.Y, 0, 0);
                     r.Margin = margin;
                     SelectionRects[i] = r;
                 }
