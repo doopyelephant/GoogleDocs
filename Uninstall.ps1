@@ -1,5 +1,7 @@
 ﻿$ProgressPreference = 'SilentlyContinue'
-if($IsWindows)
+$CustomIsWindows = [System.Environment]::OSVersion.Platform -eq 'Win32NT'
+$CustomIsLinux = [Environment]::OSVersion.Platform -eq 'Unix'
+if($CustomIsWindows)
 {
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator"))
     {
@@ -21,7 +23,7 @@ if($IsWindows)
         Write-Warning "The program registry key was not found."
     }
 }
-if($IsLinux)
+if($CustomIsLinux)
 {
     Remove-Item -Recurse -Force "/opt/GoogleDocs"
     Remove-Item -Force "~/.local/share/applications/GoogleDocs.desktop"
