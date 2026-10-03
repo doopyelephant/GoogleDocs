@@ -15,7 +15,7 @@ if($CustomIsWindows)
     $RegistryPath = "HKLM:/Software/Microsoft/Windows/CurrentVersion/Uninstall/$RegistryKeyName"
     if (Test-Path $RegistryPath)
     {
-        Remove-Item -Path $RegistryPath -Recurper -Force
+        Remove-Item -Path $RegistryPath -Recurse -Force
         Write-Host "Successfully removed the program entry from Add/Remove Programs." -ForegroundColor Green
     }
     else
