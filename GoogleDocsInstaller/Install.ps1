@@ -3,7 +3,8 @@
     [string]$Mode = "External"
 )
 $ProgressPreference = 'SilentlyContinue'
-
+$CustomIsWindows = [System.Environment]::OSVersion.Platform -eq 'Win32NT'
+$CustomIsLinux = [Environment]::OSVersion.Platform -eq 'Unix'
 if($IsWindows)
 {
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator"))
@@ -27,22 +28,22 @@ $client.Connect(5000)
 Write-Host "Connected!"
 $writer = New-Object System.IO.StreamWriter($client)
 $AppData = ""
-if($IsWindows)
+if($CustomIsWindows)
 {
     $AppData = "$env:USERPROFILE/AppData/Local/GoogleDocs"
 }
-if($IsLinux)
+if($CustomIsLinux)
 {
     $AppData = "/opt/GoogleDocs"
 }
 mkdir $AppData
 $Release = "$AppData/Release.zip"
 $OSarch = ""
-if($IsWindows)
+if($CustomIsWindows)
 {
     $OSarch = $env:PROCESSOR_ARCHITECTURE
 }
-if($IsLinux)
+if($CustomIsLinux)
 {
     $OSarch = (uname -m).Trim()
 }
@@ -56,11 +57,11 @@ switch($OSarch)
     'x86'   { Write-Host "x86" }
 }
 $OS = ""
-if($IsWindows)
+if($CustomIsWindows)
 {
     $OS = "windows"
 }
-if($IsLinux)
+if($CustomIsLinux)
 {
     $OS = "linux"
 }
@@ -77,12 +78,12 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDo
 $writer.WriteLine("Progress: 80")
 Set-Location "$AppData/Release/GoogleDocs"
 $ExePath = "$AppData/Release/GoogleDocs/GoogleDocs.exe"
-if($IsLinux)
+if($CustomIsLinux)
 {
 $ExePath = "$AppData/Release/GoogleDocs/GoogleDocs"
 }
 $IcoPath = "$AppData/Release/GoogleDocs/icon.ico"
-if($IsWindows)
+if($CustomIsWindows)
 {
     $WScript = New-Object -ComObject WScript.Shell
     $Shortcut = $WScript.CreateShortcut("$env:USERPROFILE/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/GoogleDocs.lnk")
@@ -109,7 +110,7 @@ if($IsWindows)
     New-ItemProperty -Path $RegistryPath -Name "InstallLocation" -Value $InstallLocation -PropertyType String -Force | Out-Null
     New-ItemProperty -Path $RegistryPath -Name "UninstallString" -Value $UninstallCommand -PropertyType String -Force | Out-Null
 }
-if($IsLinux)
+if($CustomCustomIsLinux)
 {
     $DesktopEntry = "[Desktop Entry]`nType=Application`nTerminal=false`nName=Google Docs`nExec=$ExePath`nIcon=$IcoPath`nCategories=Office";
     Write-Output $DesktopEntry > "~/.local/share/applications/GoogleDocs.desktop"

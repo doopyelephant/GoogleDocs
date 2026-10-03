@@ -1,21 +1,23 @@
 $ProgressPreference = 'SilentlyContinue'
 $AppData = ""
-if($IsWindows)
+$CustomIsWindows = [System.Environment]::OSVersion.Platform -eq 'Win32NT'
+$CustomIsLinux = [Environment]::OSVersion.Platform -eq 'Unix'
+if($CustomIsWindows)
 {
     $AppData = "$env:USERPROFILE/AppData/Local/GoogleDocs"
 }
-if($IsLinux)
+if($CustomIsLinux)
 {
     $AppData = "/opt/GoogleDocs"
 }
 mkdir $AppData
 $Release = "$AppData/InstallerRelease.zip"
 $OSarch = ""
-if($IsWindows)
+if($CustomIsWindows)
 {
     $OSarch = $env:PROCESSOR_ARCHITECTURE
 }
-if($IsLinux)
+if($CustomIsLinux)
 {
     $OSarch = (uname -m).Trim()
 }
@@ -29,7 +31,7 @@ switch($OSarch)
     'x86'   { Write-Host "x86" }
 }
 $OS = ""
-if($IsWindows)
+if($CustomIsWindows)
 {
     $OS = "windows"
     Write-Host "Using Windows Version"
@@ -37,7 +39,7 @@ if($IsWindows)
 else{
     Write-Host "Not using windows version"
 }
-if($IsLinux)
+if($CustomIsLinux)
 {
     $OS = "linux"
     Write-Host "Using linux version"
@@ -60,11 +62,11 @@ Invoke-WebRequest -Uri $installzip -OutFile "$Release"
 mkdir "$AppData/InstallerRelease"
 Expand-Archive -Path $Release -DestinationPath "$AppData/InstallerRelease"
 Remove-Item -Force $Release
-if($IsWindows)
+if($CustomIsWindows)
 {
     & "$AppData/InstallerRelease/Installer/GoogleDocsInstaller.exe"
 }
-if($IsLinux)
+if($CustomIsLinux)
 {
     $installerpath = "$AppData/InstallerRelease/Installer/GoogleDocsInstaller"
     chmod +x $installerpath
