@@ -10,6 +10,10 @@ if($CustomIsWindows)
         Exit
     }
     Remove-Item -Recurse -Force "$env:USERPROFILE/AppData/Local/GoogleDocs"
+    Remove-Item -Recurse -Force "D:/AppData/Local/GoogleDocs/"
+    Remove-Item -Recurse -Force "E:/AppData/Local/GoogleDocs/"
+    Remove-Item -Recurse -Force "F:/AppData/Local/GoogleDocs/"
+    Remove-Item -Recurse -Force "G:/AppData/Local/GoogleDocs/"
     Remove-Item -Force "$env:USERPROFILE/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/GoogleDocs.lnk"
     $RegistryKeyName = "GoogleDocs"
     $RegistryPath = "HKLM:/Software/Microsoft/Windows/CurrentVersion/Uninstall/$RegistryKeyName"

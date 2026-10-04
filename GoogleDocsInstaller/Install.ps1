@@ -32,6 +32,10 @@ if($CustomIsWindows -and $Drive -eq "C:/")
 {
     $AppData = "$env:USERPROFILE/AppData/Local/GoogleDocs"
 }
+if($CustomIsWindows -and $Drive -ne "C:/")
+{
+    $AppData = "$Drive/AppData/Local/GoogleDocs/User/$env:USERPROFILE"
+}
 if($CustomIsLinux)
 {
     $AppData = "/opt/GoogleDocs"
