@@ -5,7 +5,7 @@
 $ProgressPreference = 'SilentlyContinue'
 $CustomIsWindows = [System.Environment]::OSVersion.Platform -eq 'Win32NT'
 $CustomIsLinux = [Environment]::OSVersion.Platform -eq 'Unix'
-if($IsWindows)
+if($CustomIsWindows)
 {
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator"))
     {
@@ -72,10 +72,13 @@ if($libc -match "musl")
 }
 Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v1.0.0-exp/GoogleDocs-${OS}-${OSarch}.zip" -OutFile "$Release"
 $writer.WriteLine("Progress: 60")
+$writer.Flush()
 Expand-Archive -Path $Release -DestinationPath "$AppData/Release"
 $writer.WriteLine("Progress: 70")
+$writer.Flush()
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/GoogleDocs/DocsLogo.ico" -OutFile "$AppData/Release/GoogleDocs/icon.ico"
 $writer.WriteLine("Progress: 80")
+$writer.Flush()
 Set-Location "$AppData/Release/GoogleDocs"
 $ExePath = "$AppData/Release/GoogleDocs/GoogleDocs.exe"
 if($CustomIsLinux)
@@ -109,6 +112,8 @@ if($CustomIsWindows)
     New-ItemProperty -Path $RegistryPath -Name "Publisher" -Value $Publisher -PropertyType String -Force | Out-Null
     New-ItemProperty -Path $RegistryPath -Name "InstallLocation" -Value $InstallLocation -PropertyType String -Force | Out-Null
     New-ItemProperty -Path $RegistryPath -Name "UninstallString" -Value $UninstallCommand -PropertyType String -Force | Out-Null
+    $writer.WriteLine("Progress: 90")
+    $writer.Flush()
 }
 if($CustomCustomIsLinux)
 {
