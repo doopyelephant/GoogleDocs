@@ -11,7 +11,7 @@ if($CustomIsWindows)
     }
     try
     {
-        Remove-Item -Recurse -Force "$env:USERPROFILE/AppData/Local/GoogleDocs"  -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force "$env:USERPROFILE/AppData/Local/GoogleDocs"
     }
     catch [System.IO.IOException] {
         Write-Warning "Failed to delete: The file is locked or in use by another process."
@@ -22,7 +22,7 @@ if($CustomIsWindows)
     }
     try
     {
-        Remove-Item -Recurse -Force "D:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force "D:/AppData/Local/GoogleDocs/"
     }
     catch [System.IO.IOException] {
         Write-Warning "Failed to delete: The file is locked or in use by another process."
@@ -33,7 +33,7 @@ if($CustomIsWindows)
     }
     try
     {
-        Remove-Item -Recurse -Force "E:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force "E:/AppData/Local/GoogleDocs/"
     }
     catch [System.IO.IOException] {
         Write-Warning "Failed to delete: The file is locked or in use by another process."
@@ -44,7 +44,7 @@ if($CustomIsWindows)
     }
     try
     {
-        Remove-Item -Recurse -Force "F:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force "F:/AppData/Local/GoogleDocs/"
     }
     catch [System.IO.IOException] {
         Write-Warning "Failed to delete: The file is locked or in use by another process."
@@ -55,7 +55,7 @@ if($CustomIsWindows)
     }
     try
     {
-        Remove-Item -Recurse -Force "G:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force "G:/AppData/Local/GoogleDocs/"
     }
     catch [System.IO.IOException] {
         Write-Warning "Failed to delete: The file is locked or in use by another process."
