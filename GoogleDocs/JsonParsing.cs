@@ -9,7 +9,9 @@ namespace GoogleDocs;
 
 public static class JsonParsing
 {
+private static bool haschanged = true;
 
+private static SaveKeys SaveKeysCache;
 // Exact extraction from raw text: finds first {...} while handling nested braces and quoted strings.
 public static bool TryExtractFirstJsonObject(
     string input,
@@ -204,6 +206,7 @@ public static bool TryReadLengthPrefixedSegment(
 
     public static void SaveKeys(SaveKeys keys)
     {
+        SaveKeysCache = keys;
         string json = JsonConvert.SerializeObject(keys, Formatting.Indented);
         File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\SaveKeys.json", json);
     }
@@ -219,20 +222,29 @@ public static bool TryReadLengthPrefixedSegment(
 
     public static SaveKeys GetSaveKeys()
     {
-        string json = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\SaveKeys.json");
-        var SaveKeys = JsonConvert.DeserializeObject<SaveKeys>(json);
-        if (SaveKeys.promptcacherequests == null)
+        if (haschanged)
         {
-            SaveKeys.promptcacherequests = new List<string>();
-            SaveKeys.promptcache = new List<int>();
-        }
+            string json = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\SaveKeys.json");
+            var SaveKeys = JsonConvert.DeserializeObject<SaveKeys>(json);
+            if (SaveKeys.promptcacherequests == null)
+            {
+                SaveKeys.promptcacherequests = new List<string>();
+                SaveKeys.promptcache = new List<int>();
+            }
 
-        if (SaveKeys.cacherequests == null)
-        {
-            SaveKeys.cacherequests = new List<string>();
-            SaveKeys.cache = new List<string>();
+            if (SaveKeys.cacherequests == null)
+            {
+                SaveKeys.cacherequests = new List<string>();
+                SaveKeys.cache = new List<string>();
+            }
+            SaveKeysCache = SaveKeys;
+            haschanged = false;
+            return SaveKeys;
         }
-        return SaveKeys;
+        else
+        {
+            return SaveKeysCache;
+        }
     }
 
 
