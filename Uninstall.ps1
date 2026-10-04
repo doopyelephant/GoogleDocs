@@ -9,12 +9,12 @@ if($CustomIsWindows)
         Start-Process powershell.exe -ArgumentList $arguments -Verb RunAs
         Exit
     }
-    Remove-Item -Recurse -Force "$env:USERPROFILE/AppData/Local/GoogleDocs"
-    Remove-Item -Recurse -Force "D:/AppData/Local/GoogleDocs/"
-    Remove-Item -Recurse -Force "E:/AppData/Local/GoogleDocs/"
-    Remove-Item -Recurse -Force "F:/AppData/Local/GoogleDocs/"
-    Remove-Item -Recurse -Force "G:/AppData/Local/GoogleDocs/"
-    Remove-Item -Force "$env:USERPROFILE/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/GoogleDocs.lnk"
+    Remove-Item -Recurse -Force "$env:USERPROFILE/AppData/Local/GoogleDocs"  -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force "D:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force "E:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force "F:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force "G:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+    Remove-Item -Force "$env:USERPROFILE/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/GoogleDocs.lnk"  -ErrorAction SilentlyContinue
     $RegistryKeyName = "GoogleDocs"
     $RegistryPath = "HKLM:/Software/Microsoft/Windows/CurrentVersion/Uninstall/$RegistryKeyName"
     if (Test-Path $RegistryPath)
@@ -29,6 +29,6 @@ if($CustomIsWindows)
 }
 if($CustomIsLinux)
 {
-    Remove-Item -Recurse -Force "/opt/GoogleDocs"
-    Remove-Item -Force "~/.local/share/applications/GoogleDocs.desktop"
+    Remove-Item -Recurse -Force "/opt/GoogleDocs"  -ErrorAction SilentlyContinue
+    Remove-Item -Force "~/.local/share/applications/GoogleDocs.desktop"  -ErrorAction SilentlyContinue
 }
