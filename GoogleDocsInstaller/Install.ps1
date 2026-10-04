@@ -119,7 +119,7 @@ if($CustomIsWindows)
     $writer.WriteLine("Progress: 90")
     $writer.Flush()
 }
-if($CustomCustomIsLinux)
+if($CustomIsLinux)
 {
     $DesktopEntry = "[Desktop Entry]`nType=Application`nTerminal=false`nName=Google Docs`nExec=$ExePath`nIcon=$IcoPath`nCategories=Office";
     Write-Output $DesktopEntry > "~/.local/share/applications/GoogleDocs.desktop"
