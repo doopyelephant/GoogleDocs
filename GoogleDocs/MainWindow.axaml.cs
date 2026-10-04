@@ -183,7 +183,7 @@ public partial class MainWindow : Window
                 snapshot = debugmenulog;
             }
 
-            File.WriteAllText("./log.txt", snapshot);
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\log.txt", snapshot);
             Thread.Sleep(1000);
         }
     }
@@ -677,7 +677,7 @@ public partial class MainWindow : Window
                       {
                           File.Create("siddebug.txt").Dispose();
                       }
-                      File.WriteAllText("siddebug.txt",File.ReadAllText("siddebug.txt") + ", " + json.Parent[4].ToString());
+                      File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\siddebug.txt",File.ReadAllText("siddebug.txt") + ", " + json.Parent[4].ToString());
                   }
                   if (json.Parent[4].Type == JTokenType.String && json.Parent[4].ToString() == NetworkManager.sid)
                   {
@@ -741,7 +741,7 @@ public partial class MainWindow : Window
             var testingitems = await NetworkManager.PostRequest(
                 "https://drivefrontend-pa.clients6.google.com/v1/items:list?key=AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0",
                 "", true);
-            File.WriteAllText("items.txt", testingitems);
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\items.txt", testingitems);
             /*  var homepage = await NetworkManager.GetRequest("https://docs.google.com/document/u/0",true,new [] {("Sec-Fetch-Dest","document"),("Priority","u=0, i"),("Sec-Fetch-Mode","navigate"),("Sec-Fetch-Site","none"),("Sec-Fetch-User","?1"),("Sec-GPC","1"),("Upgrade-Insecure-Requests","1")}.ToList());
               File.WriteAllText("homepage.txt",homepage);
               var key = homepage.SubstringAfter("client_key\":\"").SubstringBefore("\"");//* "AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0";

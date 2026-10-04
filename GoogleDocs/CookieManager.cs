@@ -233,7 +233,7 @@ public static class CookieManager
         else
         {
             File.Copy(Path.Combine(rpath, "Cookies"), Path.Combine(datadir, "Profile\\Network\\Cookies"), true);
-            File.Copy(Path.Combine(rpath, "../../Local State"), Path.Combine(datadir, "Profile\\Local State"), true);
+            File.Copy(Path.Combine(rpath, AppDomain.CurrentDomain.BaseDirectory +  "\\..\\..\\Local State"), Path.Combine(datadir, "Profile\\Local State"), true);
         }
 
         PrintLineDebugMenu("Browser cookie files copied to data directory.");
