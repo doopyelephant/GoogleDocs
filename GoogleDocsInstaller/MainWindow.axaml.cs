@@ -22,6 +22,7 @@ public partial class MainWindow : Window
 {
     public string drive = "";
     public string mode = "";
+    public const bool skipmode = true;
     public MainWindow()
     {
         InitializeComponent();
@@ -34,12 +35,27 @@ public partial class MainWindow : Window
 
     private async void StartSetup(object? sender, RoutedEventArgs e)
     {
-        AnimateOut(StartingWindow,PathSelectWindow);
-        foreach (var radio in PathSelectWindow.Children)
+        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
         {
-            if (radio is RadioButton rb)
+            AnimateOut(StartingWindow, PathSelectWindow);
+            foreach (var radio in PathSelectWindow.Children)
             {
-                rb.IsEnabled = Directory.Exists(rb.Content.ToString());
+                if (radio is RadioButton rb)
+                {
+                    rb.IsEnabled = Directory.Exists(rb.Content.ToString());
+                }
+            }
+        }
+        else if (Environment.OSVersion.Platform == PlatformID.Unix)
+        {
+            if (!skipmode)
+            {
+                AnimateOut(StartingWindow, ModeSelectWindow);
+            }
+            else
+            {
+                UpdateConfirmWindow();
+                AnimateOut(StartingWindow, ConfirmWindow);
             }
         }
     }
@@ -64,21 +80,37 @@ public partial class MainWindow : Window
 
     private void NextPath(object? sender, RoutedEventArgs e)
     {
-    AnimateOut(PathSelectWindow,ModeSelectWindow);
-    }
-    private void NextMode(object? sender, RoutedEventArgs e)
-    {
-         drive = "";
-         mode = "";
-        foreach (var radio in PathSelectWindow.Children)
+        if (!skipmode)
         {
-            if (radio is RadioButton rb)
+            AnimateOut(PathSelectWindow, ModeSelectWindow);
+        }
+        else
+        {
+            UpdateConfirmWindow();
+            AnimateOut(PathSelectWindow,ConfirmWindow);
+        }
+    }
+
+    private void UpdateConfirmWindow()
+    {
+        drive = "";
+        mode = "";
+        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+        {
+            foreach (var radio in PathSelectWindow.Children)
             {
-                if (rb.IsChecked == true)
+                if (radio is RadioButton rb)
                 {
-                    drive = rb.Content.ToString();
+                    if (rb.IsChecked == true)
+                    {
+                        drive = rb.Content.ToString();
+                    }
                 }
             }
+        }
+        else if (Environment.OSVersion.Platform == PlatformID.Unix)
+        {
+            drive = "C:/";
         }
 
         foreach (var radio in ModeSelectWindow.Children)
@@ -91,10 +123,14 @@ public partial class MainWindow : Window
                 }
             }
         }
-    AnimateOut(ModeSelectWindow,ConfirmWindow);
-    DriveConfirm.Text = $"Drive: {drive}";
-    ModeConfirm.Text = $"Mode: {mode}";
+        DriveConfirm.Text = $"Drive: {drive}";
+        ModeConfirm.Text = $"Mode: {mode}";
+    }
 
+    private void NextMode(object? sender, RoutedEventArgs e)
+    {
+        UpdateConfirmWindow();
+    AnimateOut(ModeSelectWindow,ConfirmWindow);
     }
 
     private void ProgressThread()

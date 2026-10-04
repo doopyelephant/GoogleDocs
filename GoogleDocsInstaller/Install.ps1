@@ -28,7 +28,7 @@ $client.Connect(5000)
 Write-Host "Connected!"
 $writer = New-Object System.IO.StreamWriter($client)
 $AppData = ""
-if($CustomIsWindows)
+if($CustomIsWindows -and $Drive -eq "C:/")
 {
     $AppData = "$env:USERPROFILE/AppData/Local/GoogleDocs"
 }
