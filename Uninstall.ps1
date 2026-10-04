@@ -9,11 +9,61 @@ if($CustomIsWindows)
         Start-Process powershell.exe -ArgumentList $arguments -Verb RunAs
         Exit
     }
-    Remove-Item -Recurse -Force "$env:USERPROFILE/AppData/Local/GoogleDocs"  -ErrorAction SilentlyContinue
-    Remove-Item -Recurse -Force "D:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
-    Remove-Item -Recurse -Force "E:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
-    Remove-Item -Recurse -Force "F:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
-    Remove-Item -Recurse -Force "G:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+    try
+    {
+        Remove-Item -Recurse -Force "$env:USERPROFILE/AppData/Local/GoogleDocs"  -ErrorAction SilentlyContinue
+    }
+    catch [System.IO.IOException] {
+        Write-Warning "Failed to delete: The file is locked or in use by another process."
+    }
+    catch {
+        # $_ contains the actual error message
+        Write-Warning "Could not delete file. Reason: $($_.Exception.Message)"
+    }
+    try
+    {
+        Remove-Item -Recurse -Force "D:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+    }
+    catch [System.IO.IOException] {
+        Write-Warning "Failed to delete: The file is locked or in use by another process."
+    }
+    catch {
+        # $_ contains the actual error message
+        Write-Warning "Could not delete file. Reason: $($_.Exception.Message)"
+    }
+    try
+    {
+        Remove-Item -Recurse -Force "E:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+    }
+    catch [System.IO.IOException] {
+        Write-Warning "Failed to delete: The file is locked or in use by another process."
+    }
+    catch {
+        # $_ contains the actual error message
+        Write-Warning "Could not delete file. Reason: $($_.Exception.Message)"
+    }
+    try
+    {
+        Remove-Item -Recurse -Force "F:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+    }
+    catch [System.IO.IOException] {
+        Write-Warning "Failed to delete: The file is locked or in use by another process."
+    }
+    catch {
+        # $_ contains the actual error message
+        Write-Warning "Could not delete file. Reason: $($_.Exception.Message)"
+    }
+    try
+    {
+        Remove-Item -Recurse -Force "G:/AppData/Local/GoogleDocs/"  -ErrorAction SilentlyContinue
+    }
+    catch [System.IO.IOException] {
+        Write-Warning "Failed to delete: The file is locked or in use by another process."
+    }
+    catch {
+        # $_ contains the actual error message
+        Write-Warning "Could not delete file. Reason: $($_.Exception.Message)"
+    }
     Remove-Item -Force "$env:USERPROFILE/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/GoogleDocs.lnk"
     $RegistryKeyName = "GoogleDocs"
     $RegistryPath = "HKLM:/Software/Microsoft/Windows/CurrentVersion/Uninstall/$RegistryKeyName"
