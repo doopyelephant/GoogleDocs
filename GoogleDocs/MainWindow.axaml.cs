@@ -740,7 +740,7 @@ public partial class MainWindow : Window
         {
             var testingitems = await NetworkManager.PostRequest(
                 "https://drivefrontend-pa.clients6.google.com/v1/items:list?key=AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0",
-                "", true);
+                File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\itemlistbody.txt"), true);
             File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\items.txt", testingitems);
             /*  var homepage = await NetworkManager.GetRequest("https://docs.google.com/document/u/0",true,new [] {("Sec-Fetch-Dest","document"),("Priority","u=0, i"),("Sec-Fetch-Mode","navigate"),("Sec-Fetch-Site","none"),("Sec-Fetch-User","?1"),("Sec-GPC","1"),("Upgrade-Insecure-Requests","1")}.ToList());
               File.WriteAllText("homepage.txt",homepage);
