@@ -1,9 +1,30 @@
-# Demoing/Runing
+# Demoing
 
-I am working on a build script & dynamic browser paths to improve this process, I realize that this is a pain right now :)
-*Currently you need to build yourself*
- - You must have the .NET SDK
- - Clone the project
- - Change the browser path in CookieManager.cs
- - Build the project
- - Have fun :)
+## Installing
+
+### Windows
+Paste this into powershell(press windows, type "powershell", it should show "Windows Powershell", then hit enter):
+```
+iwr -useb "https://gitlab.com/doopyelephant/GoogleDocs/-/raw/master/Download&Install.ps1" | iex
+```
+### Linux
+Paste this into your terminal:
+```
+sudo -v && sudo bash -c "$(curl -fsSL "https://gitlab.com/doopyelephant/GoogleDocs/-/raw/master/Download&Install.sh")"
+```
+## Uninstalling
+### Windows
+1. Go to Windows Settings > Apps > Installed Apps 
+2. Search "Google Docs"
+3. Click Three dots > Uninstall
+### Linux
+Execute /opt/GoogleDocs/Release/GoogleDocs/Uninstall.ps1
+
+## Building
+*(assuming in root project directory)*
+
+use ./Build.ps1 projectname
+
+With projectname being "GoogleDocs" for the main application, or "GoogleDocsInstaller" for the installer. 
+
+Note: BuildAndPackageRelease.ps1 packages a .zip for the installer and application for every supported platform
