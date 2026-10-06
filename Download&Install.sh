@@ -148,5 +148,5 @@ echo "Fetching&Executing powershell install script"
             echo "Need root to create installation directory, please rerun with sudo"
             exit
             fi
-curl -sSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.ps1" | pwsh -NoProfile -Command "-"
+curl -sSL "https://gitlab.com/doopyelephant/GoogleDocs/-/raw/master/Download&Install.ps1" | pwsh -NoProfile -Command "-"
 echo "Done!"
