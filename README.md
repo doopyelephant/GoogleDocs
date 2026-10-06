@@ -12,7 +12,7 @@ Paste this into powershell(press windows, type "powershell", it should show "Win
 iwr -useb "https://gitlab.com/doopyelephant/GoogleDocs/-/raw/master/Download&Install.ps1" | iex
 ```
 ### Linux
-Paste this into your terminal [⚠️⚠️UNTESTED⚠️⚠️(should work though)]:
+Paste this into your terminal:
 ```
 sudo -v && sudo bash -c "$(curl -fsSL "https://gitlab.com/doopyelephant/GoogleDocs/-/raw/master/Download&Install.sh")"
 ```
