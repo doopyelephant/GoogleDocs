@@ -55,6 +55,15 @@ public static class Utils
         }
         return str.Substring(0, index) + replace + str.Substring(index + search.Length);
     }
+    public static string ReplaceLast(this string str, string search, string replace)
+    {
+        int index = str.LastIndexOf(search, StringComparison.Ordinal);
+        if (index == -1)
+        {
+            return str;
+        }
+        return str.Substring(0, index) + replace + str.Substring(index + search.Length);
+    }
 
     public static string Base64Encode(this string s)
     {

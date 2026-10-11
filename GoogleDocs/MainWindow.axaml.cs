@@ -23,6 +23,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using HarfBuzzSharp;
@@ -64,6 +65,8 @@ public partial class MainWindow : Window
     private int rid = 0;
     private Uri FontBase = new Uri("https://fonts.googleapis.com");
     public CancellationTokenSource cts = new CancellationTokenSource();
+    private List<string> addedfonts;
+    private List<FontFamily> addedfontfamilies;
 
 
     public MainWindow()
@@ -75,7 +78,7 @@ public partial class MainWindow : Window
             {
                 cts.Cancel();
             };
-
+            addedfonts = new List<string>();
             MainText.AddHandler(InputElement.PointerPressedEvent, MainTextMouseDown, RoutingStrategies.Tunnel);
             Program.mainWindow = this;
             CookieManager.mainWindow = this;
@@ -279,7 +282,7 @@ public partial class MainWindow : Window
       Cursor.Margin = margin;
 
     }
-    private void SetMainText(string text,List<RichText>? richTexts = null)
+    private async void SetMainText(string text,List<RichText>? richTexts = null)
     {
 
         // Start Table \u0010
@@ -380,7 +383,7 @@ public partial class MainWindow : Window
                             PrintLineDebugMenu($"Size: {t.Params[0]}");
                             break;
                         case RichTextType.Family:
-                            inline.FontFamily = FetchFontFamily(t.Params[0]);
+                            inline.FontFamily = await FetchFontFamily(t.Params[0]);
                             PrintLineDebugMenu($"Family: {t.Params[0]}");
                             break;
                         case RichTextType.Clear:
@@ -397,7 +400,7 @@ public partial class MainWindow : Window
                                     inline.FontSize = 12;
                                     break;
                                 case "Family":
-                                    inline.FontFamily = FetchFontFamily(SaveKeys.defaultfont);
+                                    inline.FontFamily = await FetchFontFamily(SaveKeys.defaultfont);
                                     break;
                             }
                             break;
@@ -457,9 +460,56 @@ public partial class MainWindow : Window
 
     }
 
-    private FontFamily FetchFontFamily(string family)
+    private async Task<FontFamily> FetchFontFamily(string family)
     {
-        return new FontFamily(FontBase,family);
+        //return new FontFamily(new Uri("https://fonts.google.com"), family);
+        List<(string, string)> downloads = new List<(string, string)>();
+        if (!SaveKeys.cachedfonts.Select<Font,string>((Font x) => x.family).Contains(family))
+        {
+            List<(string, string)> variants = new List<(string, string)>();
+            string json = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\google-fonts.json");
+            var parsed = JObject.Parse(json);
+            if (parsed[family] is JObject && parsed[family] != null)
+            {
+                foreach (var variant in (parsed[family]["variants"] as JObject).Properties())
+                {
+                    foreach (var weight in (variant.Value as JObject).Properties())
+                    {
+                        var url = weight["url"]["ttf"].ToString();
+                        if (url.Contains("fonts.gstatic.com"))
+                        {
+                            downloads.Add((
+                                $"{AppDomain.CurrentDomain.BaseDirectory}\\{family}{variant.Name}{weight.Name}.ttf",
+                                url));
+                            variants.Add((variant.Name, weight.Name));
+                        }
+                    }
+
+                }
+            }
+            var http = new HttpClient();
+            foreach (var download in downloads)
+            {
+                var bytes = await http.GetByteArrayAsync(download.Item2);
+                File.WriteAllBytes(download.Item1, bytes);
+            }
+            SaveKeys.cachedfonts.Add(new Font(family,variants));
+            JsonParsing.SaveKeys(SaveKeys);
+        }
+
+        if (!addedfonts.Contains(family))
+        {
+            var font = SaveKeys.cachedfonts[SaveKeys.cachedfonts.Select((x) => x.family).ToList().IndexOf(family)];
+            var filename = $"{AppDomain.CurrentDomain.BaseDirectory}\\{font.family}{font.variants[0].Item1}{font.variants[0].Item2}.ttf";
+            var collection = new EmbeddedFontCollection(new Uri("fonts:Runtime"),new Uri(filename));
+            FontManager.Current.AddFontCollection(collection);
+            var fontname = collection.FirstOrDefault()?.FamilyNames.FirstOrDefault();
+            var readyfamily = new FontFamily($"fonts:Runtime#{fontname}");
+            addedfonts.Add(family);
+            addedfontfamilies.Add(readyfamily);
+            return readyfamily;
+        }
+        return addedfontfamilies[addedfonts.ToList().IndexOf(family)];
     }
 
 
@@ -736,7 +786,7 @@ public partial class MainWindow : Window
     }
     public async void OpenDoc(string docid = "")
     {
-        if (SaveKeys.verbose)
+        if (SaveKeys.verbose && File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\itemlistbody.txt"))
         {
             var testingitems = await NetworkManager.PostRequest(
                 "https://drivefrontend-pa.clients6.google.com/v1/items:list?key=AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0",
@@ -862,6 +912,8 @@ catch (HttpRequestException err)
     PrintLineDebugMenu(err.Message);
     SetMainText(err.Message);
 }
+
+
     }
 
     public void PrintDebugMenu(string s)
@@ -1019,6 +1071,23 @@ catch (HttpRequestException err)
     private void MainTextKeyDown(object? sender, KeyEventArgs e)
     {
         PrintLineDebugMenu("Key Down: " + e.Key);
+        if (e.Key == Key.Escape)
+        {
+            doc = null;
+            ActiveElement(FeelingLuckyButton,true,true);
+            ActiveElement(OpenDebugMenuButton,true,true);
+            ActiveElement(OpenDocButton,true,true);
+            ActiveElement(docidbox,true,true);
+            Title.Text = "";
+            ActiveElement(Title,false,true);
+            Name.Text = "";
+            ActiveElement(Name,false,true);
+            ActiveElement(ProfilePicture,false,true);
+            ActiveElement(FeelingLuckyButton, SaveKeys.lastopened != "");
+            OpenDebugMenuButton.IsVisible = SaveKeys.debugmenu;
+            CursorManager.Position = new Vector2(0, 0);
+            SetMainText("Ready!");
+        }
         switch (e.Key)
         {
             case Key.LeftCtrl:
@@ -1081,6 +1150,8 @@ catch (HttpRequestException err)
                             PrintLineDebugMenu("Toplevel is null or clipboard is null");
                         }
                     }
+
+
                     if (edit != null && doc != null)
                     {
                         doc.history.Edits.Add(edit);
@@ -1097,7 +1168,6 @@ catch (HttpRequestException err)
                     }
                     break;
                 }
-
                 int capitaloffset = 'a' - 'A';
                 bool isAlphabet = e.Key >= Key.A && e.Key <= Key.Z;
                 bool isNumber = e.Key >= Key.D0 && e.Key <= Key.D9;
@@ -1222,6 +1292,104 @@ catch (HttpRequestException err)
                     case Key.Enter:
                         edit = new Edit(EditType.Insert,
                             new string[] { pos.ToString(),"\n"});
+                        doc.history.Edits.Add(edit);
+                        doc.OffsetAltersAfter(1, pos);
+                        break;
+                    case Key.OemPeriod:
+                        if (!shift)
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "." });
+                        }
+                        else
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), ">" });
+                        }
+                        doc.history.Edits.Add(edit);
+                        doc.OffsetAltersAfter(1, pos);
+                        break;
+                    case Key.OemComma:
+                        if (!shift)
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "," });
+                        }
+                        else
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "<" });
+                        }
+                        doc.history.Edits.Add(edit);
+                        doc.OffsetAltersAfter(1, pos);
+                        break;
+                    case Key.OemQuestion:
+                        if (!shift)
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "/" });
+                        }
+                        else
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "?" });
+                        }
+                        doc.history.Edits.Add(edit);
+                        doc.OffsetAltersAfter(1, pos);
+                        break;
+                    case Key.OemSemicolon:
+                        if (!shift)
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), ";" });
+                        }
+                        else
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), ":" });
+                        }
+                        doc.history.Edits.Add(edit);
+                        doc.OffsetAltersAfter(1, pos);
+                        break;
+                    case Key.OemQuotes:
+                        if (!shift)
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "'" });
+                        }
+                        else
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "\""});
+                        }
+                        doc.history.Edits.Add(edit);
+                        doc.OffsetAltersAfter(1, pos);
+                        break;
+                    case Key.OemOpenBrackets:
+                        if (!shift)
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "[" });
+                        }
+                        else
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "{" });
+                        }
+                        doc.history.Edits.Add(edit);
+                        doc.OffsetAltersAfter(1, pos);
+                        break;
+                    case Key.OemCloseBrackets:
+                        if (!shift)
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "]" });
+                        }
+                        else
+                        {
+                            edit = new Edit(EditType.Insert,
+                                new string[] { pos.ToString(), "}" });
+                        }
                         doc.history.Edits.Add(edit);
                         doc.OffsetAltersAfter(1, pos);
                         break;

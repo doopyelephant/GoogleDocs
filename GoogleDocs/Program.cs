@@ -29,9 +29,16 @@ public static class Program
     public static void Main(string[] args)
     {
 //AttachConsole(ATTACH_PARENT_PROCESS);
-CleanUp = new List<Thread>();
-BuildAvaloniaApp()
-    .StartWithClassicDesktopLifetime(args);
+        try
+        {
+            CleanUp = new List<Thread>();
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception e)
+        {
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "\\errorlog.txt", e.ToString());
+        }
     }
 
     public async static void DebugMenu()

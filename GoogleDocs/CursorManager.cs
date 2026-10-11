@@ -246,7 +246,7 @@ public static class CursorManager
             while (length < tmp.X)
             {
                 var lsty = tmp.Y;
-                tmp.X -= textlayout.TextLines[(int)lsty].Length + textlayout.TextLines[(int)lsty].NewLineLength;
+                tmp.X -= textlayout.TextLines[Math.Clamp((int)lsty,0,textlayout.TextLines.Count - 1)].Length + textlayout.TextLines[Math.Clamp((int)lsty,0,textlayout.TextLines.Count - 1)].NewLineLength;
                 tmp.Y++;
                 length = 0;
                 if (tmp.Y < textlayout.TextLines.Count)

@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace GoogleDocs;
 
+
 public static class JsonParsing
 {
 private static bool haschanged = true;
@@ -256,4 +257,6 @@ public static bool TryReadLengthPrefixedSegment(
         var BrowserCookiePaths = JsonConvert.DeserializeObject<BrowserCookiePaths>(json);
         return BrowserCookiePaths;
     }
+
+
 }

@@ -50,6 +50,18 @@ public struct BrowserCookiePaths
     public List<BrowserCookieKey> keys;
     public List<BrowserCookieConfig> browsers;
 }
+
+public struct Font
+{
+    public string family;
+    public List<(string,string)> variants;
+
+    public Font(string _family, List<(string,string)> _variants)
+    {
+        family = _family;
+        variants = _variants;
+    }
+}
 public struct SaveKeys
 {
     public bool hasopened;
@@ -76,6 +88,6 @@ public struct SaveKeys
     public bool verbose;
     public uint wraplength;
     public bool cursorupdatelog;
-    public List<string> cachedfonts;
+    public List<Font> cachedfonts;
     public string defaultfont;
 }
