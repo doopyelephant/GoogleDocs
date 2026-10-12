@@ -25,17 +25,18 @@ sudo -v && sudo bash -c "$(curl -fsSL "https://gitlab.com/doopyelephant/GoogleDo
 - Text Underline Support 🕛
 - Text Color Support 🕛
 - Text Highlight(with colors) Support 🕛
-- Dynamic browser paths(removing hardcoded browser cookie path) 🟨
+- Dynamic browser paths(removing hardcoded browser cookie path) ✅
 ### Need reverse engineering & Implementation
-- Syncing with Google Docs backend (Saving & Realtime Collaboration)(Roadblock is on Google's cookie authentication) 🚧
+- Syncing with Google Docs backend ✅
 ## Features
 - Authenticating with Google's servers using cookie files within a already logged in browser (Currently only Firefox and Firefox based browsers like Zen work)
 - Fetching the contents of a document stored in Google's proprietary format(Kix)
 - Render the contents of a document using Avalonia
   - Bold Text
   - Italics
-  - Tables
-- Typing & Moving the Cursor (No saving yet)
+  - Font Size
+  - Font Family
+- Realtime incoming and outgoing changes to the document, this means if anybody is editing the document, everybody will see the changes in realtime on their own machine
 ## Known Issues
 - Zen "works" but sometimes decides it doesnt want to work(very unreliable)(I have 0 clue why this happens)
 - Edge on Windows runs in the background(even when closed) so Google Docs is unable to fetch Edge's Cookies **(Fix: End Task for Edge & Edge for Game Bar in Task Manager)**
