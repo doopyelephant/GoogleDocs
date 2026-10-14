@@ -238,6 +238,10 @@ public static bool TryReadLengthPrefixedSegment(
                 SaveKeys.cacherequests = new List<string>();
                 SaveKeys.cache = new List<string>();
             }
+            if (SaveKeys.cachedfonts == null)
+            {
+                SaveKeys.cachedfonts = new List<Font>();
+            }
             SaveKeysCache = SaveKeys;
             haschanged = false;
             return SaveKeys;

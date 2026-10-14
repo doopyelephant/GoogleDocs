@@ -79,6 +79,7 @@ public partial class MainWindow : Window
                 cts.Cancel();
             };
             addedfonts = new List<string>();
+            addedfontfamilies = new List<FontFamily>();
             MainText.AddHandler(InputElement.PointerPressedEvent, MainTextMouseDown, RoutingStrategies.Tunnel);
             Program.mainWindow = this;
             CookieManager.mainWindow = this;
@@ -464,7 +465,7 @@ public partial class MainWindow : Window
     {
         //return new FontFamily(new Uri("https://fonts.google.com"), family);
         List<(string, string)> downloads = new List<(string, string)>();
-        if (!SaveKeys.cachedfonts.Select<Font,string>((Font x) => x.family).Contains(family))
+        if (!SaveKeys.cachedfonts.Select<Font, string>((Font x) => x.family).Contains(family))
         {
             List<(string, string)> variants = new List<(string, string)>();
             string json = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\google-fonts.json");
@@ -475,7 +476,8 @@ public partial class MainWindow : Window
                 {
                     foreach (var weight in (variant.Value as JObject).Properties())
                     {
-                        var url = weight["url"]["ttf"].ToString();
+
+                        var url = weight.Value["url"]["ttf"].ToString();
                         if (url.Contains("fonts.gstatic.com"))
                         {
                             downloads.Add((
@@ -487,29 +489,46 @@ public partial class MainWindow : Window
 
                 }
             }
+
             var http = new HttpClient();
             foreach (var download in downloads)
             {
                 var bytes = await http.GetByteArrayAsync(download.Item2);
                 File.WriteAllBytes(download.Item1, bytes);
             }
-            SaveKeys.cachedfonts.Add(new Font(family,variants));
+
+            SaveKeys.cachedfonts.Add(new Font(family, variants));
             JsonParsing.SaveKeys(SaveKeys);
         }
 
+        var added = false;
         if (!addedfonts.Contains(family))
         {
-            var font = SaveKeys.cachedfonts[SaveKeys.cachedfonts.Select((x) => x.family).ToList().IndexOf(family)];
-            var filename = $"{AppDomain.CurrentDomain.BaseDirectory}\\{font.family}{font.variants[0].Item1}{font.variants[0].Item2}.ttf";
-            var collection = new EmbeddedFontCollection(new Uri("fonts:Runtime"),new Uri(filename));
-            FontManager.Current.AddFontCollection(collection);
-            var fontname = collection.FirstOrDefault()?.FamilyNames.FirstOrDefault();
-            var readyfamily = new FontFamily($"fonts:Runtime#{fontname}");
-            addedfonts.Add(family);
-            addedfontfamilies.Add(readyfamily);
-            return readyfamily;
+            if (SaveKeys.cachedfonts.Select((x) => x.family).ToList().Contains(family))
+            {
+                added = true;
+                var font = SaveKeys.cachedfonts[SaveKeys.cachedfonts.Select((x) => x.family).ToList().IndexOf(family)];
+                var filename =
+                    $"{AppDomain.CurrentDomain.BaseDirectory}\\{font.family}{font.variants[0].Item1}{font.variants[0].Item2}.ttf";
+                var collection = new EmbeddedFontCollection(new Uri("fonts:Runtime"), new Uri(filename));
+                var fontname = collection.FirstOrDefault()?.FamilyNames.FirstOrDefault();
+                Console.WriteLine("Font name: " + fontname);
+                FontManager.Current.AddFontCollection(collection);
+                var readyfamily = new FontFamily($"fonts:Runtime#{fontname}");
+                addedfonts.Add(family);
+                addedfontfamilies.Add(readyfamily);
+                return readyfamily;
+            }
         }
-        return addedfontfamilies[addedfonts.ToList().IndexOf(family)];
+
+        if (added)
+        {
+            return addedfontfamilies[addedfonts.ToList().IndexOf(family)];
+        }
+        else
+        {
+            return await FetchFontFamily(SaveKeys.defaultfont);
+        }
     }
 
 
