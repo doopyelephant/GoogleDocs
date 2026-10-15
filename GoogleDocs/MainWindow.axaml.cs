@@ -510,11 +510,11 @@ public partial class MainWindow : Window
                 var font = SaveKeys.cachedfonts[SaveKeys.cachedfonts.Select((x) => x.family).ToList().IndexOf(family)];
                 var filename =
                     $"{AppDomain.CurrentDomain.BaseDirectory}\\{font.family}{font.variants[0].Item1}{font.variants[0].Item2}.ttf";
-                var collection = new EmbeddedFontCollection(new Uri("fonts:Runtime"), new Uri(filename));
+                var collection = new EmbeddedFontCollection(new Uri($"fonts:{Uri.EscapeDataString(family)}"), new Uri(filename));
                 var fontname = collection.FirstOrDefault()?.FamilyNames.FirstOrDefault();
                 Console.WriteLine("Font name: " + fontname);
                 FontManager.Current.AddFontCollection(collection);
-                var readyfamily = new FontFamily($"fonts:Runtime#{fontname}");
+                var readyfamily = new FontFamily($"fonts:{Uri.EscapeDataString(family)}#{fontname}");
                 addedfonts.Add(family);
                 addedfontfamilies.Add(readyfamily);
                 return readyfamily;
