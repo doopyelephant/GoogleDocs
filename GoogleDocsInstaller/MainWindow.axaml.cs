@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -135,7 +136,26 @@ public partial class MainWindow : Window
 
     private void ProgressThread()
     {
-        var info = new ProcessStartInfo("pwsh.exe", $"-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File { System.IO.Path.GetDirectoryName(System.Environment.ProcessPath)}/Install.ps1 {drive} {mode}");
+        string PATH = Environment.GetEnvironmentVariable("PATH");
+        string[] paths = PATH.Split(Path.PathSeparator,StringSplitOptions.RemoveEmptyEntries);
+        string filename = "";
+        if (paths.Select(x => Path.Combine(x,"pwsh.exe")).FirstOrDefault(File.Exists) != null)
+        {
+            filename = "pwsh.exe";
+        }
+        else if (paths.Select(x => Path.Combine(x, "powershell.exe")).FirstOrDefault(File.Exists) != null)
+        {
+            filename = "powershell.exe";
+        }
+        else
+        {
+        PowershellError.Open();
+        return;
+        }
+
+
+
+        var info = new ProcessStartInfo(filename, $"-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File { System.IO.Path.GetDirectoryName(System.Environment.ProcessPath)}/Install.ps1 {drive} {mode}");
         info.UseShellExecute = true;
         info.Verb = "runas";
         info.CreateNoWindow = true;

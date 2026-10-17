@@ -64,5 +64,14 @@
                 <TextBlock Text="Exit" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
             </Button>
         </StackPanel>
+        <Popup x:Name="PowershellError"
+               Placement="Center"
+               Width="500" Height="200">
+            <Border Background="{DynamicResource SurfaceContainer}" BorderThickness="1" CornerRadius="20" Padding="12" HorizontalAlignment="Center">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <TextBlock Text="Powershell is not installed. Installation has failed. Please install powershell." Margin="0,0,0,10"  HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Popup>
     </Panel>
 </Window>

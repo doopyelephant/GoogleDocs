@@ -38,10 +38,9 @@
             </Image.Clip></Image>
 
         </StackPanel>
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="800"
-                          Width="1700">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Panel  Name="SelectionParent">
-                <TextBlock Text="Loading..." Name="MainText" TextWrapping="Wrap"></TextBlock>
+                <TextBlock Text="Loading..." Name="MainText" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></TextBlock>
                 <Rectangle Name="Cursor" Fill="Red" Width="2" Height="20" HorizontalAlignment="Left" VerticalAlignment="Top" />
             </Panel>
         </ScrollViewer>
