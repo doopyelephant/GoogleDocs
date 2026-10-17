@@ -520,6 +520,10 @@ public partial class MainWindow : Window
                 return readyfamily;
             }
         }
+        else
+        {
+            added = true;
+        }
 
         if (added)
         {
