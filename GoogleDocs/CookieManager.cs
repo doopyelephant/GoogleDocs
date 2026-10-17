@@ -876,6 +876,7 @@ else
         {
             await Task.Delay(100);
         }
+        mainWindow.PromptPrompt.Text = q;
         mainWindow.SetPromptOptions(options.ToList());
         mainWindow.PickPrompt.IsOpen = true;
         CanStartPrompt = false;
