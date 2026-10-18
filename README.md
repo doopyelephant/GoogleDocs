@@ -1,3 +1,15 @@
+> [!WARNING]
+> If you have paid for Unofficial Google Docs, you have been scammed and you should immediately request a refund.  Unofficial Google Docs is entirely free and **is intended for NON-COMMERCIAL use only**, I do not attempt to profit off of it.  \
+> \
+>  Unofficial Google Docs is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
+
+> [!NOTE]
+> DoopyElephant and Unofficial Google Docs is not affiliated with Google LLC, our project is not official or endorsed by Google LLC in any way. \
+> \
+> Google, Google LLC and Google Docs are trademarks or registered trademarks of Google LLC in the United States of America and elsewhere.
+
+
+
 # Unofficial Google Docs Client
 An unofficial Google Doc's Client built using Avalonia in C# that can open Google Docs with authentication from the cookie files of a logged in browser
 

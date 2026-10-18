@@ -106,7 +106,8 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
     $jsons = @(Get-ChildItem -Filter *.json -File -ErrorAction SilentlyContinue)
     $scripts = @(Get-ChildItem -Filter *.ps1 -File -ErrorAction SilentlyContinue)
     $pys = @(Get-ChildItem -Filter *.py -File -ErrorAction SilentlyContinue)
-    $files = $jsons + $scripts + $pys
+    $htmls = @(Get-ChildItem -Filter *.html -File -ErrorAction SilentlyContinue)
+    $files = $jsons + $scripts + $pys + $htmls
     foreach ($file in $files)
     {
     Copy-Item $file "./Build"

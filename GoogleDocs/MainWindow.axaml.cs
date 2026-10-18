@@ -1615,4 +1615,24 @@ catch (HttpRequestException err)
         JsonParsing.SaveKeys(SaveKeys);
         this.Close();
     }
+
+    private void AboutButton(object? sender, RoutedEventArgs e)
+    {
+        if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "about.html"))
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = AppDomain.CurrentDomain.BaseDirectory + "about.html",
+                UseShellExecute = true
+            });
+        }
+        else
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "https://www.gnu.org/licenses/gpl-3.0.de.html",
+                UseShellExecute = true
+            });
+        }
+    }
 }
