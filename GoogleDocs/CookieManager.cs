@@ -239,7 +239,12 @@ public static class CookieManager
         PrintLineDebugMenu("Browser cookie files copied to data directory.");
        
         string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + (HostBrowserType == BrowserType.Firefox ? "\\cookies.sqlite" : "\\Profile\\Network\\Cookies"))/*.AddQuotes()*/, hostfilter };
-        string json = await ExecuteScript("python",pyargs);
+        string filename = "python";
+        if (Directory.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Python")))
+        {
+            filename = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Python\\python.exe");
+        }
+        string json = await ExecuteScript(filename,pyargs);
         //json = json.UrlDecode();
                                     //PrintLineDebugMenu("PY OUT: " + json);
         json = "[" + json.SubstringAfter("[");

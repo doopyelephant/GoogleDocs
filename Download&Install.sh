@@ -129,6 +129,12 @@ else
   echo "Powershell is not installed"
   install_package "powershell"
   fi
+if command -v python >/dev/null 2>&1; then
+  echo "Python is installed, continuing"
+else
+  echo "Python is not installed"
+  install_package "python"
+  fi
   hash -r
 if command -v curl >/dev/null 2>&1; then
   echo "Curl Dependency satisfied"
@@ -140,6 +146,12 @@ if command -v pwsh >/dev/null 2>&1; then
   echo "Powershell Dependency satisfied"
 else
   echo "Failed to satisfy dependency: powershell, please install powershell from your distro's package manager and try again"
+  exit
+  fi
+if command -v python >/dev/null 2>&1; then
+  echo "Python Dependency satisfied"
+else
+  echo "Failed to satisfy dependency: python, please install powershell from your distro's package manager and try again"
   exit
   fi
 echo "All Dependencies Satisfied"

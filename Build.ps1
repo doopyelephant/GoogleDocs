@@ -174,6 +174,15 @@ if (Get-Command "dotnet" -ErrorAction SilentlyContinue) {
         }
         $Type = "$Type-$CCArch"
     }
+    if($Type -eq "windows-x64")
+    {
+        Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-amd64.zip" -OutFile "./Build/Python.zip"
+    }
+    if($Type -eq "windows-arm64")
+    {
+        Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-arm64.zip" -OutFile "./Build/Python.zip"
+    }
+    Expand-Archive -Path "./Build/Python.zip" -DestinationPath "./Build/Python"
     if($arch -match "musl")
     {
     $Type = "$Type-musl"
