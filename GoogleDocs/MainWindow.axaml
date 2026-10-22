@@ -119,8 +119,8 @@ This is required for this application to function, if rejected, the application 
                 </StackPanel>
             </Border>
         </Popup>
-        <Button HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="Transparent" MaxWidth="100" MaxHeight="50" Click="AboutButton">
-            <TextBlock Text="About"></TextBlock>
+        <Button HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="Transparent" MaxWidth="100" MaxHeight="50" Click="AboutButton" Focusable="False">
+            <TextBlock Text="About" Focusable="False"></TextBlock>
         </Button>
     </Grid>
 </Window>

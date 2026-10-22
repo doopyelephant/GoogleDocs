@@ -12,6 +12,10 @@
         {
             "key": "##FIREFOXPROFILE##",
             "name": "FIREFOXPROFILE"
+        },
+        {
+            "key": "##APPDIR##",
+            "name": "APPDIR"
         }
     ],
     "browsers": [
@@ -53,6 +57,11 @@
                     "winpath": "",
                     "linpath": "\\home\\##SYSUSER##\\.var\\app\\org.mozilla.firefox\\.mozilla\\firefox\\##FIREFOXPROFILE##\\cookies.sqlite",
                     "name": "Flatpak"
+                },
+                {
+                    "winpath": "",
+                    "linpath": "##APPDIR##\\app\\org.mozilla.firefox\\.mozilla\\firefox\\##FIREFOXPROFILE##\\cookies.sqlite",
+                    "name": "AutoInstalled"
                 }
             ]
         },

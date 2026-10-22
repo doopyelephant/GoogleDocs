@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Newtonsoft.Json;
@@ -417,6 +420,63 @@ public static class CookieManager
         watch.Stop();
         PrintLineDebugMenu("Cookie initialization took " + watch.ElapsedMilliseconds + "ms.");
     }
+
+    private static async Task InstallFireFox()
+    {
+        bool arm = (int)RuntimeInformation.ProcessArchitecture > 1;
+        bool linux = Environment.OSVersion.Platform == PlatformID.Unix;
+        string folder = linux ? "linux" : "win64";
+        if (arm)
+        {
+            folder += "-aarch64";
+        }
+        else if (linux)
+        {
+            folder += "-x86_64";
+        }
+        string url = "https://download-installer.cdn.mozilla.net/pub/firefox/releases/158.0.1/" + folder + "/en-CA/" + (linux ? "firefox-158.0.1.tar.xz" : "Firefox%20Setup%20158.0.1.exe");
+        var httpclient = new HttpClient();
+        byte[] contents = await httpclient.GetByteArrayAsync(url);
+        Directory.CreateDirectory(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Firefox"));
+        File.WriteAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Firefox",(linux ? "firefox.tar.xz" : "firefoxsetup.exe")), contents);
+        if (linux)
+        {
+            var process = new Process();
+            process.StartInfo.FileName = "tar";
+            process.StartInfo.Arguments = "-xf " + Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Firefox","firefox.tar.xz");
+            process.StartInfo.UseShellExecute = true;
+            process.Start();
+            process.WaitForExit();
+            var process2 = new Process();
+            process2.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "Firefox/firefox/firefox.exe";
+            process2.StartInfo.Arguments = "\"docs.google.com\"";
+            process2.StartInfo.UseShellExecute = true;
+            process2.Start();
+            while (Process.GetProcessesByName("firefox").Length > 0)
+            {
+                Thread.Sleep(500);
+            }
+        }
+        else
+        {
+
+            var process = new Process();
+            process.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Firefox","firefoxsetup.exe");
+            process.StartInfo.Arguments = "/S";
+            process.StartInfo.UseShellExecute = true;
+            process.Start();
+            process.WaitForExit();
+            var process2 = new Process();
+            process2.StartInfo.FileName = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
+            process2.StartInfo.Arguments = " \"https://docs.google.com\"";
+            process2.StartInfo.UseShellExecute = true;
+            process2.Start();
+            while (Process.GetProcessesByName("firefox").Length > 0)
+            {
+                Thread.Sleep(500);
+            }
+        }
+    }
     private static async Task<string> GetBrowserCookiePath()
     {
         if(browsercookiepath != "")
@@ -427,10 +487,17 @@ public static class CookieManager
         List<int> ValidIndexes = new List<int>();
         var browsers = JsonParsing.GetBrowserCookiePaths();
         PrintLineDebugMenu("Browser cookie paths: ");
+        var tmpbrowsers = new List<BrowserCookieConfig>();
         foreach (var browser in browsers.browsers)
         {
             PrintLineDebugMenu("- " + browser.name + ": " + browser.winpath + " (Windows), " + browser.linpath + " (Linux)");
+            if (browser.type != "Chromium" && browser.name != "Zen")
+            {
+                //Remove unsupported chromium browsers
+                tmpbrowsers.Add(browser);
+            }
         }
+        browsers.browsers = tmpbrowsers;
         PrintLineDebugMenu("Validating browser cookie paths...");
         foreach (var browser in browsers.browsers)
         {
@@ -454,14 +521,28 @@ public static class CookieManager
         if(ValidIndexes.Count == 0)
         {
             PrintLineDebugMenu("No valid browser cookie paths found, requesting manual input.");
-            ManualBrowserCookieInput();
-            while(!CookieSelectorCallback)
+            var install = false;
+            if (SaveKeys.promptcacherequests.Contains( "No valid browsers were detected(Chromium isn't supported yet), would you like to install Firefox?:" ) == false)
             {
-                await Task.Delay(100);
+                 install = await Prompt(new[] {"Install Firefox", "Cancel"}, "No valid browsers were detected(Chromium isn't supported yet), would you like to install Firefox?:") == 0;
             }
-            CookieSelectorCallback = false;
-            EvalHostBrowserType();
-            return await browsercookiepath.GetRealPath();
+            if (install)
+            {
+            await InstallFireFox();
+            return await GetBrowserCookiePath();
+            }
+            else
+            {
+                ManualBrowserCookieInput();
+                while (!CookieSelectorCallback)
+                {
+                    await Task.Delay(100);
+                }
+
+                CookieSelectorCallback = false;
+                EvalHostBrowserType();
+                return await browsercookiepath.GetRealPath();
+            }
         }
         else if(ValidIndexes.Count == 1)
         {
@@ -805,9 +886,28 @@ else
                             {
                                 return oldpath;
                             }
+
+                            var dirs = Directory.GetDirectories(oldpath.SubstringBefore(substitute));
+                            var tmpdirs = new List<string>();
+                            foreach (var dir in dirs)
+                            {
+                                if (Directory.EnumerateFiles(dir, "cookies.sqlite", SearchOption.AllDirectories).Any())
+                                {
+                                    tmpdirs.Add(dir);
+                                }
+                            }
+
+                            if (tmpdirs.Count > 0)
+                            {
+                                oldpath = oldpath.ReplaceFirst(substitute,
+                                    tmpdirs[0].SubstringAfterLast("\\"));
+                            }
+                            else
+                            {
+                                return oldpath;
+                            }
                             //replace all of the substitutes in the path with the first child
-                            oldpath = oldpath.ReplaceFirst(substitute,
-                                Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
+
                         }
                         break;
                     }
@@ -873,6 +973,10 @@ else
 
     public static async Task<int> Prompt(string[] options, string q)
     {
+        if (options.Length == 1)
+        {
+            return 0;
+        }
         if (SaveKeys.promptcacherequests.Contains(q))
         {
         return SaveKeys.promptcache[SaveKeys.promptcacherequests.IndexOf(q)];
@@ -889,6 +993,7 @@ else
         {
             await Task.Delay(100);
         }
+        mainWindow.SetPromptOptions(new List<string>());
         PromptCallbackSephamore = false;
         string value = PromptCallbackValue;
         int idx  = options.ToList().IndexOf(value);

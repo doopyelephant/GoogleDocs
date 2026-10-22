@@ -77,7 +77,7 @@
   "defaultbrowser": "",
   "verbose" : true,
   "wraplength": 100,
-  "cursorupdatelog": true,
+  "cursorupdatelog": false,
   "cachedfonts": [
 
   ],
