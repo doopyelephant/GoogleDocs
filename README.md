@@ -21,12 +21,12 @@ An unofficial Google Doc's Client built using Avalonia in C# that can open Googl
 ### Windows
 Paste this into powershell(press windows, type "powershell", it should show "Windows Powershell", then hit enter):
 ```
-iwr -useb "https://gitlab.com/doopyelephant/GoogleDocs/-/raw/master/Download&Install.ps1" | iex
+iwr -useb "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.ps1" | iex
 ```
 ### Linux
 Paste this into your terminal:
 ```
-sudo -v && sudo bash -c "$(curl -fsSL "https://gitlab.com/doopyelephant/GoogleDocs/-/raw/master/Download&Install.sh")"
+sudo -v && sudo bash -c "$(curl -fsSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.sh")"
 ```
 ## TODO
 🕛 Planned
