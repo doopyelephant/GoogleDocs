@@ -74,7 +74,7 @@ if($libc -match "musl")
 {
     $OSarch = "$OSarch-musl"
 }
-Invoke-WebRequest -Uri "https://gitlab.com/doopyelephant/GoogleDocs/-/releases/v1.0.0-exp4/downloads/GoogleDocs-${OS}-${OSarch}.zip" -OutFile "$Release"
+Invoke-WebRequest -Uri "https://github.com/doopyelephant/GoogleDocs/releases/download/v1.0.0-exp4/GoogleDocs-${OS}-${OSarch}.zip" -OutFile "$Release"
 $writer.WriteLine("Progress: 60")
 $writer.Flush()
 Expand-Archive -Path $Release -DestinationPath "$AppData/Release"
