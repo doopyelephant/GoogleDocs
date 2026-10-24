@@ -59,6 +59,6 @@ I use Github Copilot to write the odd snippet or to bounce ideas off of (large %
 This is part of [The Stardance Project](https://stardance.hackclub.com)
 
 ## Credits
-- browser_cookies.py comes from [akkana/scripts](https://github.com/akkana/scripts)
+- browser_cookies.py is [akkana/scripts](https://github.com/akkana/scripts) with some AI-Generated tweaks
 - some RE was done by [James Somers](https://features.jsomers.net/how-i-reverse-engineered-google-docs/)
 - Google Fonts Catalog comes from [jonathantneal/google-fonts-complete](https://github.com/jonathantneal/google-fonts-complete/tree/master)
