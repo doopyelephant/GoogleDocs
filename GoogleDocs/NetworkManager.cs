@@ -109,7 +109,7 @@ public static class NetworkManager
         var sanitizedCookie = SanitizeCookieHeader(rawCookie);
         if (string.IsNullOrWhiteSpace(sanitizedCookie))
         {
-            throw new HttpRequestException("Cookie header is empty after sanitization.");
+            throw new HttpRequestException("Cookie header is empty after sanitization. Are you logged into your google account in the selected browser?");
         }
 
         if (!string.Equals(rawCookie, sanitizedCookie, StringComparison.Ordinal))
@@ -226,7 +226,7 @@ public static class NetworkManager
         var sanitizedCookie = SanitizeCookieHeader(rawCookie);
         if (string.IsNullOrWhiteSpace(sanitizedCookie))
         {
-            throw new HttpRequestException("Cookie header is empty after sanitization.");
+            throw new HttpRequestException("Cookie header is empty after sanitization. Are you logged into your google account in the selected browser?");
         }
 
         if (!string.Equals(rawCookie, sanitizedCookie, StringComparison.Ordinal))
@@ -450,7 +450,7 @@ if(headers.Contains("reporting-endpoints"))
         var sanitizedCookie = SanitizeCookieHeader(rawCookie);
         if (string.IsNullOrWhiteSpace(sanitizedCookie))
         {
-            throw new HttpRequestException("Cookie header is empty after sanitization.");
+            throw new HttpRequestException("Cookie header is empty after sanitization. Are you logged into your google account in the selected browser?");
         }
 
         if (!string.Equals(rawCookie, sanitizedCookie, StringComparison.Ordinal))
