@@ -80,7 +80,7 @@ $writer.Flush()
 Expand-Archive -Path $Release -DestinationPath "$AppData/Release"
 $writer.WriteLine("Progress: 70")
 $writer.Flush()
-Invoke-WebRequest -Uri "https://gitlab.com/doopyelephant/GoogleDocs/-/raw/master/GoogleDocs/DocsLogo.ico" -OutFile "$AppData/Release/GoogleDocs/icon.ico"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/GoogleDocs/DocsLogo.ico" -OutFile "$AppData/Release/GoogleDocs/icon.ico"
 $writer.WriteLine("Progress: 80")
 $writer.Flush()
 Set-Location "$AppData/Release/GoogleDocs"
@@ -125,5 +125,5 @@ if($CustomIsLinux)
     Write-Output $DesktopEntry > "~/.local/share/applications/GoogleDocs.desktop"
 }
     $writer.WriteLine("Progress: 95")
-    Invoke-WebRequest -Uri "https://gitlab.com/doopyelephant/GoogleDocs/-/raw/master/Uninstall.ps1" -OutFile "$AppData/Release/GoogleDocs/Uninstall.ps1"
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Uninstall.ps1" -OutFile "$AppData/Release/GoogleDocs/Uninstall.ps1"
     $writer.WriteLine("Progress: 100")
