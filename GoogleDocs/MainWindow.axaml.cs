@@ -809,21 +809,7 @@ public partial class MainWindow : Window
     }
     public async void OpenDoc(string docid = "")
     {
-        if (SaveKeys.verbose && File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\itemlistbody.txt"))
-        {
-            var testingitems = await NetworkManager.PostRequest(
-                "https://drivefrontend-pa.clients6.google.com/v1/items:list?key=AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0",
-                File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\itemlistbody.txt"), true);
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\items.txt", testingitems);
-            /*  var homepage = await NetworkManager.GetRequest("https://docs.google.com/document/u/0",true,new [] {("Sec-Fetch-Dest","document"),("Priority","u=0, i"),("Sec-Fetch-Mode","navigate"),("Sec-Fetch-Site","none"),("Sec-Fetch-User","?1"),("Sec-GPC","1"),("Upgrade-Insecure-Requests","1")}.ToList());
-              File.WriteAllText("homepage.txt",homepage);
-              var key = homepage.SubstringAfter("client_key\":\"").SubstringBefore("\"");//* "AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0";
-              File.WriteAllText("homekey.txt",key);
-              File.WriteAllText("items.txt",
-                  await NetworkManager.PostRequest($"https://drivefrontend-pa.clients6.google.com/v1/changes:list?key={key}",
-                      "[[null,1,null,null,1],[33501,1000]]",true,new [] {("authorization","SAPISIDHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID1PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID3PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u")}.ToList()));
-        */
-        }
+
         var watch = new Stopwatch();
         watch.Start();
 SetMainText("Loading...");
@@ -936,7 +922,21 @@ catch (HttpRequestException err)
     SetMainText(err.Message);
 }
 
-
+   if (SaveKeys.verbose && File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\itemlistbody.txt"))
+        {
+            var testingitems = await NetworkManager.PostRequest(
+                "https://drivefrontend-pa.clients6.google.com/v1/changes:list",
+                File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\itemlistbody.txt"), true,new [] {("x-goog-fieldmask","largest_change_id,next_change_id,change(id,item_type,item_id,deleted,modification_date_millis,item(primary_sync_parent,published,subscribed,action_item,owned_by_me,externality_state,contains_unsubscribed_children,last_viewed_by_me_date_millis,workbook_details,trashed,has_thumbnail,open_with_links,inheritance_broken,permission_summary(visibility.type),thumbnail_version,single_parent_id,shared_with_me_date_millis,client_encryption_details(decryption_metadata.aes_256_gcm_chunk_size,decryption_metadata.kacls_id,decryption_metadata.key_format,decryption_metadata.wrapped_key),mime_type,modified_by_me_date_millis,version,resource_key,shortcut_details(target_mime_type,target_item,target_lookup_status,target_resource_key,target_id),etag,detectors,default_open_with_link,shared,ancestor_has_own_permissions,parent,last_modifying_user(type,focus_user_id,email_from_account),viewed,customer_id,organization_display_name,recency_date_millis,workspace_id,trashed_date_millis,approval_summaries,starred,quota_bytes_used,sharing_user(email_from_account,type,focus_user_id),readers_can_see_comments,md5_checksum,owner(organization_display_name,type,focus_user_id,email_from_account),file_size,spam_metadata(in_spam_view,is_spam,is_inherited_spam,marked_as_spam_date_millis),creator_app_id,alternate_link,spaces,folder_features,head_revision_id,export_links,has_own_permissions,capabilities(can_modify_content,can_move_item_within_drive,can_move_children_out_of_team_drive,can_report_not_spam,can_add_my_drive_parent,can_add_children,can_report_spam_or_abuse,can_copy_non_authoritative,can_trash,can_rename,can_read,can_discover_by_search,can_delete,can_manage_visitors,can_read_category_metadata,can_download,can_print,can_untrash,can_download_non_authoritative,can_move_item_out_of_drive,can_move_children_within_drive,can_read_team_drive,can_list_children,can_share_child_files,can_accept_ownership,can_delete_children,can_change_security_update_enabled,can_trash_children,can_remove_children,can_change_permission_expiration,can_share_child_folders,can_block_owner,can_request_approval,can_copy,can_comment,can_share,can_manage_members,can_edit),has_legacy_blob_comments,has_visitor_permissions,abuse_notice_reason,modified_date_millis,explicitly_trashed,applied_labels,title,approval_version,recency_date_reason,abuse_is_appealable,id,passively_subscribed,blocking_detectors,folder_color,content_restrictions.read_only,primary_domain_name,team_drive_id,create_date_millis,folder_color_rgb),shared_drive(team_drive_root_data.theme_color,team_drive_root_data.hidden,create_date_millis,team_drive_root_data.trusted,permission_summary(group_entry_count,user_entry_count,member_count),restrictions(sharing_folders_requires_organizer_permission,domain_users_only,team_members_only),organization_display_name,primary_domain_name,restrictions_override(domain_users_only),team_drive_root_data.theme_image_url,customer_id,title,team_drive_id,id,mime_type,capabilities(can_list_children,can_download_non_authoritative,can_copy,can_rename,can_edit,can_manage_members,can_print,can_move_children_out_of_team_drive,can_copy_non_authoritative,can_add_folder_from_another_drive,can_change_team_members_only_restriction,can_download,can_share,can_change_copy_requires_writer_permission_restriction,can_delete_children,can_change_domain_users_only_restriction,can_move_children_within_drive,can_delete,can_rename_team_drive,can_reset_drive_restrictions,can_comment,can_add_children,can_change_sharing_folders_requires_organizer_permission_restriction,can_trash_children,can_change_team_drive_background,can_create_client_side_encrypted_files,can_share_to_all_users),individual_quota_bytes_total,quota_bytes_used_in_drive,modified_date_millis))")}.ToList() );
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\items.txt", testingitems);
+            /*  var homepage = await NetworkManager.GetRequest("https://docs.google.com/document/u/0",true,new [] {("Sec-Fetch-Dest","document"),("Priority","u=0, i"),("Sec-Fetch-Mode","navigate"),("Sec-Fetch-Site","none"),("Sec-Fetch-User","?1"),("Sec-GPC","1"),("Upgrade-Insecure-Requests","1")}.ToList());
+              File.WriteAllText("homepage.txt",homepage);
+              var key = homepage.SubstringAfter("client_key\":\"").SubstringBefore("\"");//* "AIzaSyDl-UL2oekTnhhyaKOSEIX2fYcWIapfhR0";
+              File.WriteAllText("homekey.txt",key);
+              File.WriteAllText("items.txt",
+                  await NetworkManager.PostRequest($"https://drivefrontend-pa.clients6.google.com/v1/changes:list?key={key}",
+                      "[[null,1,null,null,1],[33501,1000]]",true,new [] {("authorization","SAPISIDHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID1PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u SAPISID3PHASH 1789332404_13ea55c355d34ac42a6d3414dedd6bc98a009a93_u")}.ToList()));
+        */
+        }
     }
 
     public void PrintDebugMenu(string s)
