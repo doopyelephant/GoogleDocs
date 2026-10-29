@@ -69,6 +69,7 @@ if($CustomIsWindows)
 if($CustomIsLinux)
 {
     $installerpath = "$AppData/InstallerRelease/Installer/GoogleDocsInstaller"
-    chmod +x $installerpath
-    sudo -i -u "$SUDO_USER" "& $installerpath"
+    & chmod +x $installerpath
+    & sudo -i -u "$SUDO_USER"
+    & "$installerpath"
 }
