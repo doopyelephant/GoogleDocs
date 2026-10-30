@@ -139,33 +139,41 @@ public partial class MainWindow : Window
         string PATH = Environment.GetEnvironmentVariable("PATH");
         string[] paths = PATH.Split(Path.PathSeparator,StringSplitOptions.RemoveEmptyEntries);
         string filename = "";
-        if (paths.Select(x => Path.Combine(x,"pwsh.exe")).FirstOrDefault(File.Exists) != null)
+        if (Environment.OSVersion.Platform != PlatformID.Unix)
         {
-            filename = "pwsh.exe";
-        }
-        else if (paths.Select(x => Path.Combine(x, "powershell.exe")).FirstOrDefault(File.Exists) != null)
-        {
-            filename = "powershell.exe";
-        }
-        else if (paths.Select(x => Path.Combine(x, "pwsh")).FirstOrDefault(File.Exists) != null)
-        {
-            filename = "pwsh";
+            if (paths.Select(x => Path.Combine(x, "pwsh.exe")).FirstOrDefault(File.Exists) != null)
+            {
+                filename = "pwsh.exe";
+            }
+            else if (paths.Select(x => Path.Combine(x, "powershell.exe")).FirstOrDefault(File.Exists) != null)
+            {
+                filename = "powershell.exe";
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    PowershellError.Open();
+                });
+                return;
+            }
         }
         else
         {
-            Dispatcher.UIThread.Post(() =>
-            {
-        PowershellError.Open();
-            });
-        return;
+            filename = "pwsh";
         }
+
 
 
 
         var info = new ProcessStartInfo(filename, $"-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File { System.IO.Path.GetDirectoryName(System.Environment.ProcessPath)}/Install.ps1 {drive} {mode}");
         info.UseShellExecute = true;
-        info.Verb = "runas";
-        info.CreateNoWindow = true;
+        if (Environment.OSVersion.Platform != PlatformID.Unix)
+        {
+            info.Verb = "runas";
+            info.CreateNoWindow = true;
+        }
+
         var process = Process.Start(info);
         Dispatcher.UIThread.Post(() =>
         {
