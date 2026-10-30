@@ -129,7 +129,7 @@ else
   echo "Powershell is not installed"
   install_package "powershell"
   fi
-if [[ command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1 ]]; then
+if command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1 ; then
   echo "Python is installed, continuing"
 else
   echo "Python is not installed"
@@ -148,7 +148,7 @@ else
   echo "Failed to satisfy dependency: powershell, please install powershell from your distro's package manager and try again"
   exit
   fi
-if [[ command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1 ]]; then
+if command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1 ; then
   echo "Python Dependency satisfied"
 else
   echo "Failed to satisfy dependency: python, please install python from your distro's package manager and try again"
