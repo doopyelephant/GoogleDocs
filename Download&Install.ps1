@@ -10,7 +10,8 @@ if($CustomIsLinux)
 {
     $AppData = "/opt/GoogleDocs"
 }
-mkdir -p $AppData
+New-Item -ItemType Directory -Force -Path $AppData | Out-Null
+New-Item -ItemType Directory -Force -Path "$AppData/InstallerRelease" | Out-Null
 $Release = "$AppData/InstallerRelease.zip"
 $OSarch = ""
 if($CustomIsWindows)

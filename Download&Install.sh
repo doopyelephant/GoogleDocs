@@ -57,7 +57,7 @@ if [ $accepted = "n" ]; then
                     exit
                     fi
                   echo "Installing using DNF"
-                  $dnf_arch = $(get_arch)
+                  $dnf_arch=$(get_arch)
                   dnf install "https://github.com/PowerShell/PowerShell/releases/download/v7.6.3/powershell-7.6.3-1.cm.$dnf_arch.rpm"
                   echo "$package installed"
                   fi
@@ -129,7 +129,7 @@ else
   echo "Powershell is not installed"
   install_package "powershell"
   fi
-if command -v python >/dev/null 2>&1; then
+if [[command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1]]; then
   echo "Python is installed, continuing"
 else
   echo "Python is not installed"
@@ -148,7 +148,7 @@ else
   echo "Failed to satisfy dependency: powershell, please install powershell from your distro's package manager and try again"
   exit
   fi
-if command -v python >/dev/null 2>&1; then
+if [[command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1]]; then
   echo "Python Dependency satisfied"
 else
   echo "Failed to satisfy dependency: python, please install powershell from your distro's package manager and try again"
@@ -160,5 +160,5 @@ echo "Fetching&Executing powershell install script"
             echo "Need root to create installation directory, please rerun with sudo"
             exit
             fi
-curl -sSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.ps1" | pwsh -NoProfile -Command "-"
+curl -sSL "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.ps1" | pwsh -NoProfile -Command "-" || { echo "Install failed"; exit 1; }
 echo "Done!"

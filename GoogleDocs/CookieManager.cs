@@ -240,9 +240,14 @@ public static class CookieManager
         }
 
         PrintLineDebugMenu("Browser cookie files copied to data directory.");
-       
+        string PATH = Environment.GetEnvironmentVariable("PATH");
+        string[] paths = PATH.Split(Path.PathSeparator,StringSplitOptions.RemoveEmptyEntries);
         string[] pyargs = new string[] { Path.GetFullPath(cookiescript) ,(datadir + (HostBrowserType == BrowserType.Firefox ? "\\cookies.sqlite" : "\\Profile\\Network\\Cookies"))/*.AddQuotes()*/, hostfilter };
         string filename = "python";
+        if (paths.Select(x => Path.Combine(x,"python3")).FirstOrDefault(File.Exists) != null)
+        {
+            filename = "python3";
+        }
         if (Directory.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Python")))
         {
             filename = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Python\\python.exe");

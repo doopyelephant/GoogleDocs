@@ -147,9 +147,16 @@ public partial class MainWindow : Window
         {
             filename = "powershell.exe";
         }
+        else if (paths.Select(x => Path.Combine(x, "pwsh")).FirstOrDefault(File.Exists) != null)
+        {
+            filename = "pwsh";
+        }
         else
         {
+            Dispatcher.UIThread.Post(() =>
+            {
         PowershellError.Open();
+            });
         return;
         }
 
