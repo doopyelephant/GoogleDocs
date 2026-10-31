@@ -134,7 +134,7 @@ public partial class MainWindow : Window
             }
 
             CookieManager.OvverideAlphabetical(false);
-            SetMainText("Ready to go!\n\nPlease put a document ID in the text box.\nThis can be found in the Google Docs URL, e.g:\nhttps://docs.google.com/document/d/1ge6DGS1rHrkHIYeaHjpyvLI5Rc1wG8gitBoeSnOneqY/edit?tab=t.0\nThe document ID for this would be \"1ge6DGS1rHrkHIYeaHjpyvLI5Rc1wG8gitBoeSnOneqY\".");
+            SetMainText("Ready to go!\n\nPlease put a document ID in the text box.\nThis can be found in the Google Docs URL, e.g:\nhttps://docs.google.com/document/d/1ge6DGS1rHrkHIYeaHjpyvLI5Rc1wG8gitBoeSnOneqY/edit?tab=t.0\nThe document ID for this would be \"1ge6DGS1rHrkHIYeaHjpyvLI5Rc1wG8gitBoeSnOneqY\". \n \n Please make sure you have Firefox installed and logged in to your Google account.");
             InitCursorManager();
             ActivePanel(Toolbar, false);
             ActiveElement(FeelingLuckyButton, SaveKeys.lastopened != "");

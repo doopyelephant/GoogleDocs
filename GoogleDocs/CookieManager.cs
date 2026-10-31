@@ -534,16 +534,24 @@ public static class CookieManager
         {
             PrintLineDebugMenu("No valid browser cookie paths found, requesting manual input.");
             var install = false;
-            if (SaveKeys.promptcacherequests.Contains( "No valid browsers were detected(Chromium isn't supported yet), would you like to install Firefox?:" ) == false)
+            if (Environment.OSVersion.Platform != PlatformID.Unix)
             {
-                 install = await Prompt(new[] {"Install Firefox", "Cancel"}, "No valid browsers were detected(Chromium isn't supported yet), would you like to install Firefox?:") == 0;
+                if (SaveKeys.promptcacherequests.Contains(
+                        "No valid browsers were detected(Chromium isn't supported yet), would you like to install Firefox?:") ==
+                    false)
+                {
+                    install = await Prompt(new[] { "Install Firefox", "Cancel" },
+                                  "No valid browsers were detected(Chromium isn't supported yet), would you like to install Firefox?:") ==
+                              0;
+                }
+
+                if (install)
+                {
+                    await InstallFireFox();
+                    return await GetBrowserCookiePath();
+                }
             }
-            if (install)
-            {
-            await InstallFireFox();
-            return await GetBrowserCookiePath();
-            }
-            else
+            if(!install)
             {
                 ManualBrowserCookieInput();
                 while (!CookieSelectorCallback)
