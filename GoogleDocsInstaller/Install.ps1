@@ -123,6 +123,8 @@ if($CustomIsLinux)
 {
     $DesktopEntry = "[Desktop Entry]`nType=Application`nTerminal=false`nName=Google Docs`nExec=$ExePath`nIcon=$IcoPath`nCategories=Office";
     Write-Output $DesktopEntry > "/usr/share/applications/GoogleDocs.desktop"
+    chmod +x  "/usr/share/applications/GoogleDocs.desktop"
+    chmod +x  $ExePath
 }
     $writer.WriteLine("Progress: 95")
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Uninstall.ps1" -OutFile "$AppData/Release/GoogleDocs/Uninstall.ps1"
