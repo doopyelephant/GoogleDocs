@@ -121,7 +121,8 @@ if($CustomIsWindows)
 }
 if($CustomIsLinux)
 {
-    $DesktopEntry = "[Desktop Entry]`nType=Application`nTerminal=false`nName=Google Docs`nExec=$ExePath`nIcon=$IcoPath`nCategories=Office";
+    $DesktopEntry = "[Desktop Entry]`nType=Application`nTerminal=false`nName=Google Docs`nExec=pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR /opt/GoogleDocs/Release/GoogleDocs/GoogleDocs
+`nIcon=$IcoPath`nCategories=Office";
     Write-Output $DesktopEntry > "/usr/share/applications/GoogleDocs.desktop"
     chmod +x  "/usr/share/applications/GoogleDocs.desktop"
     chmod +x  $ExePath
