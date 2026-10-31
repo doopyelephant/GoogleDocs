@@ -165,4 +165,5 @@ chown -R $(whoami) "/opt/GoogleDocs/"
 cd "/opt/GoogleDocs"
 curl -O "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.ps1"
 pwsh "./Download&Install.ps1" || { echo "Install failed, run 'Download&Install.ps1' in the current directory"; exit 1; }
+chown -R $(whoami) "/opt/GoogleDocs/"
 echo "Done!"
