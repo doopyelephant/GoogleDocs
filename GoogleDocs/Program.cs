@@ -37,7 +37,7 @@ public static class Program
         }
         catch (Exception e)
         {
-            File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"errorlog.txt"), e.ToString());
+            File.WriteAllText(System.IO.Path.Combine(Path.GetTempPath(),"errorlog.txt"), e.ToString());
         }
     }
 
