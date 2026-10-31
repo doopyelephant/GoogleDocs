@@ -3,6 +3,9 @@
 ## Installing
 
 **Please Make Sure you have Firefox installed and have logged in to your google account in *Google Docs***.
+
+> [!NOTE]
+> Windows will have a more polished experience than linux
 ### Windows
 Paste this into powershell(press windows, type "powershell", it should show "Windows Powershell", then hit enter):
 ```
