@@ -1091,8 +1091,32 @@ catch (HttpRequestException err)
                 }
     }
 
-    private void MainTextKeyDown(object? sender, KeyEventArgs e)
+    public async Task<Edit> Paste(int pos)
     {
+        PrintLineDebugMenu("Paste");
+        var toplevel = TopLevel.GetTopLevel(this);
+        if (toplevel is not null && toplevel.Clipboard is not null)
+        {
+            string? contents = await toplevel.Clipboard.TryGetTextAsync();
+            if (contents is not null)
+            {
+                PrintLineDebugMenu($"Pasting {contents} at {pos}");
+                return new Edit(EditType.Insert,new []{pos.ToString(),contents});
+            }
+            else
+            {
+                PrintLineDebugMenu("No clipboard contents or the contents is not text");
+            }
+        }
+        else
+        {
+            PrintLineDebugMenu("Toplevel is null or clipboard is null");
+        }
+        return new Edit(EditType.Noop, new string[]{});
+    }
+    private async void MainTextKeyDown(object? sender, KeyEventArgs e)
+    {
+
         PrintLineDebugMenu("Key Down: " + e.Key);
         if (e.Key == Key.Escape)
         {
@@ -1135,6 +1159,8 @@ catch (HttpRequestException err)
                 CursorManager.KeyDown(Move.Down);
                 break;
             default:
+                if (TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is TextBox)
+                    return;
                 Edit? edit = null;
                 var pos = CursorManager.GetCursorPosition();
               /*  if (doc != null)
@@ -1152,26 +1178,7 @@ catch (HttpRequestException err)
 
                     if (e.Key == Key.V)
                     {
-                       PrintLineDebugMenu("Paste");
-                        var toplevel = TopLevel.GetTopLevel(this);
-                        if (toplevel is not null && toplevel.Clipboard is not null)
-                        {
-                            string? contents = toplevel.Clipboard.TryGetTextAsync().Result;
-                            if (contents is not null)
-                            {
-                                PrintLineDebugMenu($"Pasting {contents} at {pos}");
-                            edit = new Edit(EditType.Insert,new []{pos.ToString(),contents});
-
-                            }
-                            else
-                            {
-                                PrintLineDebugMenu("No clipboard contents or the contents is not text");
-                            }
-                        }
-                        else
-                        {
-                            PrintLineDebugMenu("Toplevel is null or clipboard is null");
-                        }
+                        edit = await Paste(pos);
                     }
 
 
