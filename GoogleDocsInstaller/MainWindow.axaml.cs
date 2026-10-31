@@ -194,8 +194,7 @@ public partial class MainWindow : Window
                 string s = stream.ReadLine();
                 if (s == null)
                 {
-                    Thread.Sleep(50);
-                    continue;
+                    break;
                 }
 
                 Console.WriteLine(s);
@@ -203,6 +202,10 @@ public partial class MainWindow : Window
                 {
                     int progress = int.Parse(s.Replace("Progress: ", ""));
                     Dispatcher.UIThread.Post(() => { ProgressBar.Value = progress; });
+                    if (progress == 100)
+                    {
+                        break;
+                    }
                 }
 
 

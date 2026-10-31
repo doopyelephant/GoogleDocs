@@ -169,14 +169,21 @@ public static class CookieManager
        // string profiledir = "C:\\Users\\nolan\\AppData\\Roaming\\zen\\Profiles\\us8cxx3x.Default (alpha)";
         }
         else{
-            datadir = "~\\.cache\\GoogleDocs";
+            datadir = "~/.cache/GoogleDocs";
         }
         profiledir = await SaveKeys.staticpath.GetRealPath();
 
         if (SaveKeys.usedynamicpaths)
         {
             profiledir = await GetBrowserCookiePath();
-            profiledir = profiledir.SubstringBeforeLast("\\");
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                profiledir = profiledir.SubstringBeforeLast("/");
+            }
+            else
+            {
+                profiledir = profiledir.SubstringBeforeLast("\\");
+            }
         }
 
         if(!Directory.Exists(datadir))
@@ -876,7 +883,7 @@ else
                         }
                         //replace all of the substitutes in the path with the first child
                         oldpath = oldpath.ReplaceFirst(substitute,
-                            Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast("\\"));
+                            Directory.GetDirectories(oldpath.SubstringBefore(substitute))[0].SubstringAfterLast(Environment.OSVersion.Platform == PlatformID.Unix ? "/" :"\\"));
                     }
                     break;
                 case "SYSUSER":
@@ -905,7 +912,7 @@ else
                             if (tmpdirs.Count > 0)
                             {
                                 oldpath = oldpath.ReplaceFirst(substitute,
-                                    tmpdirs[0].SubstringAfterLast("\\"));
+                                    tmpdirs[0].SubstringAfterLast(Environment.OSVersion.Platform == PlatformID.Unix ? "/" : "\\"));
                             }
                             else
                             {
@@ -922,11 +929,11 @@ else
                             {
                                 return oldpath;
                             }
-                            var dirs = Directory.GetDirectories(oldpath.SubstringBefore(substitute)).Select((string s) => s.SubstringAfterLast("\\"));
+                            var dirs = Directory.GetDirectories(oldpath.SubstringBefore(substitute)).Select((string s) => s.SubstringAfterLast(Environment.OSVersion.Platform == PlatformID.Unix ? "/" : "\\"));
                             var validdirs = new List<string>();
                             foreach (var dir in dirs)
                             {
-                                if (File.Exists(oldpath.SubstringBefore(substitute) + dir + "\\cookies.sqlite"))
+                                if (File.Exists(System.IO.Path.Combine(oldpath.SubstringBefore(substitute),dir,"cookies.sqlite")))
                                 {
                                     validdirs.Add(dir);
                                 }

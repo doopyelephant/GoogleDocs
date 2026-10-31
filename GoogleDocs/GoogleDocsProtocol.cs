@@ -237,10 +237,10 @@ public class GoogleDoc
         savekeys = JsonParsing.GetSaveKeys();
         if (savekeys.verbose)
         {
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\rawjson1.json", json1.ToString(Formatting.Indented));
+            File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"rawjson1.json"), json1.ToString(Formatting.Indented));
             foreach (var json in jsons)
             {
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\rawjson" + (jsons.IndexOf(json) + 1).ToString() + ".json", json.ToString(Formatting.Indented));
+                File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"rawjson" + (jsons.IndexOf(json) + 1).ToString() + ".json"), json.ToString(Formatting.Indented));
             }
         }
         PrintLineDebugMenu("Revision: " + revision);
@@ -248,7 +248,7 @@ public class GoogleDoc
         PrintLineDebugMenu("Token: " + token);
         if (savekeys.verbose)
         {
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\token.txt", token);
+            File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"token.txt"), token);
         }
         PrintLineDebugMenu("Name: " + name);
         PrintLineDebugMenu("Profile Pic URL: " + profpicurl);
@@ -504,7 +504,7 @@ public class GoogleDoc
     {
         if (savekeys.verbose)
         {
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\doceditsbefore.json", JsonConvert.SerializeObject(history.Edits, Formatting.Indented));
+            File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"doceditsbefore.json"), JsonConvert.SerializeObject(history.Edits, Formatting.Indented));
         }
         PrintLineDebugMenu($"Offsetting alters after {after} by {offset}");
         var i = 0;
@@ -559,7 +559,7 @@ public class GoogleDoc
 
         if (savekeys.verbose)
         {
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\doceditsafter.json", JsonConvert.SerializeObject(history.Edits, Formatting.Indented));
+            File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"doceditsafter.json"), JsonConvert.SerializeObject(history.Edits, Formatting.Indented));
         }
     }
     public void OffsetAltersAfter(int offset, int after, ref List<Edit> edits,bool cursor = true)
@@ -658,7 +658,7 @@ public class GoogleDoc
     {
         if (savekeys.verbose)
         {
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\docedits.json",JsonConvert.SerializeObject(history.Edits,Formatting.Indented));
+            File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"docedits.json"),JsonConvert.SerializeObject(history.Edits,Formatting.Indented));
         }
 
         var expanded = new List<Edit>();
@@ -687,7 +687,7 @@ public class GoogleDoc
         }
         if (savekeys.verbose)
         {
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\expandeddocedits.json",JsonConvert.SerializeObject(expanded,Formatting.Indented));
+            File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"expandeddocedits.json"),JsonConvert.SerializeObject(expanded,Formatting.Indented));
         }
 
         string content = "";
@@ -863,7 +863,7 @@ public class GoogleDoc
 
         if (savekeys.verbose)
         {
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\doc.txt", content.ToString());
+            File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"doc.txt"), content.ToString());
         }
         return (content,riches);
     }

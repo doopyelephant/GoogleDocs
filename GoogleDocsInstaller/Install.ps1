@@ -127,5 +127,7 @@ if($CustomIsLinux)
     chmod +x  $ExePath
 }
     $writer.WriteLine("Progress: 95")
+    $writer.Flush()
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Uninstall.ps1" -OutFile "$AppData/Release/GoogleDocs/Uninstall.ps1"
     $writer.WriteLine("Progress: 100")
+    $writer.Flush()

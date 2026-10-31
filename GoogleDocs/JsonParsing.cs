@@ -209,14 +209,14 @@ public static bool TryReadLengthPrefixedSegment(
     {
         SaveKeysCache = keys;
         string json = JsonConvert.SerializeObject(keys, Formatting.Indented);
-        File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\SaveKeys.json", json);
+        File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"SaveKeys.json"), json);
     }
 
 
 
     public static UrlConfig GetUrlConfig()
     {
-        string json = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\UrlConfig.json");
+        string json = File.ReadAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"UrlConfig.json"));
         var UrlConfig = JsonConvert.DeserializeObject<UrlConfig>(json);
         return UrlConfig;
     }
@@ -225,7 +225,7 @@ public static bool TryReadLengthPrefixedSegment(
     {
         if (haschanged)
         {
-            string json = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\SaveKeys.json");
+            string json = File.ReadAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"SaveKeys.json"));
             var SaveKeys = JsonConvert.DeserializeObject<SaveKeys>(json);
             if (SaveKeys.promptcacherequests == null)
             {
@@ -257,7 +257,7 @@ public static bool TryReadLengthPrefixedSegment(
 
     public static BrowserCookiePaths GetBrowserCookiePaths()
     {
-        string json = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory +  "\\BrowserCookiePaths.json");
+        string json = File.ReadAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"BrowserCookiePaths.json"));
         var BrowserCookiePaths = JsonConvert.DeserializeObject<BrowserCookiePaths>(json);
         return BrowserCookiePaths;
     }
