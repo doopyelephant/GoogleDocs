@@ -170,7 +170,7 @@ public partial class MainWindow : Window
         if (Environment.OSVersion.Platform == PlatformID.Unix)
         {
             info = new ProcessStartInfo("pkexec",
-                $"env DISPLAY=$DISPLAY WAYLAND_DISPLAY=$WAYLAND_DISPLAY XDG_SESSION_TYPE=$XDG_SESSION_TYPE XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR ${filename} -NoProfile -ExecutionPolicy Bypass -File {System.IO.Path.GetDirectoryName(System.Environment.ProcessPath)}/Install.ps1 {drive} {mode}");
+                $"env DISPLAY=$DISPLAY WAYLAND_DISPLAY=$WAYLAND_DISPLAY XDG_SESSION_TYPE=$XDG_SESSION_TYPE XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR {filename} -NoProfile -ExecutionPolicy Bypass -File {System.IO.Path.GetDirectoryName(System.Environment.ProcessPath)}/Install.ps1 {drive} {mode}");
         }
         info.UseShellExecute = true;
         if (Environment.OSVersion.Platform != PlatformID.Unix)
