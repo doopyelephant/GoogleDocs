@@ -161,7 +161,7 @@ echo "Fetching&Executing powershell install script"
             exit
             fi
 mkdir -p "/opt/GoogleDocs/InstallerRelease"
-chown -R users "/opt/GoogleDocs/"
+chown -R $(whoami) "/opt/GoogleDocs/"
 cd "/opt/GoogleDocs"
 curl -O "https://raw.githubusercontent.com/doopyelephant/GoogleDocs/refs/heads/master/Download&Install.ps1"
 pwsh "./Download&Install.ps1" || { echo "Install failed, run 'Download&Install.ps1' in the current directory"; exit 1; }
